@@ -26,7 +26,7 @@ export const metadata = {
   description: "Nơi lưu giữ những nét mực thanh xuân của bạn bè gửi về Tòa soạn",
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="vi" className="scroll-smooth">
       {/* Tích hợp các class font vào body */}
