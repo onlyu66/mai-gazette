@@ -3,21 +3,23 @@
 import ArchiveFeed from '@/lib/components/ArchiveFeed';
 import FormEditor from '@/lib/components/FormEditor';
 import GallerySlider from '@/lib/components/GallerySlider';
+import { MagneticButton } from '@/lib/components/MagneticButton';
 import MarqueeTicker from '@/lib/components/MarqueeTicker';
 import NewspaperPreview from '@/lib/components/NewspaperPreview';
 import PressStudio from '@/lib/components/PressStudio';
 import { useLuuBut } from '@/lib/hooks/useLuuBut';
-import { useWebcamCard } from '@/lib/hooks/useWebcamCard';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { useState } from 'react';
 
 
 export default function Home() {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const { formData, luuButList, loading, updateField, formatDropCapText, submitLuuBut } = useLuuBut();
-  
-  const {
-    tenThe, setTenThe, anhChupThe, videoRef, canvasRef, theCardRef, moCamera, chupAnh, taiThePhongVien
-  } = useWebcamCard();
+
+  // Parallax scroll
+  const { scrollY } = useScroll();
+  const blobY1 = useTransform(scrollY, [0, 1000], [0, 260]);
+  const blobY2 = useTransform(scrollY, [0, 1000], [0, -180]);
 
   const chuyenCheDo = () => {
     setIsDarkMode(!isDarkMode);
@@ -40,7 +42,7 @@ export default function Home() {
           <div className="flex items-center space-x-4">
             <nav className="hidden lg:flex space-x-6 text-xs uppercase tracking-widest font-semibold opacity-80">
               <a href="#goc-trien-lam" className="hover:text-rose-500 transition">Triển Lãm Ảnh</a>
-              <a href="#studio-anh" className="hover:text-rose-500 transition">Studio Thẻ</a>
+              <a href="#studio-anh" className="hover:text-rose-500 transition">Photobooth</a>
               <a href="#thiet-ke-bao" className="hover:text-rose-500 transition">Thiết Kế Trang Nhất</a>
               <a href="#kho-luu-tru" className="hover:text-rose-500 transition">Đọc Lưu Bút</a>
             </nav>
@@ -53,26 +55,61 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section id="trang-chu" className="max-w-7xl mx-auto px-6 pt-16 pb-12 grid lg:grid-cols-12 gap-12 items-center">
-        <div className="lg:col-span-7 space-y-6">
-          <div className="inline-block bg-rose-100/60 text-rose-600 text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full border border-rose-200">
+      <section id="trang-chu" className="max-w-7xl mx-auto px-6 pt-16 pb-12 grid lg:grid-cols-12 gap-12 items-center relative overflow-hidden">
+        {/* Parallax decorative blobs */}
+        <motion.div style={{ y: blobY1 }} className="absolute -top-24 -right-20 pointer-events-none -z-0">
+          <div className="w-[420px] h-[420px] rounded-full bg-rose-100/60 dark:bg-rose-900/10 opacity-50 animate-float" />
+        </motion.div>
+        <motion.div style={{ y: blobY2 }} className="absolute -bottom-20 -left-16 pointer-events-none -z-0">
+          <div className="w-72 h-72 rounded-full bg-rose-200/40 dark:bg-rose-800/10 opacity-30 animate-float-reverse" />
+        </motion.div>
+
+        <div className="lg:col-span-7 space-y-6 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="inline-block bg-rose-100/60 text-rose-600 text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full border border-rose-200"
+          >
             🌸 Mùa hoa tốt nghiệp năm 2026
-          </div>
-          <h1 className="font-bao-chi text-5xl md:text-7xl font-bold uppercase tracking-tight leading-none text-gray-900 dark:text-white">
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="font-bao-chi text-5xl md:text-7xl font-bold uppercase tracking-tight leading-none text-gray-900 dark:text-white"
+          >
             PHAN NGỌC MAI.
-          </h1>
-          <p className="font-nghe-thuat text-2xl text-rose-400 italic">
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.35 }}
+            className="font-nghe-thuat text-2xl text-rose-400 italic"
+          >
             &quot;Cây bút trẻ, hoài bão lớn và trang hành trình thanh xuân rực rỡ.&quot;
-          </p>
-          <div className="pt-2 flex flex-wrap gap-4">
-            <a href="#studio-anh" className="bg-gray-900 text-white dark:bg-white dark:text-gray-900 text-xs uppercase tracking-widest font-bold px-6 py-4 rounded-xl hover:bg-rose-600 hover:text-white transition shadow-lg">
-              Cấp Thẻ Phóng Viên Đặc Nhiệm 📸
-            </a>
-          </div>
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="pt-2 flex flex-wrap gap-4"
+          >
+            <MagneticButton>
+              <a href="#studio-anh" className="bg-gray-900 text-white dark:bg-white dark:text-gray-900 text-xs uppercase tracking-widest font-bold px-6 py-4 rounded-xl hover:bg-rose-600 hover:text-white transition shadow-lg inline-block">
+                Chụp Ảnh Photobooth Kỷ Niệm 📸
+              </a>
+            </MagneticButton>
+          </motion.div>
         </div>
 
         {/* Khung ảnh quét sáng */}
-        <div className="lg:col-span-4 lg:col-start-9 flex justify-center items-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.92 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.3, type: 'spring' }}
+          className="lg:col-span-4 lg:col-start-9 flex justify-center items-center relative z-10"
+        >
           <div className="relative group w-full max-w-[340px] aspect-[3/4] rounded-2xl p-3.5 bg-gradient-to-br from-white/60 via-rose-50/30 to-rose-100/40 dark:from-zinc-900/60 dark:via-zinc-900/40 dark:to-rose-950/30 backdrop-blur-md border border-rose-200/40 dark:border-zinc-800 shadow-xl hover:-translate-y-2 hover:rotate-1 transition-all duration-700 ease-out grid grid-cols-1">
             <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-10">
               <div className="w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:animate-hieu-ung-quet-sang"></div>
@@ -86,42 +123,56 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* 2. Góc triển lãm ảnh vô tận */}
       <GallerySlider />
 
       {/* 3. Studio Thẻ Nhà Báo */}
-      <PressStudio 
-        tenThe={tenThe} setTenThe={setTenThe} anhChupThe={anhChupThe}
-        videoRef={videoRef} canvasRef={canvasRef} theCardRef={theCardRef}
-        moCamera={moCamera} chupAnh={chupAnh} taiThePhongVien={taiThePhongVien}
-      />
+      <PressStudio />
 
-      {/* 4. Phân hệ thiết kế trang nhất */}
-      <section id="thiet-ke-bao" className="py-20 border-t border-rose-200/20 bg-rose-50/10">
-        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-12 gap-12">
-          <div className="lg:col-span-5">
-            <FormEditor formData={formData} updateField={updateField} onSubmit={submitLuuBut} loading={loading} />
+      {/* 4. Phân hệ viết lưu bút */}
+      <section id="thiet-ke-bao" className="py-20 border-t border-rose-100/60"
+        style={{ background: 'linear-gradient(180deg, #fff5f8 0%, #fef2f6 100%)' }}
+      >
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-12 space-y-2">
+            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-rose-400 block">✦ Gửi lời yêu thương</span>
+            <h2 className="font-nghe-thuat italic text-3xl font-bold" style={{ color: '#be123c' }}>
+              Viết Trang Lưu Bút Cho Mai
+            </h2>
+            <p className="text-sm text-rose-300 max-w-md mx-auto leading-relaxed">
+              Mỗi lời chúc của bạn sẽ được lưu lại mãi mãi trong tập san kỷ niệm đặc biệt này 🌸
+            </p>
           </div>
-          <div className="lg:col-span-7 flex justify-center">
-            <NewspaperPreview formData={formData} formatDropCapText={formatDropCapText} />
+          <div className="grid lg:grid-cols-12 gap-12">
+            <div className="lg:col-span-5">
+              <FormEditor formData={formData} updateField={updateField} onSubmit={submitLuuBut} loading={loading} />
+            </div>
+            <div className="lg:col-span-7 flex justify-center items-start">
+              <NewspaperPreview formData={formData} formatDropCapText={formatDropCapText} />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 5. Kho lưu trữ bài viết đã xuất bản */}
-      <section id="kho-luu-tru" className="py-20 border-t max-w-6xl mx-auto px-6">
-        <div className="text-center mb-16 space-y-2">
-          <span className="text-xs font-bold uppercase tracking-[0.3em] text-rose-500 block">● KHO LƯU TRỮ TOÀ SOẠN</span>
-          <h2 className="font-bao-chi text-4xl font-bold text-gray-900 dark:text-white">Các Bài Phóng Sự Đã Xuất Bản</h2>
+      {/* 5. Vườn lưu bút */}
+      <section id="kho-luu-tru" className="py-20 border-t border-rose-100/60 max-w-6xl mx-auto px-6">
+        <div className="text-center mb-12 space-y-2">
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-rose-400 block">✦ Vườn kỷ niệm</span>
+          <h2 className="font-nghe-thuat italic text-3xl font-bold" style={{ color: '#be123c' }}>
+            Những Trang Lưu Bút Gửi Đến Mai
+          </h2>
+          <p className="text-sm text-rose-300 max-w-sm mx-auto">
+            Từng lời chúc là một bông hoa trong vườn thanh xuân 🌷
+          </p>
         </div>
         <ArchiveFeed list={luuButList} />
       </section>
 
-      <footer className="py-12 text-center text-xs tracking-widest opacity-50 font-mono border-t border-rose-200/20">
-          © 2026 TÒA SOẠN DI ĐỘNG PHAN NGỌC MAI. GIỮ TRỌN KÝ ỨC THANH XUÂN.
+      <footer className="py-12 text-center text-xs tracking-[0.2em] font-mono border-t border-rose-100/60" style={{ color: '#fda4af' }}>
+        🌸 © 2026 TẬP SAN KỶ NIỆM TỐT NGHIỆP · PHAN NGỌC MAI · CỬ NHÂN BÁO CHÍ 🌸
       </footer>
     </div>
   );

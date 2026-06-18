@@ -34,6 +34,19 @@ body {
     100% { transform: skewX(-12deg) translateX(250%); }
   }
   --animate-hieu-ung-quet-sang: tiaSangQuet 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33%       { transform: translateY(-18px) rotate(2deg); }
+    66%       { transform: translateY(-8px) rotate(-1deg); }
+  }
+  @keyframes floatReverse {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33%       { transform: translateY(14px) rotate(-2deg); }
+    66%       { transform: translateY(6px) rotate(1deg); }
+  }
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-float-reverse: floatReverse 9s ease-in-out infinite;
 }
 
 .vung-tin-tuc {

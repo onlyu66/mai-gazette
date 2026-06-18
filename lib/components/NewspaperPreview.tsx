@@ -6,51 +6,146 @@ interface NewspaperPreviewProps {
   formatDropCapText: (text: string) => ReactNode;
 }
 
+const LOAI_LABELS: Record<string, { label: string; emoji: string; color: string }> = {
+  'loi-chuc':  { label: 'Lời chúc tốt nghiệp', emoji: '🌸', color: '#f43f5e' },
+  'ky-niem':   { label: 'Kỷ niệm đáng nhớ',    emoji: '📸', color: '#e879a0' },
+  'nhan-nhu':  { label: 'Nhắn nhủ từ trái tim', emoji: '💌', color: '#e11d48' },
+  'hai-huoc':  { label: 'Hài hước & vui vẻ',   emoji: '🎭', color: '#fb7185' },
+};
+
+const CAM_XUC_COLORS: Record<string, string> = {
+  '🥹 Xúc động': '#f43f5e',
+  '🌸 Tự hào':   '#e879a0',
+  '🥂 Hào hứng': '#fb923c',
+  '😭 Nhớ nhau': '#a855f7',
+  '✨ Biết ơn':   '#eab308',
+  '💕 Yêu quý':  '#ec4899',
+};
+
+function today() {
+  return new Date().toLocaleDateString('vi-VN', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  });
+}
+
 export default function NewspaperPreview({ formData, formatDropCapText }: NewspaperPreviewProps) {
+  const loai = LOAI_LABELS[formData.tieuDe] ?? { label: 'Lời nhắn', emoji: '💌', color: '#f43f5e' };
+  const camXucEmoji = formData.quaTang?.split(' ')[0] ?? '';
+  const camXucColor = CAM_XUC_COLORS[formData.quaTang] ?? '#f43f5e';
+
   return (
-    <div className="w-full max-w-xl bg-[#FBF9F4] text-[#1A1512] p-8 shadow-2xl border-[3px] border-[#1A1512] flex flex-col space-y-5 relative select-none">
-      <div className="absolute inset-2 border border-[#1A1512]/20 pointer-events-none"></div>
-      
-      <div className="text-center space-y-1">
-        <p className="text-[9px] uppercase tracking-[0.4em] font-bold text-gray-500 font-mono">The Daily Graduation Journal</p>
-        <h3 className="font-bao-chi text-4xl md:text-5xl font-black tracking-wider border-b-4 border-[#1A1512] pb-1">TẬP SAN THANH XUÂN</h3>
-        <div className="flex justify-between items-center text-[9px] font-mono uppercase font-bold py-1.5 border-b border-[#1A1512]">
-          <span>N° 2026.MAI</span>
-          <span>Thứ Năm, 18 Tháng 6, 2026</span>
-          <span className="text-rose-700">Giá: Vô Giá ✦</span>
-        </div>
-      </div>
+    <div
+      className="w-full max-w-xl relative rounded-3xl overflow-hidden select-none"
+      style={{
+        background: 'linear-gradient(155deg, #fff9fb 0%, #fef2f6 60%, #fff0f8 100%)',
+        boxShadow: '0 20px 60px rgba(244,63,94,0.15), 0 0 0 1px rgba(244,114,182,0.12)',
+      }}
+    >
+      {/* Top decorative band */}
+      <div
+        className="h-2 w-full"
+        style={{ background: `linear-gradient(90deg, #fda4af, ${loai.color}, #fda4af)` }}
+      />
 
-      <h4 className="font-bao-chi text-xl md:text-2xl font-black text-center leading-tight uppercase text-zinc-900">
-        {formData.tieuDe}
-      </h4>
+      {/* Corner petals */}
+      <div className="pointer-events-none absolute top-4 right-4 text-3xl opacity-10 rotate-12 select-none">🌸</div>
+      <div className="pointer-events-none absolute bottom-4 left-4 text-2xl opacity-10 -rotate-12 select-none">🌷</div>
 
-      <div className="grid md:grid-cols-12 gap-4 items-start pt-1">
-        <div className="md:col-span-7 space-y-1.5 relative">
-          <div className="w-full aspect-[4/3] bg-zinc-100 border border-[#1A1512] p-1.5 flex items-center justify-center overflow-hidden">
-            {formData.anhBase64 ? (
-              <img src={formData.anhBase64} alt="Phóng sự" className="w-full h-full object-cover" />
-            ) : (
-              <div className="text-[10px] font-mono text-gray-400 text-center uppercase p-4 tracking-wider">[ 📸 Ảnh phóng sự chưa tải lên ]</div>
-            )}
+      <div className="p-8 space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-2 pb-5 border-b border-rose-100">
+          <p className="text-[9px] uppercase tracking-[0.35em] font-bold text-rose-300 font-mono">
+            Tập San Kỷ Niệm Tốt Nghiệp · 2026
+          </p>
+          <h3 className="font-nghe-thuat italic text-3xl font-bold" style={{ color: '#be123c' }}>
+            Lưu Bút Thanh Xuân
+          </h3>
+          <div className="flex justify-center items-center gap-3 text-[9px] font-mono text-rose-300">
+            <span>Phan Ngọc Mai</span>
+            <span>·</span>
+            <span>{today()}</span>
           </div>
         </div>
-        <div className="md:col-span-5 border-l border-dashed border-gray-300 pl-4 text-[9px] font-mono text-gray-500">
-          <span className="text-rose-700 block font-bold">● LỜI TÒA SOẠN</span>
-          <h5 className="font-nghe-thuat font-bold italic text-sm text-gray-800 mt-1">Hành trình vạn dặm bắt đầu từ nét mực đầu tiên.</h5>
+
+        {/* Loại lưu bút badge */}
+        <div className="flex items-center gap-3">
+          <span
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider text-white"
+            style={{ background: loai.color }}
+          >
+            {loai.emoji} {loai.label.toUpperCase()}
+          </span>
+          {formData.quaTang && (
+            <span
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-bold border"
+              style={{ borderColor: `${camXucColor}40`, color: camXucColor, background: `${camXucColor}10` }}
+            >
+              {camXucEmoji} {formData.quaTang.replace(/^\S+\s/, '')}
+            </span>
+          )}
+        </div>
+
+        {/* Ảnh kỷ niệm */}
+        <div
+          className="w-full aspect-[16/9] rounded-2xl overflow-hidden border border-rose-100 flex items-center justify-center"
+          style={{ background: 'linear-gradient(135deg, #fce7f3, #fdf2f8)' }}
+        >
+          {formData.anhBase64 ? (
+            <img src={formData.anhBase64} alt="Ảnh kỷ niệm" className="w-full h-full object-cover" />
+          ) : (
+            <div className="text-center space-y-2 opacity-40">
+              <div className="text-3xl">🖼️</div>
+              <p className="text-[10px] font-mono text-rose-400 uppercase tracking-wider">
+                Chưa có ảnh kỷ niệm
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Nội dung */}
+        <div className="relative">
+          {/* Decorative quote mark */}
+          <div
+            className="absolute -top-2 -left-1 text-5xl font-serif leading-none opacity-15 select-none"
+            style={{ color: '#f43f5e' }}
+          >
+            "
+          </div>
+          <div
+            className="text-[13px] leading-[1.85] text-gray-700 pl-4 border-l-2 border-rose-200"
+            style={{ fontFamily: 'var(--font-playfair), serif', fontStyle: 'italic' }}
+          >
+            {formData.noiDung
+              ? formatDropCapText(formData.noiDung)
+              : (
+                <span className="text-rose-200">
+                  Lời nhắn của bạn sẽ hiện ra ở đây... Hãy bắt đầu viết từ biểu mẫu bên cạnh nhé 🌸
+                </span>
+              )
+            }
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="pt-4 border-t border-rose-100 flex justify-between items-center">
+          <div className="space-y-0.5">
+            <p className="text-[9px] uppercase tracking-widest text-rose-300 font-mono">Người gửi</p>
+            <p className="font-nghe-thuat italic font-bold text-rose-600 text-base">
+              {formData.tacGia || 'Người bạn thân mến'}
+            </p>
+          </div>
+          <div className="text-right space-y-0.5">
+            <p className="text-[9px] uppercase tracking-widest text-rose-300 font-mono">Tập san</p>
+            <p className="text-[11px] font-bold text-rose-400">N°MAI · 2026 🌷</p>
+          </div>
         </div>
       </div>
 
-      <div className="border-t border-[#1A1512] pt-3">
-        <div className="text-[11px] font-serif text-zinc-800 leading-relaxed text-justify md:columns-2 gap-6">
-          {formatDropCapText(formData.noiDung)}
-        </div>
-      </div>
-
-      <div className="border-t-2 border-[#1A1512] pt-2.5 mt-auto flex justify-between items-center text-[10px] font-mono uppercase font-bold">
-        <span>Đặc Phái Viên: <span className="underline decoration-double">{formData.tacGia || "Bạn Thân"}</span></span>
-        <span className="text-rose-700">Nhuận bút: {formData.quaTang}</span>
-      </div>
+      {/* Bottom decorative band */}
+      <div
+        className="h-1 w-full opacity-40"
+        style={{ background: `linear-gradient(90deg, transparent, ${loai.color}, transparent)` }}
+      />
     </div>
   );
 }

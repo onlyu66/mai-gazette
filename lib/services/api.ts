@@ -7,7 +7,7 @@ import { LuuButRecord, InsertLuuButDTO } from "../types";
 export const uploadStorageImage = async (
   base64Data: string,
 ): Promise<string | null> => {
-  if (!base64Data) return null;
+  if (!base64Data || !supabase) return null;
   try {
     const response = await fetch(base64Data);
     const blob = await response.blob();
@@ -36,6 +36,8 @@ export const uploadStorageImage = async (
 export const insertLuuBut = async (
   postData: InsertLuuButDTO,
 ): Promise<LuuButRecord> => {
+  if (!supabase) throw new Error("Supabase chưa được cấu hình (.env.local).");
+
   const { data, error } = await supabase
     .from("luu_but")
     .insert([
@@ -59,6 +61,8 @@ export const insertLuuBut = async (
  * Lấy danh sách lưu bút đã xuất bản
  */
 export const fetchLuuButList = async (): Promise<LuuButRecord[]> => {
+  if (!supabase) return []; // Trả về mảng rỗng khi chưa cấu hình Supabase
+
   const { data, error } = await supabase
     .from("luu_but")
     .select("*")
@@ -67,3 +71,4 @@ export const fetchLuuButList = async (): Promise<LuuButRecord[]> => {
   if (error) throw error;
   return (data || []) as LuuButRecord[];
 };
+

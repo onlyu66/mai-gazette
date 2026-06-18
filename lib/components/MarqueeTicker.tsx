@@ -1,20 +1,36 @@
+'use client';
+
 import { motion } from 'framer-motion';
+
+const MESSAGES = [
+  '🌸 Chúc mừng tốt nghiệp Phan Ngọc Mai — Cử nhân Báo chí xuất sắc 2026!',
+  '💌 Hãy để lại trang lưu bút và gửi những lời chúc ấm áp nhất đến Mai nhé',
+  '🎓 Hành trình 4 năm kết thúc, nhưng ký ức thanh xuân sẽ mãi còn đây',
+  '🌷 Mỗi lời chúc là một bông hoa trong vườn kỷ niệm của chúng ta',
+  '✨ Cảm ơn bạn đã ghé thăm tập san kỷ niệm tốt nghiệp của Mai',
+  '💕 Những tháng năm đại học — rực rỡ, đáng nhớ và thật nhiều yêu thương',
+];
+
+const TICKER_CONTENT = [...MESSAGES, ...MESSAGES];
 
 export default function MarqueeTicker() {
   return (
-    <div className="bg-[#F43F5E] text-white text-xs uppercase tracking-[0.2em] py-2.5 overflow-hidden font-medium border-b border-rose-600 select-none">
+    <div
+      className="overflow-hidden py-2.5 select-none"
+      style={{
+        background: 'linear-gradient(90deg, #fda4af, #f43f5e, #e11d48, #f43f5e, #fda4af)',
+        borderBottom: '1px solid rgba(244,63,94,0.3)',
+      }}
+    >
       <div className="flex w-max flex-nowrap">
-        <motion.div 
-          animate={{ x: ["0%", "-50%"] }}
-          transition={{ duration: 22, ease: "linear", repeat: Infinity }}
-          className="flex space-x-16 pr-16 items-center flex-nowrap whitespace-nowrap"
+        <motion.div
+          animate={{ x: ['0%', '-50%'] }}
+          transition={{ duration: 35, ease: 'linear', repeat: Infinity }}
+          className="flex space-x-16 pr-16 items-center flex-nowrap whitespace-nowrap text-white text-xs tracking-[0.15em] font-medium"
         >
-          <span>✦ TIN NÓNG: Phan Ngọc Mai chính thức nhận bằng Cử nhân Báo chí xuất sắc!</span>
-          <span>✦ TẬP SAN KỶ NIỆM: Nơi lưu giữ những nét mực thanh xuân của bạn bè gửi về Tòa soạn</span>
-          <span>✦ CẬP NHẬT: Đã tích hợp chuỗi chuyển động Motion cuộn vô tận mượt mà!</span>
-          <span>✦ TIN NÓNG: Phan Ngọc Mai chính thức nhận bằng Cử nhân Báo chí xuất sắc!</span>
-          <span>✦ TẬP SAN KỶ NIỆM: Nơi lưu giữ những nét mực thanh xuân của bạn bè gửi về Tòa soạn</span>
-          <span>✦ CẬP NHẬT: Đã tích hợp chuỗi chuyển động Motion cuộn vô tận mượt mà!</span>
+          {TICKER_CONTENT.map((msg, i) => (
+            <span key={i}>{msg}</span>
+          ))}
         </motion.div>
       </div>
     </div>
