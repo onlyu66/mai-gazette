@@ -67,8 +67,8 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
     <div
       className="relative rounded-3xl overflow-hidden"
       style={{
-        background: 'linear-gradient(145deg, #fff9fb 0%, #fef2f6 50%, #fff5f8 100%)',
-        boxShadow: '0 8px 40px rgba(244,114,182,0.12), 0 0 0 1px rgba(244,114,182,0.08)',
+        background: 'var(--bg-card-gradient)',
+        boxShadow: '0 8px 40px rgba(0,0,0,0.08), 0 0 0 1px var(--border-card)',
       }}
     >
       {/* Decorative corner flowers */}
@@ -82,18 +82,18 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
           <div className="text-2xl mb-1">🎓</div>
           <h2
             className="font-nghe-thuat italic text-2xl font-bold leading-snug"
-            style={{ color: '#be123c' }}
+            style={{ color: 'var(--text-heading)' }}
           >
             Trang Lưu Bút Tốt Nghiệp
           </h2>
-          <p className="text-[11px] tracking-[0.15em] uppercase font-semibold" style={{ color: '#fb7185' }}>
+          <p className="text-[11px] tracking-[0.15em] uppercase font-semibold" style={{ color: 'var(--text-muted)' }}>
             Phan Ngọc Mai · Cử Nhân Báo Chí 2026
           </p>
         </div>
 
         {/* ── 1. Loại lưu bút ── */}
         <div className="space-y-3">
-          <label className="block text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: '#fb7185' }}>
+          <label className="block text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: 'var(--text-heading)', opacity: 0.8 }}>
             ✦ Bạn muốn viết gì?
           </label>
           <div className="grid grid-cols-2 gap-2.5">
@@ -113,12 +113,12 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
                     className={`px-3.5 py-3 rounded-2xl border-2 transition-all duration-200 ${
                       isSelected
                         ? 'border-rose-400 shadow-md'
-                        : 'border-rose-100 bg-white/70 hover:border-rose-200 hover:bg-rose-50/60'
+                        : 'border-transparent hover:border-rose-200'
                     }`}
-                    style={isSelected ? {
-                      background: 'linear-gradient(135deg, #fff0f5, #fce7f3)',
-                      boxShadow: '0 4px 16px rgba(244,114,182,0.2)',
-                    } : {}}
+                    style={{
+                      background: isSelected ? 'linear-gradient(135deg, #fff0f5, #fce7f3)' : 'var(--khung-kinh)',
+                      boxShadow: isSelected ? '0 4px 16px rgba(244,114,182,0.2)' : 'none',
+                    }}
                   >
                     {isSelected && (
                       <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-rose-400 flex items-center justify-center">
@@ -127,10 +127,10 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
                         </svg>
                       </span>
                     )}
-                    <p className={`text-xs font-bold mb-0.5 ${isSelected ? 'text-rose-600' : 'text-gray-700'}`}>
+                    <p className={`text-xs font-bold mb-0.5 ${isSelected ? 'text-rose-600' : 'text-[var(--mau-chu)]'}`}>
                       {opt.label}
                     </p>
-                    <p className={`text-[10px] leading-tight ${isSelected ? 'text-rose-400' : 'text-gray-400'}`}>
+                    <p className={`text-[10px] leading-tight ${isSelected ? 'text-rose-400' : 'text-[var(--mau-chu)] opacity-60'}`}>
                       {opt.desc}
                     </p>
                   </div>
@@ -142,7 +142,7 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
 
         {/* ── 2. Ảnh kỷ niệm ── */}
         <div className="space-y-2.5">
-          <label className="block text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: '#fb7185' }}>
+          <label className="block text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: 'var(--text-heading)', opacity: 0.8 }}>
             ✦ Ảnh kỷ niệm (tuỳ chọn)
           </label>
           {!preview ? (
@@ -154,8 +154,9 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
               className={`w-full h-32 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-300 ${
                 isDragging
                   ? 'border-rose-400 bg-rose-50 scale-[1.01]'
-                  : 'border-rose-200/70 bg-white/50 hover:border-rose-300 hover:bg-rose-50/60'
+                  : 'border-rose-200/70 hover:border-rose-300'
               }`}
+              style={!isDragging ? { background: 'var(--khung-kinh)' } : {}}
             >
               <span className={`text-2xl transition-transform duration-300 ${isDragging ? 'scale-125' : ''}`}>
                 {isDragging ? '💝' : '🖼️'}
@@ -192,7 +193,7 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
 
         {/* ── 3. Nội dung lưu bút ── */}
         <div className="space-y-2.5">
-          <label className="block text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: '#fb7185' }}>
+          <label className="block text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: 'var(--text-heading)', opacity: 0.8 }}>
             ✦ Lời nhắn của bạn
           </label>
           <div className="relative">
@@ -201,8 +202,8 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
               value={formData.noiDung}
               onChange={(e) => updateField('noiDung', e.target.value)}
               placeholder="Hãy để lại những lời chúc ấm áp, kỷ niệm đáng nhớ hoặc những điều bạn muốn nói với Mai nhé... 🌸"
-              className="w-full px-4 py-3.5 rounded-2xl text-sm leading-relaxed resize-none border bg-white/80 border-rose-100 focus:outline-none focus:ring-2 focus:ring-rose-300/50 focus:border-rose-300 placeholder:text-rose-200 text-gray-700 transition-all duration-200"
-              style={{ fontFamily: 'var(--font-playfair), serif' }}
+              className="w-full px-4 py-3.5 rounded-2xl text-sm leading-relaxed resize-none border border-transparent focus:outline-none focus:ring-2 focus:ring-rose-300/50 focus:border-rose-300 placeholder:text-rose-200 transition-all duration-200"
+              style={{ fontFamily: 'var(--font-playfair), serif', background: 'var(--khung-kinh)', color: 'var(--mau-chu)' }}
             />
             <span className="absolute bottom-3 right-3.5 text-[9px] text-rose-200 font-mono">
               {formData.noiDung.length} ký tự
@@ -212,7 +213,7 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
 
         {/* ── 4. Cảm xúc ── */}
         <div className="space-y-2.5">
-          <label className="block text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: '#fb7185' }}>
+          <label className="block text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: 'var(--text-heading)', opacity: 0.8 }}>
             ✦ Cảm xúc hôm nay của bạn
           </label>
           <div className="grid grid-cols-6 gap-1.5">
@@ -232,14 +233,14 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
                     className={`flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl border-2 transition-all duration-200 ${
                       isSelected
                         ? 'border-rose-400 scale-105'
-                        : 'border-transparent bg-white/60 hover:bg-rose-50 hover:border-rose-100'
+                        : 'border-transparent hover:border-rose-100'
                     }`}
-                    style={isSelected ? { background: 'linear-gradient(135deg, #fff0f5, #fce7f3)' } : {}}
+                    style={isSelected ? { background: 'linear-gradient(135deg, #fff0f5, #fce7f3)' } : { background: 'var(--khung-kinh)' }}
                   >
                     <span className={`text-xl transition-transform duration-200 ${isSelected ? 'scale-110' : ''}`}>
                       {cx.emoji}
                     </span>
-                    <span className={`text-[8px] font-bold text-center leading-tight ${isSelected ? 'text-rose-500' : 'text-gray-400'}`}>
+                    <span className={`text-[8px] font-bold text-center leading-tight ${isSelected ? 'text-rose-500' : 'text-[var(--mau-chu)] opacity-60'}`}>
                       {cx.label}
                     </span>
                   </div>
@@ -251,7 +252,7 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
 
         {/* ── 5. Tên bạn ── */}
         <div className="space-y-2.5">
-          <label className="block text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: '#fb7185' }}>
+          <label className="block text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: 'var(--text-heading)', opacity: 0.8 }}>
             ✦ Tên của bạn
           </label>
           <div className="relative">
@@ -261,7 +262,8 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
               value={formData.tacGia}
               onChange={(e) => updateField('tacGia', e.target.value)}
               placeholder="Bạn là ai? Để lại dấu ấn nhé..."
-              className="w-full pl-10 pr-4 py-3.5 rounded-2xl text-sm border bg-white/80 border-rose-100 focus:outline-none focus:ring-2 focus:ring-rose-300/50 focus:border-rose-300 placeholder:text-rose-200 text-gray-700 transition-all duration-200"
+              className="w-full pl-10 pr-4 py-3.5 rounded-2xl text-sm border border-transparent focus:outline-none focus:ring-2 focus:ring-rose-300/50 focus:border-rose-300 placeholder:text-rose-200 transition-all duration-200"
+              style={{ background: 'var(--khung-kinh)', color: 'var(--mau-chu)' }}
             />
           </div>
         </div>

@@ -37,8 +37,8 @@ export default function NewspaperPreview({ formData, formatDropCapText }: Newspa
     <div
       className="w-full max-w-xl relative rounded-3xl overflow-hidden select-none"
       style={{
-        background: 'linear-gradient(155deg, #fff9fb 0%, #fef2f6 60%, #fff0f8 100%)',
-        boxShadow: '0 20px 60px rgba(244,63,94,0.15), 0 0 0 1px rgba(244,114,182,0.12)',
+        background: 'var(--bg-card-gradient)',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.05), 0 0 0 1px var(--border-card)',
       }}
     >
       {/* Top decorative band */}
@@ -53,14 +53,14 @@ export default function NewspaperPreview({ formData, formatDropCapText }: Newspa
 
       <div className="p-8 space-y-6">
         {/* Header */}
-        <div className="text-center space-y-2 pb-5 border-b border-rose-100">
-          <p className="text-[9px] uppercase tracking-[0.35em] font-bold text-rose-300 font-mono">
+        <div className="text-center space-y-2 pb-5 border-b" style={{ borderColor: 'var(--border-section)' }}>
+          <p className="text-[9px] uppercase tracking-[0.35em] font-bold font-mono" style={{ color: 'var(--text-muted)' }}>
             Tập San Kỷ Niệm Tốt Nghiệp · 2026
           </p>
-          <h3 className="font-nghe-thuat italic text-3xl font-bold" style={{ color: '#be123c' }}>
+          <h3 className="font-nghe-thuat italic text-3xl font-bold" style={{ color: 'var(--text-heading)' }}>
             Lưu Bút Thanh Xuân
           </h3>
-          <div className="flex justify-center items-center gap-3 text-[9px] font-mono text-rose-300">
+          <div className="flex justify-center items-center gap-3 text-[9px] font-mono" style={{ color: 'var(--text-muted)' }}>
             <span>Phan Ngọc Mai</span>
             <span>·</span>
             <span>{today()}</span>
@@ -112,8 +112,8 @@ export default function NewspaperPreview({ formData, formatDropCapText }: Newspa
             "
           </div>
           <div
-            className="text-[13px] leading-[1.85] text-gray-700 pl-4 border-l-2 border-rose-200"
-            style={{ fontFamily: 'var(--font-playfair), serif', fontStyle: 'italic' }}
+            className="text-[13px] leading-[1.85] pl-4 border-l-2"
+            style={{ fontFamily: 'var(--font-playfair), serif', fontStyle: 'italic', borderColor: 'var(--border-section)', color: 'var(--mau-chu)', opacity: 0.85 }}
           >
             {formData.noiDung
               ? formatDropCapText(formData.noiDung)
@@ -127,16 +127,16 @@ export default function NewspaperPreview({ formData, formatDropCapText }: Newspa
         </div>
 
         {/* Footer */}
-        <div className="pt-4 border-t border-rose-100 flex justify-between items-center">
+        <div className="pt-4 border-t flex justify-between items-center" style={{ borderColor: 'var(--border-section)' }}>
           <div className="space-y-0.5">
-            <p className="text-[9px] uppercase tracking-widest text-rose-300 font-mono">Người gửi</p>
-            <p className="font-nghe-thuat italic font-bold text-rose-600 text-base">
+            <p className="text-[9px] uppercase tracking-widest font-mono" style={{ color: 'var(--text-muted)' }}>Người gửi</p>
+            <p className="font-nghe-thuat italic font-bold text-base" style={{ color: 'var(--text-heading)' }}>
               {formData.tacGia || 'Người bạn thân mến'}
             </p>
           </div>
           <div className="text-right space-y-0.5">
-            <p className="text-[9px] uppercase tracking-widest text-rose-300 font-mono">Tập san</p>
-            <p className="text-[11px] font-bold text-rose-400">N°MAI · 2026 🌷</p>
+            <p className="text-[9px] uppercase tracking-widest font-mono" style={{ color: 'var(--text-muted)' }}>Tập san</p>
+            <p className="text-[11px] font-bold" style={{ color: 'var(--text-heading)' }}>N°MAI · 2026 🌷</p>
           </div>
         </div>
       </div>

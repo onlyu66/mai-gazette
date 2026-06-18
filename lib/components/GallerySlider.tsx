@@ -18,15 +18,15 @@ const STRIP = [...MEMORIES, ...MEMORIES];
 
 export default function GallerySlider() {
   return (
-    <section id="goc-trien-lam" className="py-12 overflow-hidden border-t border-rose-100/60 select-none"
-      style={{ background: 'linear-gradient(180deg, #fff9fb 0%, #fef2f6 100%)' }}
+    <section id="goc-trien-lam" className="py-12 overflow-hidden border-t select-none"
+      style={{ background: 'var(--bg-section-2)', borderColor: 'var(--border-section)' }}
     >
       {/* Header */}
       <div className="mb-8 px-6 max-w-7xl mx-auto text-center space-y-1">
         <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-rose-400">
           ✦ Góc triển lãm ký ức
         </p>
-        <h3 className="font-nghe-thuat italic text-xl font-bold text-rose-800">
+        <h3 className="font-nghe-thuat italic text-xl font-bold" style={{ color: 'var(--text-heading)' }}>
           Những khoảnh khắc thanh xuân không thể quên
         </h3>
       </div>
@@ -44,10 +44,11 @@ export default function GallerySlider() {
               className={`
                 w-52 h-44 rounded-3xl flex-shrink-0 flex flex-col items-center justify-center gap-3
                 bg-gradient-to-br ${item.color}
-                border border-rose-100 shadow-sm
+                border shadow-sm
                 hover:shadow-rose-200/60 hover:-translate-y-1
                 transition-all duration-300
               `}
+              style={{ borderColor: 'var(--border-card)' }}
             >
               {/* Decorative dot */}
               <div className="w-1.5 h-1.5 rounded-full bg-rose-300/60 absolute top-4 right-4" />
@@ -61,7 +62,7 @@ export default function GallerySlider() {
       </div>
 
       {/* Footer hint */}
-      <p className="text-center text-[9px] text-rose-300 tracking-widest uppercase mt-6 font-mono">
+      <p className="text-center text-[9px] tracking-widest uppercase mt-6 font-mono" style={{ color: 'var(--text-muted)' }}>
         Cuộn tự động · Kỷ niệm là mãi mãi 🌷
       </p>
     </section>

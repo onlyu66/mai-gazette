@@ -43,8 +43,8 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
             key={item.id}
             className="relative rounded-3xl overflow-hidden flex flex-col group transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose-100/60"
             style={{
-              background: 'linear-gradient(145deg, #fff9fb, #fef2f6)',
-              boxShadow: '0 4px 20px rgba(244,114,182,0.08), 0 0 0 1px rgba(244,114,182,0.1)',
+              background: 'var(--bg-card-gradient)',
+              boxShadow: '0 4px 20px rgba(244,114,182,0.08), 0 0 0 1px var(--border-card)',
             }}
           >
             {/* Top stripe */}
@@ -82,8 +82,8 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
                 {/* Quote mark */}
                 <span className="absolute -top-1 -left-2 text-rose-200 text-2xl font-serif leading-none select-none">"</span>
                 <p
-                  className="text-sm leading-relaxed text-gray-600 line-clamp-4"
-                  style={{ fontFamily: 'var(--font-playfair), serif', fontStyle: 'italic' }}
+                  className="text-sm leading-relaxed line-clamp-4"
+                  style={{ fontFamily: 'var(--font-playfair), serif', fontStyle: 'italic', color: 'var(--mau-chu)', opacity: 0.85 }}
                 >
                   {item.noi_dung || <span className="text-rose-200 italic">Không có nội dung</span>}
                 </p>

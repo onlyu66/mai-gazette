@@ -432,12 +432,12 @@ export default function PressStudio() {
   };
 
   return (
-    <section id="studio-anh" className="py-20 border-t border-rose-100/60" style={{ background: 'linear-gradient(180deg,#fff9fb 0%,#fdf2f8 100%)' }}>
+    <section id="studio-anh" className="py-20 border-t" style={{ background: 'var(--bg-section-2)', borderColor: 'var(--border-section)' }}>
       <div className="max-w-7xl mx-auto px-6">
         
         <div className="text-center mb-12 space-y-2">
           <span className="block text-[10px] uppercase tracking-[0.3em] font-bold text-rose-400">✦ Studio Chụp Ảnh Kỷ Niệm ✦</span>
-          <h2 className="font-nghe-thuat italic text-4xl font-bold" style={{ color: '#be123c' }}>
+          <h2 className="font-nghe-thuat italic text-4xl font-bold" style={{ color: 'var(--text-heading)' }}>
             Photobooth Thanh Xuân
           </h2>
           <p className="text-sm text-rose-400/80 max-w-md mx-auto">
@@ -467,7 +467,7 @@ export default function PressStudio() {
             </div>
 
             {/* Layout & Theme Selectors */}
-            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-[24px] border border-rose-100 shadow-sm space-y-5">
+            <div className="backdrop-blur-sm p-6 rounded-[24px] border shadow-sm space-y-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-card)' }}>
               
               <div className="space-y-2.5">
                 <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-rose-500">1. Số Lượng Ảnh (Grid)</label>
@@ -475,8 +475,9 @@ export default function PressStudio() {
                   {GRIDS.map(g => (
                     <button key={g.value} onClick={() => changeGrid(g.value)}
                       className={`px-2 py-2.5 rounded-xl text-[10px] sm:text-[11px] font-bold transition-all border-2 text-center ${
-                        selectedGrid === g.value ? 'border-rose-500 bg-rose-50 text-rose-600' : 'border-rose-100 bg-white text-gray-500 hover:border-rose-300'
-                      }`}>
+                        selectedGrid === g.value ? 'border-rose-500 bg-rose-50 text-rose-600' : 'text-gray-500 hover:border-rose-300'
+                      }`}
+                      style={{ background: selectedGrid === g.value ? '' : 'var(--bg-card)', borderColor: selectedGrid === g.value ? '' : 'var(--border-card)' }}>
                       {g.label}
                     </button>
                   ))}
@@ -489,9 +490,9 @@ export default function PressStudio() {
                   {THEMES.map(t => (
                     <button key={t.id} onClick={() => setSelectedThemeId(t.id)}
                       className={`relative flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-xl border-2 transition-all ${
-                        selectedThemeId === t.id ? 'border-rose-500 shadow-md scale-105' : 'border-rose-100 bg-white hover:border-rose-300'
+                        selectedThemeId === t.id ? 'border-rose-500 shadow-md scale-105' : 'hover:border-rose-300'
                       }`}
-                      style={selectedThemeId === t.id ? { background: t.selectorBg } : {}}>
+                      style={selectedThemeId === t.id ? { background: t.selectorBg } : { background: 'var(--bg-card)', borderColor: 'var(--border-card)' }}>
                       <span className="text-lg">{t.emoji}</span>
                       <span className={`text-[9px] font-bold uppercase tracking-wider ${selectedThemeId === t.id ? 'text-white' : 'text-gray-600'}`}>
                         {t.label}

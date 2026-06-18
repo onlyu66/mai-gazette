@@ -4,12 +4,32 @@
   --bg-nen: #FFF5F5;
   --mau-chu: #2E1F20;
   --khung-kinh: rgba(255, 255, 255, 0.5);
+  
+  /* Thematic variables */
+  --bg-section-1: linear-gradient(180deg, #fff5f8 0%, #fef2f6 100%);
+  --bg-section-2: linear-gradient(180deg, #fff9fb 0%, #fdf2f8 100%);
+  --bg-card: #ffffff;
+  --bg-card-gradient: linear-gradient(145deg, #fff9fb, #fef2f6);
+  --border-card: rgba(244,114,182,0.15);
+  --border-section: rgba(244,114,182,0.6);
+  --text-muted: #fda4af;
+  --text-heading: #be123c;
 }
 
-.che-do-dem {
+/* next-themes adds .dark class to <html> */
+.dark {
   --bg-nen: #0B0809;
   --mau-chu: #F3F4F6;
   --khung-kinh: rgba(26, 18, 20, 0.7);
+  
+  --bg-section-1: linear-gradient(180deg, #170A0D 0%, #0B0809 100%);
+  --bg-section-2: linear-gradient(180deg, #0B0809 0%, #170A0D 100%);
+  --bg-card: #1C1114;
+  --bg-card-gradient: linear-gradient(145deg, #1f1216, #140a0c);
+  --border-card: rgba(244,63,94,0.15);
+  --border-section: rgba(244,63,94,0.2);
+  --text-muted: #881337;
+  --text-heading: #fb7185;
 }
 
 body {

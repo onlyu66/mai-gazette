@@ -2,6 +2,7 @@ import { Cormorant_Garamond, Playfair_Display, Be_Vietnam_Pro } from 'next/font/
 import { GrainOverlay } from '@/lib/components/GrainOverlay';
 import { ProgressBar } from '@/lib/components/ProgressBar';
 import { ScrollToTop } from '@/lib/components/ScrollToTop';
+import Providers from '@/lib/components/Providers';
 import "./globals.css";
 
 // Cormorant Garamond — tiêu đề editorial sang trọng, hỗ trợ Vietnamese
@@ -33,14 +34,16 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi" className="scroll-smooth">
+    <html lang="vi" className="scroll-smooth" suppressHydrationWarning>
       {/* Tích hợp các class font vào body */}
       <body className={`${beVietnam.variable} ${cormorant.variable} ${playfair.variable}`}>
-        <ProgressBar />
-        <GrainOverlay />
-        <ScrollToTop />
-        {children}
+        <Providers>
+          <ProgressBar />
+          <GrainOverlay />
+          <ScrollToTop />
+          {children}
+        </Providers>
       </body>
     </html>
   );
-}
+}

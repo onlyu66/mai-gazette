@@ -9,11 +9,17 @@ import NewspaperPreview from '@/lib/components/NewspaperPreview';
 import PressStudio from '@/lib/components/PressStudio';
 import { useLuuBut } from '@/lib/hooks/useLuuBut';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useState } from 'react';
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
 
 export default function Home() {
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const { theme, setTheme } = useTheme();
+  // mounted prevents hydration mismatch — server always renders neutral state
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isDarkMode = mounted && theme === 'dark';
+
   const { formData, luuButList, loading, updateField, formatDropCapText, submitLuuBut } = useLuuBut();
 
   // Parallax scroll
@@ -21,14 +27,7 @@ export default function Home() {
   const blobY1 = useTransform(scrollY, [0, 1000], [0, 260]);
   const blobY2 = useTransform(scrollY, [0, 1000], [0, -180]);
 
-  const chuyenCheDo = () => {
-    setIsDarkMode(!isDarkMode);
-    if (!isDarkMode) {
-      document.body.classList.add('che-do-dem');
-    } else {
-      document.body.classList.remove('che-do-dem');
-    }
-  };
+  const chuyenCheDo = () => setTheme(isDarkMode ? 'light' : 'dark');
 
   return (
     <div className="min-h-screen transition-colors duration-500">
@@ -133,13 +132,13 @@ export default function Home() {
       <PressStudio />
 
       {/* 4. Phân hệ viết lưu bút */}
-      <section id="thiet-ke-bao" className="py-20 border-t border-rose-100/60"
-        style={{ background: 'linear-gradient(180deg, #fff5f8 0%, #fef2f6 100%)' }}
+      <section id="thiet-ke-bao" className="py-20 border-t"
+        style={{ background: 'var(--bg-section-1)', borderColor: 'var(--border-section)' }}
       >
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12 space-y-2">
             <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-rose-400 block">✦ Gửi lời yêu thương</span>
-            <h2 className="font-nghe-thuat italic text-3xl font-bold" style={{ color: '#be123c' }}>
+            <h2 className="font-nghe-thuat italic text-3xl font-bold" style={{ color: 'var(--text-heading)' }}>
               Viết Trang Lưu Bút Cho Mai
             </h2>
             <p className="text-sm text-rose-300 max-w-md mx-auto leading-relaxed">
@@ -158,10 +157,10 @@ export default function Home() {
       </section>
 
       {/* 5. Vườn lưu bút */}
-      <section id="kho-luu-tru" className="py-20 border-t border-rose-100/60 max-w-6xl mx-auto px-6">
+      <section id="kho-luu-tru" className="py-20 border-t max-w-6xl mx-auto px-6" style={{ borderColor: 'var(--border-section)' }}>
         <div className="text-center mb-12 space-y-2">
           <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-rose-400 block">✦ Vườn kỷ niệm</span>
-          <h2 className="font-nghe-thuat italic text-3xl font-bold" style={{ color: '#be123c' }}>
+          <h2 className="font-nghe-thuat italic text-3xl font-bold" style={{ color: 'var(--text-heading)' }}>
             Những Trang Lưu Bút Gửi Đến Mai
           </h2>
           <p className="text-sm text-rose-300 max-w-sm mx-auto">
@@ -171,7 +170,7 @@ export default function Home() {
         <ArchiveFeed list={luuButList} />
       </section>
 
-      <footer className="py-12 text-center text-xs tracking-[0.2em] font-mono border-t border-rose-100/60" style={{ color: '#fda4af' }}>
+      <footer className="py-12 text-center text-xs tracking-[0.2em] font-mono border-t" style={{ color: 'var(--text-muted)', borderColor: 'var(--border-section)' }}>
         🌸 © 2026 TẬP SAN KỶ NIỆM TỐT NGHIỆP · PHAN NGỌC MAI · CỬ NHÂN BÁO CHÍ 🌸
       </footer>
     </div>
