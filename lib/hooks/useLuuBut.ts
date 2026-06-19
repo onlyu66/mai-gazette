@@ -1,4 +1,5 @@
 import { useState, useEffect, ReactNode } from "react";
+import toast from "react-hot-toast";
 import {
   fetchLuuButList,
   insertLuuBut,
@@ -11,10 +12,10 @@ export const useLuuBut = () => {
   const [luuButList, setLuuButList] = useState<LuuButRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [formData, setFormData] = useState<LuuButFormData>({
-    tieuDe: "PHAN NGỌC MAI: NỮ CỬ NHÂN XUẤT SẮC ĐÃ CHÍNH THỨC LỘ DIỆN!",
+    tieuDe: "loi-chuc",
     noiDung: "",
     tacGia: "",
-    quaTang: "💐 Đóa hoa tươi",
+    quaTang: "🥹 Xúc động",
     anhBase64: "",
   });
 
@@ -58,7 +59,7 @@ export const useLuuBut = () => {
 
   const submitLuuBut = async () => {
     if (!formData.noiDung.trim()) {
-      alert("Vui lòng nhập nội dung lời chúc trước khi xuất bản nha!");
+      toast.error("Vui lòng nhập nội dung lời chúc trước khi gửi nha!");
       return;
     }
 
@@ -80,16 +81,16 @@ export const useLuuBut = () => {
       setLuuButList((prev) => [newRecord, ...prev]);
 
       setFormData({
-        tieuDe: "PHAN NGỌC MAI: NỮ CỬ NHÂN XUẤT SẮC ĐÃ CHÍNH THỨC LỘ DIỆN!",
+        tieuDe: "loi-chuc",
         noiDung: "",
         tacGia: "",
-        quaTang: "💐 Đóa hoa tươi",
+        quaTang: "🥹 Xúc động",
         anhBase64: "",
       });
 
-      alert("🎉 Ấn bản trang nhất đã được lưu trữ và xuất bản thành công!");
+      toast.success("🎉 Ấn bản trang nhất đã được lưu trữ và xuất bản thành công!");
     } catch (error: any) {
-      alert(`Lỗi xuất bản: ${error.message}`);
+      toast.error(`Lỗi xuất bản: ${error.message}`);
     } finally {
       setLoading(false);
     }

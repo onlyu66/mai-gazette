@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ChangeEvent, useRef, useState } from 'react';
+import React, { ChangeEvent, useRef, useState, useEffect } from 'react';
 import { LuuButFormData } from '../types';
 
 interface FormEditorProps {
@@ -31,6 +31,14 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
   const [isDragging, setIsDragging] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!formData.anhBase64) {
+      setPreview(null);
+      setFileName(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }, [formData.anhBase64]);
 
   const processFile = (file: File) => {
     if (!file.type.startsWith('image/')) return;
@@ -96,7 +104,7 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
           <label className="block text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: 'var(--text-heading)', opacity: 0.8 }}>
             ✦ Bạn muốn viết gì?
           </label>
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {LOAI_LUU_BUT.map((opt) => {
               const isSelected = formData.tieuDe === opt.value;
               return (
@@ -216,7 +224,7 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
           <label className="block text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: 'var(--text-heading)', opacity: 0.8 }}>
             ✦ Cảm xúc hôm nay của bạn
           </label>
-          <div className="grid grid-cols-6 gap-1.5">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
             {CAM_XUC.map((cx) => {
               const isSelected = formData.quaTang === cx.value;
               return (
@@ -276,7 +284,7 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
           className="w-full py-4 rounded-2xl text-sm font-bold tracking-wider disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
           style={{
             background: loading
-              ? 'linear-gradient(135deg, #f9a8d4, #fda4af)'
+              ? 'linear-gradient(135deg, #cbd5e1, #94a3b8)'
               : 'linear-gradient(135deg, #f43f5e 0%, #e11d48 50%, #be123c 100%)',
             color: 'white',
             boxShadow: loading ? 'none' : '0 8px 24px rgba(244,63,94,0.35)',

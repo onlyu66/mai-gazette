@@ -37,17 +37,17 @@ export default function Home() {
       {/* Navigation Header */}
       <header className="border-b border-rose-200/20 sticky top-0 z-50 backdrop-blur-md" style={{ backgroundColor: 'var(--khung-kinh)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <a href="#trang-chu" className="font-bao-chi text-xl font-bold tracking-widest text-rose-700">N°MAI.GAZETTE</a>
+          <a href="#trang-chu" className="font-bao-chi text-base md:text-xl font-bold tracking-widest text-rose-700">LƯU BÚT TỐT NGHIỆP</a>
           <div className="flex items-center space-x-4">
             <nav className="hidden lg:flex space-x-6 text-xs uppercase tracking-widest font-semibold opacity-80">
               <a href="#goc-trien-lam" className="hover:text-rose-500 transition">Triển Lãm Ảnh</a>
               <a href="#studio-anh" className="hover:text-rose-500 transition">Photobooth</a>
-              <a href="#thiet-ke-bao" className="hover:text-rose-500 transition">Thiết Kế Trang Nhất</a>
+              <a href="#thiet-ke-bao" className="hover:text-rose-500 transition">Viết Lưu Bút</a>
               <a href="#kho-luu-tru" className="hover:text-rose-500 transition">Đọc Lưu Bút</a>
             </nav>
             <button onClick={chuyenCheDo} className="flex items-center space-x-2 bg-rose-600 text-white px-4 py-2 rounded-full text-xs font-bold tracking-wider hover:bg-rose-700 transition shadow-md">
               <span>{isDarkMode ? '☀️' : '🌙'}</span> 
-              <span>{isDarkMode ? 'TÒA SOẠN BÌNH MINH' : 'TÒA SOẠN 0 GIỜ'}</span>
+              <span className="hidden sm:inline">{isDarkMode ? 'KÝ ỨC BAN MAI' : 'KÝ ỨC SAO ĐÊM'}</span>
             </button>
           </div>
         </div>
@@ -86,7 +86,7 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.35 }}
             className="font-nghe-thuat text-2xl text-rose-400 italic"
           >
-            &quot;Cây bút trẻ, hoài bão lớn và trang hành trình thanh xuân rực rỡ.&quot;
+            &quot;Chuyến tàu thanh xuân khép lại, mở ra những chân trời mới rực rỡ.&quot;
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -118,7 +118,7 @@ export default function Home() {
               <div className="absolute inset-0 bg-gradient-to-t from-[#1A0E0F] via-black/10 to-black/40 mix-blend-multiply"></div>
               <div className="absolute bottom-0 left-0 w-full p-5 text-white z-20 space-y-1">
                 <p className="font-bao-chi text-[10px] tracking-[0.3em] text-rose-400 font-bold uppercase">Graduation 2026</p>
-                <h4 className="font-nghe-thuat text-xl font-bold text-[#FFE8BC]">Nàng Thơ Báo Chí</h4>
+                <h4 className="font-nghe-thuat text-xl font-bold text-[#FFE8BC]">Tân Cử Nhân</h4>
               </div>
             </div>
           </div>
@@ -128,7 +128,7 @@ export default function Home() {
       {/* 2. Góc triển lãm ảnh vô tận */}
       <GallerySlider />
 
-      {/* 3. Studio Thẻ Nhà Báo */}
+      {/* 3. Studio Kỷ Yếu */}
       <PressStudio />
 
       {/* 4. Phân hệ viết lưu bút */}
@@ -142,7 +142,7 @@ export default function Home() {
               Viết Trang Lưu Bút Cho Mai
             </h2>
             <p className="text-sm text-rose-300 max-w-md mx-auto leading-relaxed">
-              Mỗi lời chúc của bạn sẽ được lưu lại mãi mãi trong tập san kỷ niệm đặc biệt này 🌸
+              Mỗi lời chúc của bạn sẽ được lưu lại mãi mãi trong cuốn lưu bút kỷ yếu đặc biệt này 🌸
             </p>
           </div>
           <div className="grid lg:grid-cols-12 gap-12">
@@ -171,7 +171,7 @@ export default function Home() {
       </section>
 
       <footer className="py-12 text-center text-xs tracking-[0.2em] font-mono border-t" style={{ color: 'var(--text-muted)', borderColor: 'var(--border-section)' }}>
-        🌸 © 2026 TẬP SAN KỶ NIỆM TỐT NGHIỆP · PHAN NGỌC MAI · CỬ NHÂN BÁO CHÍ 🌸
+        🌸 © 2026 LƯU BÚT TỐT NGHIỆP ĐẠI HỌC · PHAN NGỌC MAI 🌸
       </footer>
     </div>
   );

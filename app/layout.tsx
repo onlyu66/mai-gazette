@@ -28,8 +28,8 @@ const beVietnam = Be_Vietnam_Pro({
 });
 
 export const metadata = {
-  title: "Tập San Kỷ Niệm Toàn Diện — Cử Nhân Phan Ngọc Mai",
-  description: "Nơi lưu giữ những nét mực thanh xuân của bạn bè gửi về Tòa soạn",
+  title: "Lưu Bút Tốt Nghiệp Đại Học — Phan Ngọc Mai",
+  description: "Nơi lưu giữ những nét mực thanh xuân của bạn bè gửi đến Mai",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

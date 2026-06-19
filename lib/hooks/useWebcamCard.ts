@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import * as htmlToImage from "html-to-image";
+import toast from "react-hot-toast";
 
 export const useWebcamCard = () => {
   const [tenThe, setTenThe] = useState<string>("BẠN THÂN");
@@ -19,12 +20,12 @@ export const useWebcamCard = () => {
       setStreamCamera(stream);
       if (videoRef.current) videoRef.current.srcObject = stream;
     } catch (err) {
-      alert("Không thể kết nối camera.");
+      toast.error("Không thể kết nối camera.");
     }
   };
 
   const chupAnh = () => {
-    if (!streamCamera) return alert("Hãy bấm bật camera trước!");
+    if (!streamCamera) return toast.error("Hãy bấm bật camera trước!");
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (video && canvas) {
@@ -50,7 +51,7 @@ export const useWebcamCard = () => {
         link.href = dataUrl;
         link.click();
       })
-      .catch(() => alert("Hệ thống đang xử lý, vui lòng bấm lại lần nữa!"));
+      .catch(() => toast.error("Hệ thống đang xử lý, vui lòng bấm lại lần nữa!"));
   };
 
   return {

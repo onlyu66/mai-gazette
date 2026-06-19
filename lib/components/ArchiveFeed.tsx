@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { LuuButRecord } from '../types';
 
 interface ArchiveFeedProps {
@@ -23,6 +23,30 @@ function formatDate(dateStr: string) {
 }
 
 export default function ArchiveFeed({ list }: ArchiveFeedProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+  const currentItems = list.slice(0, currentPage * itemsPerPage);
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          if (currentPage * itemsPerPage < list.length) {
+            setCurrentPage((p) => p + 1);
+          }
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => observer.disconnect();
+  }, [currentPage, list.length]);
+
   if (list.length === 0) {
     return (
       <div className="text-center py-20 space-y-3">
@@ -35,8 +59,9 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
   }
 
   return (
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {list.map((item) => {
+    <div className="space-y-10">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {currentItems.map((item) => {
         const loai = getLoai(item.tieu_de);
         return (
           <div
@@ -55,7 +80,7 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
 
             <div className="p-5 flex flex-col gap-4 flex-1">
               {/* Meta row */}
-              <div className="flex justify-between items-center">
+              <div className="flex flex-wrap gap-2 justify-between items-center">
                 <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border ${loai.color}`}>
                   {loai.emoji} {loai.label}
                 </span>
@@ -109,6 +134,13 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
           </div>
         );
       })}
+      </div>
+
+      {currentPage * itemsPerPage < list.length && (
+        <div ref={observerTarget} className="flex justify-center items-center py-8">
+          <div className="w-8 h-8 border-4 border-rose-200 border-t-rose-500 rounded-full animate-spin"></div>
+        </div>
+      )}
     </div>
   );
 }

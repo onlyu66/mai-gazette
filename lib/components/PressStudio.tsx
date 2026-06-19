@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useCallback, ChangeEvent } from 'react';
 import * as htmlToImage from 'html-to-image';
+import toast from 'react-hot-toast';
 
 /* ─── Types ─────────────────────────────────────────── */
 type SlotCount = 1 | 2 | 3 | 4 | 6;
@@ -259,8 +260,8 @@ function PhotoBoothCard({
   return (
     <div
       ref={cardRef}
+      className="w-full max-w-[380px]"
       style={{
-        width: '380px', // Wider card for better grid display
         ...theme.cardStyle,
         boxSizing: 'border-box',
         overflow: 'hidden',
@@ -370,13 +371,13 @@ export default function PressStudio() {
       const s = await navigator.mediaDevices.getUserMedia({ video: true });
       setStream(s);
       if (videoRef.current) videoRef.current.srcObject = s;
-    } catch { alert('Không thể kết nối camera. Vui lòng cấp quyền truy cập.'); }
+    } catch { toast.error('Không thể kết nối camera. Vui lòng cấp quyền truy cập.'); }
   };
 
   const capturePhoto = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!stream) return alert('Hãy bật camera trước!');
+    if (!stream) return toast.error('Hãy bật camera trước!');
     if (!video || !canvas) return;
     
     // Capture square crop from center
@@ -427,8 +428,14 @@ export default function PressStudio() {
         const a = document.createElement('a');
         a.download = `Photobooth_Mai_${theme.id}.png`;
         a.href = url; a.click();
+        
+        toast.success('🎉 Đã tải ảnh siêu nét thành công!');
+        setImages(Array(6).fill(''));
+        setSelectedSlot(0);
+        setName('');
+        if (fileInputRef.current) fileInputRef.current.value = '';
       })
-      .catch(() => alert('Lỗi tải ảnh, hãy thử lại!'));
+      .catch(() => toast.error('Lỗi tải ảnh, hãy thử lại!'));
   };
 
   return (
@@ -513,7 +520,7 @@ export default function PressStudio() {
 
             {/* Actions */}
             <div className="space-y-3">
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button onClick={openCamera} className="flex-1 py-3.5 rounded-2xl text-xs font-bold uppercase tracking-wider text-white bg-slate-800 hover:bg-slate-700 transition shadow-lg">
                   1. Bật Camera
                 </button>
@@ -521,7 +528,7 @@ export default function PressStudio() {
                   <span>📸</span> Chụp (Slot {selectedSlot + 1})
                 </button>
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button onClick={() => fileInputRef.current?.click()} className="flex-1 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider border-2 border-rose-200 text-rose-600 bg-white hover:bg-rose-50 transition">
                   Tải Ảnh Lên
                 </button>
@@ -531,17 +538,27 @@ export default function PressStudio() {
                 </button>
               </div>
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />
-              <button onClick={download} className="w-full py-4 rounded-2xl text-sm font-bold uppercase tracking-widest text-white transition-all shadow-xl hover:shadow-rose-500/30" style={{ background: 'linear-gradient(135deg, #be123c, #9f1239)' }}>
-                📥 Tải File Ảnh Siêu Nét
-              </button>
+              {(() => {
+                const isGridFull = !images.slice(0, selectedGrid).some(img => !img);
+                return (
+                  <button 
+                    onClick={download} 
+                    disabled={!isGridFull}
+                    className="w-full py-4 rounded-2xl text-sm font-bold uppercase tracking-widest text-white transition-all shadow-xl hover:shadow-rose-500/30 disabled:opacity-50 disabled:cursor-not-allowed" 
+                    style={{ background: isGridFull ? 'linear-gradient(135deg, #be123c, #9f1239)' : 'linear-gradient(135deg, #cbd5e1, #94a3b8)' }}
+                  >
+                    {isGridFull ? '📥 Tải File Ảnh Siêu Nét' : `⚠️ Vui lòng chụp/tải đủ ${selectedGrid} ảnh`}
+                  </button>
+                );
+              })()}
             </div>
 
           </div>
 
           {/* RIGHT: Preview */}
-          <div className="lg:col-span-7 flex justify-center items-start lg:sticky lg:top-24">
-            <div className="flex flex-col items-center w-full overflow-x-auto pb-8">
-              <div className="bg-rose-100 text-rose-600 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest mb-6 animate-pulse whitespace-nowrap">
+          <div className="lg:col-span-7 flex justify-center items-start lg:sticky lg:top-24 w-full">
+            <div className="w-full flex flex-col items-center pb-8 pt-2">
+              <div className="bg-rose-100 text-rose-600 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest mb-6 animate-pulse text-center">
                 Click vào slot bên dưới để chọn vị trí ảnh
               </div>
               

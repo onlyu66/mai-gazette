@@ -7,7 +7,7 @@ const MESSAGES = [
   '💌 Hãy để lại trang lưu bút và gửi những lời chúc ấm áp nhất đến Mai nhé',
   '🎓 Hành trình 4 năm kết thúc, nhưng ký ức thanh xuân sẽ mãi còn đây',
   '🌷 Mỗi lời chúc là một bông hoa trong vườn kỷ niệm của chúng ta',
-  '✨ Cảm ơn bạn đã ghé thăm tập san kỷ niệm tốt nghiệp của Mai',
+  '✨ Cảm ơn bạn đã ghé thăm lưu bút kỷ yếu tốt nghiệp của Mai',
   '💕 Những tháng năm đại học — rực rỡ, đáng nhớ và thật nhiều yêu thương',
 ];
 

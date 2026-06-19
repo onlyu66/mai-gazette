@@ -51,11 +51,11 @@ export default function NewspaperPreview({ formData, formatDropCapText }: Newspa
       <div className="pointer-events-none absolute top-4 right-4 text-3xl opacity-10 rotate-12 select-none">🌸</div>
       <div className="pointer-events-none absolute bottom-4 left-4 text-2xl opacity-10 -rotate-12 select-none">🌷</div>
 
-      <div className="p-8 space-y-6">
+      <div className="p-5 md:p-8 space-y-6">
         {/* Header */}
         <div className="text-center space-y-2 pb-5 border-b" style={{ borderColor: 'var(--border-section)' }}>
           <p className="text-[9px] uppercase tracking-[0.35em] font-bold font-mono" style={{ color: 'var(--text-muted)' }}>
-            Tập San Kỷ Niệm Tốt Nghiệp · 2026
+            Lưu Bút Tốt Nghiệp Đại Học · 2026
           </p>
           <h3 className="font-nghe-thuat italic text-3xl font-bold" style={{ color: 'var(--text-heading)' }}>
             Lưu Bút Thanh Xuân
@@ -68,7 +68,7 @@ export default function NewspaperPreview({ formData, formatDropCapText }: Newspa
         </div>
 
         {/* Loại lưu bút badge */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <span
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider text-white"
             style={{ background: loai.color }}
@@ -135,7 +135,7 @@ export default function NewspaperPreview({ formData, formatDropCapText }: Newspa
             </p>
           </div>
           <div className="text-right space-y-0.5">
-            <p className="text-[9px] uppercase tracking-widest font-mono" style={{ color: 'var(--text-muted)' }}>Tập san</p>
+            <p className="text-[9px] uppercase tracking-widest font-mono" style={{ color: 'var(--text-muted)' }}>Lưu bút</p>
             <p className="text-[11px] font-bold" style={{ color: 'var(--text-heading)' }}>N°MAI · 2026 🌷</p>
           </div>
         </div>
