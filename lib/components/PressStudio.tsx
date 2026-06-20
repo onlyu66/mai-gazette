@@ -809,7 +809,7 @@ export default function PressStudio() {
                 onSlotClick={setSelectedSlot}
                 name={name}
                 cardRef={cardRef}
-                animate={!isExporting && selectedSlot !== -1}
+                animate={isExporting || selectedSlot !== -1}
               />
             </div>
           </div>
