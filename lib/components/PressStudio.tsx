@@ -649,15 +649,45 @@ export default function PressStudio() {
     await new Promise(r => setTimeout(r, 120));
 
     const FRAME_COUNT = 45;
-    const FRAME_DELAY_MS = 40; // Target ~25fps for smoother animation
+    const FRAME_DELAY_MS = 40; // Target exactly 25fps
 
     try {
       const gif = GIFEncoder();
       let dims: { width: number; height: number } | null = null;
-      let globalPalette: any = null;
+
+      // Find all animated elements
+      const allAnimElements = cardRef.current.querySelectorAll('.pb-card-anim, .pb-sweep, .pb-mote, .pb-tape, .pb-slot-img, .pb-shimmer-text');
+      const targets = [cardRef.current, ...Array.from(allAnimElements)].filter(el => 
+        el.classList && (
+          el.classList.contains('pb-card-anim') ||
+          el.classList.contains('pb-sweep') ||
+          el.classList.contains('pb-mote') ||
+          el.classList.contains('pb-tape') ||
+          el.classList.contains('pb-slot-img') ||
+          el.classList.contains('pb-shimmer-text')
+        )
+      ) as HTMLElement[];
+
+      // Save original delays
+      targets.forEach(el => {
+        if (!el.hasAttribute('data-orig-delay')) {
+          el.setAttribute('data-orig-delay', el.style.animationDelay || '0s');
+        }
+      });
 
       for (let i = 0; i < FRAME_COUNT; i++) {
-        const start = performance.now();
+        const currentTime = i * FRAME_DELAY_MS;
+        
+        // Manually step CSS animations
+        targets.forEach(el => {
+          const base = el.getAttribute('data-orig-delay') || '0s';
+          el.style.animationDelay = `calc(${base} - ${currentTime}ms)`;
+          el.style.animationPlayState = 'paused';
+        });
+
+        // Small yield to let browser recalculate layout/styles
+        await new Promise(r => setTimeout(r, 15));
+
         const canvas = await htmlToImage.toCanvas(cardRef.current, { pixelRatio: 1 });
         const ctx = canvas.getContext('2d');
         if (!ctx) continue;
@@ -665,19 +695,21 @@ export default function PressStudio() {
         dims = { width, height };
         const { data } = ctx.getImageData(0, 0, width, height);
 
-        if (!globalPalette) {
-          globalPalette = quantize(data, 256);
-        }
-        const index = applyPalette(data, globalPalette);
+        // Per-frame quantization ensures perfect colors
+        const palette = quantize(data, 256);
+        const index = applyPalette(data, palette);
         
-        const elapsed = performance.now() - start;
-        const sleepTime = Math.max(0, FRAME_DELAY_MS - elapsed);
-        
-        gif.writeFrame(index, width, height, { palette: globalPalette, delay: Math.round(elapsed + sleepTime) });
+        gif.writeFrame(index, width, height, { palette, delay: FRAME_DELAY_MS });
 
         setExportProgress(Math.round(((i + 1) / FRAME_COUNT) * 100));
-        await new Promise(r => setTimeout(r, sleepTime));
       }
+
+      // Restore animations
+      targets.forEach(el => {
+        const orig = el.getAttribute('data-orig-delay');
+        el.style.animationDelay = orig === '0s' ? '' : (orig || '');
+        el.style.animationPlayState = '';
+      });
 
       if (!dims) throw new Error('No frames captured');
       gif.finish();
