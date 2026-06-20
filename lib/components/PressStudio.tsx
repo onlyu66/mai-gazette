@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useCallback, ChangeEvent } from 'react';
-import html2canvas from 'html2canvas';
+import * as htmlToImage from 'html-to-image';
 import toast from 'react-hot-toast';
 import { GIFEncoder, quantize, applyPalette } from 'gifenc';
 
@@ -601,8 +601,11 @@ export default function PressStudio() {
     await new Promise(r => setTimeout(r, 100));
 
     try {
-      const canvas = await html2canvas(cardRef.current, { scale: 2, useCORS: true, backgroundColor: null });
-      const url = canvas.toDataURL('image/png');
+      // Warm up pass to prevent black image bug
+      await htmlToImage.toPng(cardRef.current, { pixelRatio: 2 });
+      await new Promise(r => setTimeout(r, 150));
+
+      const url = await htmlToImage.toPng(cardRef.current, { pixelRatio: 2 });
       const a = document.createElement('a');
       a.download = `Photobooth_Mai_${theme.id}.png`;
       a.href = url; a.click();
@@ -636,7 +639,7 @@ export default function PressStudio() {
 
       for (let i = 0; i < FRAME_COUNT; i++) {
         const start = performance.now();
-        const canvas = await html2canvas(cardRef.current, { scale: 1, useCORS: true, backgroundColor: null });
+        const canvas = await htmlToImage.toCanvas(cardRef.current, { pixelRatio: 1 });
         const ctx = canvas.getContext('2d');
         if (!ctx) continue;
         const { width, height } = canvas;
