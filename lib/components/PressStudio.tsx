@@ -600,10 +600,10 @@ export default function PressStudio() {
 
     try {
       // Warm up pass to prevent black image bug
-      await htmlToImage.toPng(cardRef.current, { pixelRatio: 2, quality: 1.0 });
-      await new Promise(r => setTimeout(r, 100));
+      await htmlToImage.toPng(cardRef.current, { pixelRatio: 2 });
+      await new Promise(r => setTimeout(r, 150));
 
-      const url = await htmlToImage.toPng(cardRef.current, { pixelRatio: 2, quality: 1.0 });
+      const url = await htmlToImage.toPng(cardRef.current, { pixelRatio: 2 });
       const a = document.createElement('a');
       a.download = `Photobooth_Mai_${theme.id}.png`;
       a.href = url; a.click();
@@ -628,8 +628,8 @@ export default function PressStudio() {
     setExportProgress(0);
     await new Promise(r => setTimeout(r, 120));
 
-    const FRAME_COUNT = 24;
-    const FRAME_DELAY_MS = 120; // Target ~8fps
+    const FRAME_COUNT = 36;
+    const FRAME_DELAY_MS = 60; // Target ~16fps for smoother animation
 
     try {
       const gif = GIFEncoder();
@@ -637,7 +637,8 @@ export default function PressStudio() {
 
       for (let i = 0; i < FRAME_COUNT; i++) {
         const start = performance.now();
-        const canvas = await htmlToImage.toCanvas(cardRef.current, { pixelRatio: 2, quality: 1 });
+        // Use pixelRatio: 1 for GIF to prevent memory exhaustion (black frames) and speed up rendering
+        const canvas = await htmlToImage.toCanvas(cardRef.current, { pixelRatio: 1 });
         const ctx = canvas.getContext('2d');
         if (!ctx) continue;
         const { width, height } = canvas;
