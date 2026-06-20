@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { LuuButRecord } from '../types';
 
 interface ArchiveFeedProps {
@@ -132,11 +133,13 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
 
               {/* Ảnh kỷ niệm */}
               {item.anh_url && (
-                <div className="w-full aspect-[16/10] rounded-2xl overflow-hidden border border-rose-100">
-                  <img
+                <div className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden border border-rose-100 bg-rose-50/30">
+                  <Image
                     src={item.anh_url}
                     alt="Ảnh kỷ niệm"
-                    className="w-full h-full object-cover group-hover:scale-105 transition duration-700"
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover group-hover:scale-105 transition duration-700"
                   />
                 </div>
               )}
