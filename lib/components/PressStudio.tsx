@@ -598,19 +598,22 @@ export default function PressStudio() {
     setSelectedSlot(-1);
     await new Promise(r => setTimeout(r, 100));
 
-    htmlToImage.toPng(cardRef.current, { pixelRatio: 3, quality: 1.0 })
-      .then(url => {
-        const a = document.createElement('a');
-        a.download = `Photobooth_Mai_${theme.id}.png`;
-        a.href = url; a.click();
+    try {
+      // Warm up pass to prevent black image bug
+      await htmlToImage.toPng(cardRef.current, { pixelRatio: 2, quality: 1.0 });
+      await new Promise(r => setTimeout(r, 100));
 
-        toast.success('🎉 Đã tải ảnh siêu nét thành công!');
-        resetAll();
-      })
-      .catch(() => {
-        toast.error('Lỗi tải ảnh, hãy thử lại!');
-        setSelectedSlot(currentSlot);
-      });
+      const url = await htmlToImage.toPng(cardRef.current, { pixelRatio: 2, quality: 1.0 });
+      const a = document.createElement('a');
+      a.download = `Photobooth_Mai_${theme.id}.png`;
+      a.href = url; a.click();
+
+      toast.success('🎉 Đã tải ảnh siêu nét thành công!');
+      resetAll();
+    } catch {
+      toast.error('Lỗi tải ảnh, hãy thử lại!');
+      setSelectedSlot(currentSlot);
+    }
   };
 
   /* Animated GIF: replays the card's own ambient motion (float, glow, shine
@@ -626,13 +629,14 @@ export default function PressStudio() {
     await new Promise(r => setTimeout(r, 120));
 
     const FRAME_COUNT = 24;
-    const FRAME_DELAY_MS = 90;
+    const FRAME_DELAY_MS = 120; // Target ~8fps
 
     try {
       const gif = GIFEncoder();
       let dims: { width: number; height: number } | null = null;
 
       for (let i = 0; i < FRAME_COUNT; i++) {
+        const start = performance.now();
         const canvas = await htmlToImage.toCanvas(cardRef.current, { pixelRatio: 2, quality: 1 });
         const ctx = canvas.getContext('2d');
         if (!ctx) continue;
@@ -642,10 +646,14 @@ export default function PressStudio() {
 
         const palette = quantize(data, 96);
         const index = applyPalette(data, palette);
-        gif.writeFrame(index, width, height, { palette, delay: FRAME_DELAY_MS });
+        
+        const elapsed = performance.now() - start;
+        const sleepTime = Math.max(0, FRAME_DELAY_MS - elapsed);
+        
+        gif.writeFrame(index, width, height, { palette, delay: Math.round(elapsed + sleepTime) });
 
         setExportProgress(Math.round(((i + 1) / FRAME_COUNT) * 100));
-        await new Promise(r => setTimeout(r, FRAME_DELAY_MS));
+        await new Promise(r => setTimeout(r, sleepTime));
       }
 
       if (!dims) throw new Error('No frames captured');
