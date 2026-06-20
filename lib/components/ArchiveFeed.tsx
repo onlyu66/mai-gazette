@@ -24,9 +24,23 @@ function formatDate(dateStr: string) {
 
 export default function ArchiveFeed({ list }: ArchiveFeedProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(false);
+
   const itemsPerPage = 6;
   const currentItems = list.slice(0, currentPage * itemsPerPage);
   const observerTarget = useRef<HTMLDivElement>(null);
+
+  const handleUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password.toLowerCase() === 'mai') {
+      setIsUnlocked(true);
+      setError(false);
+    } else {
+      setError(true);
+    }
+  };
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -47,22 +61,47 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
     return () => observer.disconnect();
   }, [currentPage, list.length]);
 
-  if (list.length === 0) {
-    return (
-      <div className="text-center py-20 space-y-3">
-        <div className="text-5xl opacity-30">🌸</div>
-        <p className="text-sm text-rose-300 font-medium">
-          Chưa có trang lưu bút nào — hãy là người đầu tiên gửi lời chúc nhé!
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-10">
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {currentItems.map((item) => {
-        const loai = getLoai(item.tieu_de);
+    <div className="relative">
+      {/* Password Overlay */}
+      {!isUnlocked && list.length > 0 && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center pt-20 bg-white/40 backdrop-blur-[12px] rounded-3xl">
+          <form onSubmit={handleUnlock} className="bg-white/95 p-8 rounded-3xl shadow-2xl border-2 border-rose-100 flex flex-col items-center max-w-sm w-full mx-4 space-y-5 animate-in fade-in zoom-in duration-500">
+            <div className="text-5xl">🔒</div>
+            <h3 className="font-nghe-thuat text-2xl text-rose-600 font-bold">Góc Bí Mật</h3>
+            <p className="text-sm text-gray-500 text-center leading-relaxed">
+              Những lời nhắn nhủ này chỉ dành riêng cho Mai. Hãy nhập mật khẩu để mở khóa nhé!
+            </p>
+            <div className="w-full space-y-2">
+              <input 
+                type="password" 
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setError(false); }}
+                placeholder="Nhập mật khẩu..." 
+                className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none transition-all ${error ? 'border-red-400 bg-red-50' : 'border-rose-100 focus:border-rose-400 bg-rose-50/50 text-center font-bold tracking-widest'}`}
+              />
+              {error && <p className="text-[11px] text-red-500 text-center font-medium">Mật khẩu không đúng! Gợi ý: Tên của bạn 😉</p>}
+            </div>
+            <button type="submit" className="w-full py-3.5 rounded-xl bg-gradient-to-r from-rose-400 to-rose-500 text-white text-sm font-bold tracking-widest hover:from-rose-500 hover:to-rose-600 transition-all shadow-lg shadow-rose-200">
+              MỞ KHÓA NGAY
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Feed Content */}
+      <div className={`space-y-10 transition-all duration-700 ${!isUnlocked && list.length > 0 ? 'pointer-events-none opacity-40 select-none' : ''}`}>
+        {list.length === 0 ? (
+          <div className="text-center py-20 space-y-3 col-span-full">
+            <div className="text-5xl opacity-30">🌸</div>
+            <p className="text-sm text-rose-300 font-medium">
+              Chưa có trang lưu bút nào — hãy là người đầu tiên gửi lời chúc nhé!
+            </p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {currentItems.map((item) => {
+              const loai = getLoai(item.tieu_de);
         return (
           <div
             key={item.id}
@@ -129,18 +168,19 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
               </div>
             </div>
 
-            {/* Bottom accent */}
             <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-rose-200 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           </div>
         );
       })}
-      </div>
+          </div>
+        )}
 
       {currentPage * itemsPerPage < list.length && (
         <div ref={observerTarget} className="flex justify-center items-center py-8">
           <div className="w-8 h-8 border-4 border-rose-200 border-t-rose-500 rounded-full animate-spin"></div>
         </div>
       )}
+      </div>
     </div>
   );
 }
