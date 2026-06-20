@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useCallback, ChangeEvent } from 'react';
 import * as htmlToImage from 'html-to-image';
+import html2canvas from 'html2canvas';
 import toast from 'react-hot-toast';
 import { GIFEncoder, quantize, applyPalette } from 'gifenc';
 
@@ -575,8 +576,28 @@ export default function PressStudio() {
     const reader = new FileReader();
     reader.onload = ev => {
       const result = ev.target?.result as string;
-      setImages(prev => { const next = [...prev]; next[selectedSlot] = result; return next; });
-      if (selectedSlot < selectedGrid - 1) setSelectedSlot(selectedSlot + 1);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxSize = 800;
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > maxSize) { height = Math.round((height * maxSize) / width); width = maxSize; }
+        } else {
+          if (height > maxSize) { width = Math.round((width * maxSize) / height); height = maxSize; }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          setImages(prev => { const next = [...prev]; next[selectedSlot] = resizedDataUrl; return next; });
+          if (selectedSlot < selectedGrid - 1) setSelectedSlot(selectedSlot + 1);
+        }
+      };
+      img.src = result;
     };
     reader.readAsDataURL(file);
     e.target.value = '';
@@ -601,11 +622,8 @@ export default function PressStudio() {
     await new Promise(r => setTimeout(r, 100));
 
     try {
-      // Warm up pass to prevent black image bug
-      await htmlToImage.toPng(cardRef.current, { pixelRatio: 2 });
-      await new Promise(r => setTimeout(r, 150));
-
-      const url = await htmlToImage.toPng(cardRef.current, { pixelRatio: 2 });
+      const canvas = await html2canvas(cardRef.current, { scale: 2, useCORS: true, backgroundColor: null });
+      const url = canvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.download = `Photobooth_Mai_${theme.id}.png`;
       a.href = url; a.click();
