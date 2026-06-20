@@ -547,19 +547,21 @@ export default function PressStudio() {
     if (!video || !canvas) return;
 
     const size = Math.min(video.videoWidth, video.videoHeight);
-    canvas.width = size;
-    canvas.height = size;
+    const targetSize = Math.min(size, 800); // Limit size to max 800x800 to prevent OOM
+    
+    canvas.width = targetSize;
+    canvas.height = targetSize;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const startX = (video.videoWidth - size) / 2;
     const startY = (video.videoHeight - size) / 2;
 
-    ctx.translate(size, 0);
+    ctx.translate(targetSize, 0);
     ctx.scale(-1, 1);
-    ctx.drawImage(video, startX, startY, size, size, 0, 0, size, size);
+    ctx.drawImage(video, startX, startY, size, size, 0, 0, targetSize, targetSize);
 
-    const dataUrl = canvas.toDataURL('image/png', 0.9);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
     setImages(prev => { const next = [...prev]; next[selectedSlot] = dataUrl; return next; });
 
     if (selectedSlot < selectedGrid - 1) {
