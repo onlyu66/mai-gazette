@@ -630,12 +630,13 @@ export default function PressStudio() {
     setExportProgress(0);
     await new Promise(r => setTimeout(r, 120));
 
-    const FRAME_COUNT = 36;
-    const FRAME_DELAY_MS = 60; // Target ~16fps for smoother animation
+    const FRAME_COUNT = 45;
+    const FRAME_DELAY_MS = 40; // Target ~25fps for smoother animation
 
     try {
       const gif = GIFEncoder();
       let dims: { width: number; height: number } | null = null;
+      let globalPalette: any = null;
 
       for (let i = 0; i < FRAME_COUNT; i++) {
         const start = performance.now();
@@ -646,13 +647,15 @@ export default function PressStudio() {
         dims = { width, height };
         const { data } = ctx.getImageData(0, 0, width, height);
 
-        const palette = quantize(data, 96);
-        const index = applyPalette(data, palette);
+        if (!globalPalette) {
+          globalPalette = quantize(data, 256);
+        }
+        const index = applyPalette(data, globalPalette);
         
         const elapsed = performance.now() - start;
         const sleepTime = Math.max(0, FRAME_DELAY_MS - elapsed);
         
-        gif.writeFrame(index, width, height, { palette, delay: Math.round(elapsed + sleepTime) });
+        gif.writeFrame(index, width, height, { palette: globalPalette, delay: Math.round(elapsed + sleepTime) });
 
         setExportProgress(Math.round(((i + 1) / FRAME_COUNT) * 100));
         await new Promise(r => setTimeout(r, sleepTime));
