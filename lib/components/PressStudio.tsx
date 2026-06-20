@@ -175,8 +175,8 @@ const GRIDS: { value: SlotCount; label: string }[] = [
    idea, not seven different gimmicks. ───────────────────────────────── */
 const ANIMATION_CSS = `
 @keyframes pb-float {
-  0%, 100% { transform: rotate(-1.4deg) translateY(0px); }
-  50% { transform: rotate(-1.4deg) translateY(-9px); }
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-9px); }
 }
 @keyframes pb-glow-pulse {
   0%, 100% { box-shadow: 0 30px 60px -15px rgba(0,0,0,0.35), 0 0 0px 0px var(--pb-glow); }
