@@ -8,7 +8,7 @@ interface ArchiveFeedProps {
 
 const LOAI_MAP: Record<string, { label: string; emoji: string; color: string }> = {
   'loi-chuc': { label: 'Lời chúc', emoji: '🌸', color: 'text-rose-600 bg-rose-50 border-rose-200' },
-  'ky-niem':  { label: 'Kỷ niệm', emoji: '📸', color: 'text-pink-600 bg-pink-50 border-pink-200' },
+  'ky-niem': { label: 'Kỷ niệm', emoji: '📸', color: 'text-pink-600 bg-pink-50 border-pink-200' },
   'nhan-nhu': { label: 'Nhắn nhủ', emoji: '💌', color: 'text-fuchsia-600 bg-fuchsia-50 border-fuchsia-200' },
   'hai-huoc': { label: 'Hài hước', emoji: '🎭', color: 'text-orange-500 bg-orange-50 border-orange-200' },
 };
@@ -53,7 +53,7 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.toLowerCase() === 'mai') {
+    if (password.toLowerCase() === '15042025') {
       setIsUnlocked(true);
       setError(false);
     } else {
@@ -92,14 +92,14 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
               Những lời nhắn nhủ này chỉ dành riêng cho Mai. Hãy nhập mật khẩu để mở khóa nhé!
             </p>
             <div className="w-full space-y-2">
-              <input 
-                type="password" 
+              <input
+                type="password"
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setError(false); }}
-                placeholder="Nhập mật khẩu..." 
+                placeholder="Nhập mật khẩu..."
                 className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none transition-all ${error ? 'border-red-400 bg-red-50' : 'border-rose-100 focus:border-rose-400 bg-rose-50/50 text-center font-bold tracking-widest'}`}
               />
-              {error && <p className="text-[11px] text-red-500 text-center font-medium">Mật khẩu không đúng! Gợi ý: Tên của bạn 😉</p>}
+              {error && <p className="text-[11px] text-red-500 text-center font-medium">Mật khẩu không đúng! Gợi ý: Hãy nhớ tới ngày chúng ta chính thức quen nhau nhé 😉</p>}
             </div>
             <button type="submit" className="w-full py-3.5 rounded-xl bg-gradient-to-r from-rose-400 to-rose-500 text-white text-sm font-bold tracking-widest hover:from-rose-500 hover:to-rose-600 transition-all shadow-lg shadow-rose-200">
               MỞ KHÓA NGAY
@@ -110,17 +110,17 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
 
       {/* Feed Content */}
       <div className={`space-y-10 transition-all duration-700 ${!isUnlocked && list.length > 0 ? 'pointer-events-none opacity-40 select-none' : ''}`}>
-        
+
         {/* Search Bar */}
         {list.length > 0 && (
           <div className="flex justify-center -mt-4 mb-2">
             <div className="relative w-full max-w-md">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-300">🔍</span>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Tìm kiếm theo tên hoặc lời nhắn..." 
+                placeholder="Tìm kiếm theo tên hoặc lời nhắn..."
                 className="w-full pl-11 pr-4 py-3 rounded-2xl border-2 border-rose-100 focus:outline-none focus:border-rose-400 bg-white/50 focus:bg-white text-sm font-medium transition-all shadow-sm"
               />
             </div>
@@ -138,86 +138,86 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {currentItems.map((item) => {
               const loai = getLoai(item.tieu_de);
-        return (
-          <div
-            key={item.id}
-            className="relative rounded-3xl overflow-hidden flex flex-col group transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose-100/60"
-            style={{
-              background: 'var(--bg-card-gradient)',
-              boxShadow: '0 4px 20px rgba(244,114,182,0.08), 0 0 0 1px var(--border-card)',
-            }}
-          >
-            {/* Top stripe */}
-            <div className="h-1 w-full bg-gradient-to-r from-rose-200 via-rose-400 to-rose-200 opacity-60" />
-
-            {/* Corner petal */}
-            <div className="pointer-events-none absolute top-3 right-3 text-2xl opacity-10 rotate-12 select-none">🌸</div>
-
-            <div className="p-5 flex flex-col gap-4 flex-1">
-              {/* Meta row */}
-              <div className="flex flex-wrap gap-2 justify-between items-center">
-                <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border ${loai.color}`}>
-                  {loai.emoji} {loai.label}
-                </span>
-                {item.created_at && (
-                  <span className="text-[9px] font-mono text-rose-300">
-                    {formatDate(item.created_at)}
-                  </span>
-                )}
-              </div>
-
-              {/* Ảnh kỷ niệm */}
-              {item.anh_url && (
-                <div className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden border border-rose-100 bg-rose-50/30">
-                  <Image
-                    src={item.anh_url}
-                    alt="Ảnh kỷ niệm"
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover group-hover:scale-105 transition duration-700"
-                  />
-                </div>
-              )}
-
-              {/* Nội dung */}
-              <div className="relative pl-3 border-l-2 border-rose-200 group-hover:border-rose-400 transition-colors flex-1">
-                {/* Quote mark */}
-                <span className="absolute -top-1 -left-2 text-rose-200 text-2xl font-serif leading-none select-none">"</span>
-                <p
-                  className="text-sm leading-relaxed line-clamp-4"
-                  style={{ fontFamily: 'var(--font-playfair), serif', fontStyle: 'italic', color: 'var(--mau-chu)', opacity: 0.85 }}
+              return (
+                <div
+                  key={item.id}
+                  className="relative rounded-3xl overflow-hidden flex flex-col group transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose-100/60"
+                  style={{
+                    background: 'var(--bg-card-gradient)',
+                    boxShadow: '0 4px 20px rgba(244,114,182,0.08), 0 0 0 1px var(--border-card)',
+                  }}
                 >
-                  {item.noi_dung || <span className="text-rose-200 italic">Không có nội dung</span>}
-                </p>
-              </div>
+                  {/* Top stripe */}
+                  <div className="h-1 w-full bg-gradient-to-r from-rose-200 via-rose-400 to-rose-200 opacity-60" />
 
-              {/* Footer */}
-              <div className="pt-3 border-t border-rose-100/60 flex justify-between items-center mt-auto">
-                {/* Cảm xúc */}
-                {item.qua_tang && (
-                  <span className="text-xs text-rose-400 font-medium">
-                    {item.qua_tang}
-                  </span>
-                )}
-                {/* Tên */}
-                <span className="font-nghe-thuat italic font-bold text-rose-600 text-sm ml-auto">
-                  — {item.tac_gia || 'Ẩn danh'}
-                </span>
-              </div>
-            </div>
+                  {/* Corner petal */}
+                  <div className="pointer-events-none absolute top-3 right-3 text-2xl opacity-10 rotate-12 select-none">🌸</div>
 
-            <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-rose-200 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          </div>
-        );
-      })}
+                  <div className="p-5 flex flex-col gap-4 flex-1">
+                    {/* Meta row */}
+                    <div className="flex flex-wrap gap-2 justify-between items-center">
+                      <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border ${loai.color}`}>
+                        {loai.emoji} {loai.label}
+                      </span>
+                      {item.created_at && (
+                        <span className="text-[9px] font-mono text-rose-300">
+                          {formatDate(item.created_at)}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Ảnh kỷ niệm */}
+                    {item.anh_url && (
+                      <div className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden border border-rose-100 bg-rose-50/30">
+                        <Image
+                          src={item.anh_url}
+                          alt="Ảnh kỷ niệm"
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          className="object-cover group-hover:scale-105 transition duration-700"
+                        />
+                      </div>
+                    )}
+
+                    {/* Nội dung */}
+                    <div className="relative pl-3 border-l-2 border-rose-200 group-hover:border-rose-400 transition-colors flex-1">
+                      {/* Quote mark */}
+                      <span className="absolute -top-1 -left-2 text-rose-200 text-2xl font-serif leading-none select-none">"</span>
+                      <p
+                        className="text-sm leading-relaxed line-clamp-4"
+                        style={{ fontFamily: 'var(--font-playfair), serif', fontStyle: 'italic', color: 'var(--mau-chu)', opacity: 0.85 }}
+                      >
+                        {item.noi_dung || <span className="text-rose-200 italic">Không có nội dung</span>}
+                      </p>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="pt-3 border-t border-rose-100/60 flex justify-between items-center mt-auto">
+                      {/* Cảm xúc */}
+                      {item.qua_tang && (
+                        <span className="text-xs text-rose-400 font-medium">
+                          {item.qua_tang}
+                        </span>
+                      )}
+                      {/* Tên */}
+                      <span className="font-nghe-thuat italic font-bold text-rose-600 text-sm ml-auto">
+                        — {item.tac_gia || 'Ẩn danh'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-rose-200 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                </div>
+              );
+            })}
           </div>
         )}
 
-      {currentPage * itemsPerPage < filteredList.length && (
-        <div ref={observerTarget} className="flex justify-center items-center py-8">
-          <div className="w-8 h-8 border-4 border-rose-200 border-t-rose-500 rounded-full animate-spin"></div>
-        </div>
-      )}
+        {currentPage * itemsPerPage < filteredList.length && (
+          <div ref={observerTarget} className="flex justify-center items-center py-8">
+            <div className="w-8 h-8 border-4 border-rose-200 border-t-rose-500 rounded-full animate-spin"></div>
+          </div>
+        )}
       </div>
     </div>
   );
