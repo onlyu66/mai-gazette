@@ -45,6 +45,29 @@ export default function GalleryPage() {
   const [columnsCount, setColumnsCount] = useState<2 | 3 | 4>(3);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Load view preferences from localStorage on mount
+  useEffect(() => {
+    const savedViewMode = localStorage.getItem('gallery_viewMode');
+    const savedColumns = localStorage.getItem('gallery_columnsCount');
+    
+    if (savedViewMode === 'grid' || savedViewMode === 'masonry') {
+      setViewMode(savedViewMode);
+    }
+    
+    if (savedColumns) {
+      const cols = parseInt(savedColumns, 10);
+      if (cols === 2 || cols === 3 || cols === 4) setColumnsCount(cols as 2 | 3 | 4);
+    }
+  }, []);
+
+  // Save view preferences to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem('gallery_viewMode', viewMode);
+  }, [viewMode]);
+
+  useEffect(() => {
+    localStorage.setItem('gallery_columnsCount', columnsCount.toString());
+  }, [columnsCount]);
 
 
   const fileInputRef = useRef<HTMLInputElement>(null);
