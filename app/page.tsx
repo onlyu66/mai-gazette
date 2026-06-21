@@ -170,8 +170,45 @@ export default function Home() {
         <ArchiveFeed list={luuButList} />
       </section>
 
-      <footer className="py-12 text-center text-xs tracking-[0.2em] font-mono border-t" style={{ color: 'var(--text-muted)', borderColor: 'var(--border-section)' }}>
-        🌸 © 2026 LƯU BÚT TỐT NGHIỆP ĐẠI HỌC · PHAN NGỌC MAI 🌸
+      <footer className="relative mt-20 border-t overflow-hidden" style={{ borderColor: 'var(--border-section)', background: 'var(--bg-section-2)' }}>
+        <div className="absolute inset-0 pointer-events-none opacity-30">
+          <div className="absolute -top-24 -left-24 w-96 h-96 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 dark:opacity-20 animate-float"></div>
+          <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 dark:opacity-20 animate-float-reverse"></div>
+        </div>
+
+        <div className="relative z-10 max-w-4xl mx-auto px-6 py-16 flex flex-col items-center text-center space-y-8">
+          <div className="space-y-4">
+            <h2 className="font-nghe-thuat text-4xl md:text-5xl font-bold italic" style={{ color: 'var(--text-heading)' }}>
+              Phan Ngọc Mai
+            </h2>
+            <p className="font-bao-chi text-sm md:text-base tracking-[0.15em] uppercase font-bold" style={{ color: 'var(--text-muted)' }}>
+              Cử Nhân Báo Chí · Khóa 2022 - 2026
+            </p>
+          </div>
+
+          <div className="w-16 h-0.5 rounded-full bg-gradient-to-r from-transparent via-rose-300 to-transparent"></div>
+
+          <p className="text-sm max-w-lg leading-relaxed italic" style={{ color: 'var(--mau-chu)', opacity: 0.8, fontFamily: 'var(--font-playfair), serif' }}>
+            "Cảm ơn bạn đã ghé thăm góc nhỏ lưu giữ những kỷ niệm đẹp nhất của thanh xuân. Chúc chúng ta của sau này, rực rỡ và bình an."
+          </p>
+
+          <div className="flex gap-6 pt-4">
+            <a href="#kho-luu-tru" aria-label="Đọc Lưu Bút" className="w-11 h-11 rounded-full flex items-center justify-center text-xl border-2 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-rose-200/50" style={{ borderColor: 'var(--border-card)', background: 'var(--khung-kinh)', color: 'var(--text-heading)' }}>
+              📘
+            </a>
+            <a href="#studio-anh" aria-label="Studio Kỷ Yếu" className="w-11 h-11 rounded-full flex items-center justify-center text-xl border-2 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-rose-200/50" style={{ borderColor: 'var(--border-card)', background: 'var(--khung-kinh)', color: 'var(--text-heading)' }}>
+              📸
+            </a>
+            <a href="#thiet-ke-bao" aria-label="Viết Lưu Bút" className="w-11 h-11 rounded-full flex items-center justify-center text-xl border-2 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-rose-200/50" style={{ borderColor: 'var(--border-card)', background: 'var(--khung-kinh)', color: 'var(--text-heading)' }}>
+              💌
+            </a>
+          </div>
+
+          <div className="pt-8 w-full border-t border-rose-100/20 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] tracking-[0.2em] font-bold uppercase" style={{ color: 'var(--text-muted)' }}>
+            <p>© 2026 MAI'S GRADUATION</p>
+            <p className="flex items-center gap-1.5">MADE WITH <span className="text-rose-500 text-sm animate-pulse">❤️</span> BY BẠN</p>
+          </div>
+        </div>
       </footer>
     </div>
   );
