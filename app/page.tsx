@@ -146,12 +146,24 @@ export default function Home() {
             </p>
           </div>
           <div className="grid lg:grid-cols-12 gap-12">
-            <div className="lg:col-span-5">
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="lg:col-span-5"
+            >
               <FormEditor formData={formData} updateField={updateField} onSubmit={submitLuuBut} loading={loading} />
-            </div>
-            <div className="lg:col-span-7 flex justify-center items-start">
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+              className="lg:col-span-7 flex justify-center items-start lg:sticky lg:top-24"
+            >
               <NewspaperPreview formData={formData} formatDropCapText={formatDropCapText} />
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>

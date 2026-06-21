@@ -94,8 +94,14 @@ body {
     }
   }
 
+  @keyframes gioThoi {
+    0%, 100% { transform: rotate(-8deg) scale(1); }
+    50% { transform: rotate(8deg) scale(1.05); }
+  }
+
   --animate-float: float 7s ease-in-out infinite;
   --animate-float-reverse: floatReverse 9s ease-in-out infinite;
+  --animate-gio-thoi: gioThoi 6s ease-in-out infinite;
 
   /* Fallback cho Safari cũ (trước 15.4) không hỗ trợ hệ màu oklch của Tailwind v4 */
   --color-gray-900: #111827;

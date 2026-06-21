@@ -80,8 +80,12 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
       }}
     >
       {/* Decorative corner flowers */}
-      <div className="pointer-events-none absolute top-0 right-0 text-5xl opacity-10 -translate-y-2 translate-x-2 rotate-12 select-none">🌸</div>
-      <div className="pointer-events-none absolute bottom-0 left-0 text-4xl opacity-10 translate-y-2 -translate-x-1 -rotate-12 select-none">🌷</div>
+      <div className="pointer-events-none absolute top-0 right-0 opacity-10 -translate-y-2 translate-x-2 rotate-12 select-none">
+        <div className="text-5xl animate-gio-thoi" style={{ animationDelay: '0s' }}>🌸</div>
+      </div>
+      <div className="pointer-events-none absolute bottom-0 left-0 opacity-10 translate-y-2 -translate-x-1 -rotate-12 select-none">
+        <div className="text-4xl animate-gio-thoi" style={{ animationDelay: '1s' }}>🌷</div>
+      </div>
 
       <div className="relative p-8 space-y-8">
 

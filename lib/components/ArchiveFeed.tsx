@@ -129,7 +129,7 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
 
         {filteredList.length === 0 ? (
           <div className="text-center py-20 space-y-3 col-span-full">
-            <div className="text-5xl opacity-30">🌸</div>
+            <div className="text-5xl opacity-30 animate-gio-thoi inline-block">🌸</div>
             <p className="text-sm text-rose-300 font-medium">
               {searchQuery ? 'Không tìm thấy kết quả nào phù hợp!' : 'Chưa có trang lưu bút nào — hãy là người đầu tiên gửi lời chúc nhé!'}
             </p>
@@ -151,7 +151,9 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
                   <div className="h-1 w-full bg-gradient-to-r from-rose-200 via-rose-400 to-rose-200 opacity-60" />
 
                   {/* Corner petal */}
-                  <div className="pointer-events-none absolute top-3 right-3 text-2xl opacity-10 rotate-12 select-none">🌸</div>
+                  <div className="pointer-events-none absolute top-3 right-3 opacity-10 rotate-12 select-none">
+                    <div className="text-2xl animate-gio-thoi" style={{ animationDelay: `${index * 0.2}s` }}>🌸</div>
+                  </div>
 
                   <div className="p-5 flex flex-col gap-4 flex-1">
                     {/* Meta row */}

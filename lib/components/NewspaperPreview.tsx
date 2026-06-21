@@ -47,9 +47,13 @@ export default function NewspaperPreview({ formData, formatDropCapText }: Newspa
         style={{ background: `linear-gradient(90deg, #fda4af, ${loai.color}, #fda4af)` }}
       />
 
-      {/* Corner petals */}
-      <div className="pointer-events-none absolute top-4 right-4 text-3xl opacity-10 rotate-12 select-none">🌸</div>
-      <div className="pointer-events-none absolute bottom-4 left-4 text-2xl opacity-10 -rotate-12 select-none">🌷</div>
+      {/* Decorative flowers */}
+      <div className="absolute top-4 right-4 opacity-20 rotate-12 select-none">
+        <div className="text-3xl animate-gio-thoi" style={{ animationDelay: '0.5s' }}>🌸</div>
+      </div>
+      <div className="absolute bottom-4 left-4 opacity-20 -rotate-12 select-none">
+        <div className="text-3xl animate-gio-thoi" style={{ animationDelay: '1.5s' }}>🌷</div>
+      </div>
 
       <div className="p-5 md:p-8 space-y-6">
         {/* Header */}
