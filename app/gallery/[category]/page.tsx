@@ -3,11 +3,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { MEMORIES } from '@/lib/constants';
-import { fetchGalleryImages, insertGalleryImage, deleteGalleryImage, uploadStorageImage } from '@/lib/services/api';
+import { fetchGalleryImages, insertGalleryImage, deleteGalleryImage, uploadStorageImage, updateGalleryOrder } from '@/lib/services/api';
 import { GalleryImageRecord } from '@/lib/types';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Upload, Trash2, Loader2, ImagePlus } from 'lucide-react';
+import { ArrowLeft, Upload, Trash2, Loader2, ImagePlus, Move, Save, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTheme } from 'next-themes';
 
@@ -28,7 +29,26 @@ export default function GalleryPage() {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   
+  const [isReorderMode, setIsReorderMode] = useState(false);
+  const [reordering, setReordering] = useState(false);
+  const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+
+  // Preview / Lightbox
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (previewIndex === null) return;
+      if (e.key === 'ArrowRight') setPreviewIndex(i => (i! + 1) % images.length);
+      if (e.key === 'ArrowLeft') setPreviewIndex(i => (i! - 1 + images.length) % images.length);
+      if (e.key === 'Escape') setPreviewIndex(null);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [previewIndex, images.length]);
 
   const categoryInfo = MEMORIES.find(m => m.id === categoryId);
 
@@ -174,6 +194,20 @@ export default function GalleryPage() {
     }
   };
 
+  const handleSaveOrder = async () => {
+    try {
+      setReordering(true);
+      const updates = images.map((img, index) => ({ id: img.id, order_index: index }));
+      await updateGalleryOrder(updates);
+      toast.success("Đã lưu lại vị trí mới của ảnh! 📸");
+      setIsReorderMode(false);
+    } catch (error: any) {
+      toast.error("Lỗi khi lưu vị trí: " + error.message);
+    } finally {
+      setReordering(false);
+    }
+  };
+
   if (!categoryInfo) return null;
 
   return (
@@ -204,8 +238,34 @@ export default function GalleryPage() {
                   <span>XÓA ({selectedIds.length})</span>
                 </button>
               </>
+            ) : isReorderMode ? (
+              <>
+                <button
+                  onClick={() => setIsReorderMode(false)}
+                  disabled={reordering}
+                  className="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition"
+                >
+                  HỦY
+                </button>
+                <button
+                  onClick={handleSaveOrder}
+                  disabled={reordering}
+                  className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-5 py-2.5 rounded-full text-xs font-bold tracking-widest transition shadow-lg shadow-green-200 dark:shadow-none disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {reordering ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                  <span>LƯU VỊ TRÍ</span>
+                </button>
+              </>
             ) : (
               <>
+                {images.length > 1 && (
+                  <button
+                    onClick={() => setIsReorderMode(true)}
+                    className="px-4 py-2 text-xs font-bold text-indigo-500 hover:bg-indigo-50 dark:hover:bg-zinc-800 rounded-full transition hidden sm:block"
+                  >
+                    SẮP XẾP
+                  </button>
+                )}
                 {images.length > 0 && (
                   <button
                     onClick={toggleSelectionMode}
@@ -272,59 +332,170 @@ export default function GalleryPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {images.map((img) => {
+            {images.map((img, index) => {
               const isSelected = selectedIds.includes(img.id);
               return (
-                <div 
+                <motion.div 
                   key={img.id} 
-                  onClick={() => isSelectionMode && toggleSelectImage(img.id)}
-                  className={`relative group rounded-2xl overflow-hidden bg-rose-50 dark:bg-zinc-900 border transition-all duration-500 aspect-square ${isSelectionMode ? 'cursor-pointer' : ''} ${isSelected ? 'border-rose-500 ring-2 ring-rose-500 shadow-xl' : 'border-rose-100 dark:border-zinc-800 shadow-sm hover:shadow-xl hover:shadow-rose-100 dark:hover:shadow-none'}`}
+                  layout
+                  className="rounded-2xl overflow-hidden aspect-square"
                 >
-                  <img 
-                    src={img.image_url} 
-                    alt="Kỷ niệm" 
-                    className={`w-full h-full object-cover transform transition duration-700 ${!isSelectionMode ? 'group-hover:scale-105' : ''} ${isSelected ? 'scale-105 opacity-80' : ''}`} 
-                    loading="lazy"
-                  />
-                  
-                  {/* Overlay gradient for hover effects */}
-                  {!isSelectionMode && (
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  )}
+                  <div
+                    draggable={isReorderMode}
+                    onDragStart={(e: React.DragEvent<HTMLDivElement>) => {
+                      if (isReorderMode) {
+                        setDraggedItemIndex(index);
+                        e.dataTransfer.effectAllowed = 'move';
+                      }
+                    }}
+                    onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
+                      if (isReorderMode) e.preventDefault();
+                    }}
+                    onDragEnter={() => {
+                      if (!isReorderMode || draggedItemIndex === null || draggedItemIndex === index) return;
+                      const newImages = [...images];
+                      const draggedItem = newImages[draggedItemIndex];
+                      newImages.splice(draggedItemIndex, 1);
+                      newImages.splice(index, 0, draggedItem);
+                      setImages(newImages);
+                      setDraggedItemIndex(index);
+                    }}
+                    onDragEnd={() => setDraggedItemIndex(null)}
+                    onClick={() => {
+                      if (isSelectionMode) toggleSelectImage(img.id);
+                      else if (!isReorderMode) setPreviewIndex(index);
+                    }}
+                    className={`relative group w-full h-full rounded-2xl overflow-hidden bg-rose-50 dark:bg-zinc-900 border transition-all duration-300 ${isReorderMode ? 'cursor-grab active:cursor-grabbing' : isSelectionMode ? 'cursor-pointer' : 'cursor-zoom-in'} ${isSelected ? 'border-rose-500 ring-2 ring-rose-500 shadow-xl' : 'border-rose-100 dark:border-zinc-800 shadow-sm'} ${(draggedItemIndex === index && isReorderMode) ? 'opacity-50 scale-95' : ''}`}
+                  >
+                    <img 
+                      src={img.image_url} 
+                      alt="Kỷ niệm" 
+                      className={`w-full h-full object-cover transform transition duration-700 ${(!isSelectionMode && !isReorderMode) ? 'group-hover:scale-105' : ''} ${isSelected ? 'scale-105 opacity-80' : ''}`} 
+                      loading="lazy"
+                    />
+                    
+                    {/* Overlay gradient for hover effects */}
+                    {(!isSelectionMode && !isReorderMode) && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    )}
 
-                  {/* Selection Indicator */}
-                  {isSelectionMode && (
-                    <div className="absolute top-4 left-4 z-10">
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? 'bg-rose-500 border-rose-500 text-white' : 'border-white bg-black/20'}`}>
-                        {isSelected && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-4 h-4"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                    {/* Reorder Overlay */}
+                    {isReorderMode && (
+                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors flex items-center justify-center pointer-events-none">
+                        <div className="bg-white/80 dark:bg-black/50 p-3 rounded-full backdrop-blur-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform scale-90 group-hover:scale-100">
+                          <Move size={24} className="text-gray-700 dark:text-gray-200" />
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  
-                  {/* Actions */}
-                  {!isSelectionMode && (
-                    <div className="absolute top-4 right-4 translate-y-[-10px] opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); requestDelete(img.id); }}
-                        className="p-2.5 bg-white/90 dark:bg-zinc-800/90 hover:bg-red-50 hover:text-red-600 text-gray-600 dark:text-gray-300 rounded-full backdrop-blur shadow-lg transition-colors"
-                        title="Xóa ảnh này"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  )}
+                    )}
 
-                  <div className={`absolute bottom-4 left-4 transition-all duration-300 ${!isSelectionMode ? 'translate-y-[10px] opacity-0 group-hover:opacity-100 group-hover:translate-y-0' : ''}`}>
-                    <span className="text-[10px] font-mono font-bold tracking-widest text-white uppercase bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-md">
-                      {new Date(img.created_at).toLocaleDateString('vi-VN')}
-                    </span>
+                    {/* Selection Indicator */}
+                    {isSelectionMode && (
+                      <div className="absolute top-4 left-4 z-10">
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? 'bg-rose-500 border-rose-500 text-white' : 'border-white bg-black/20'}`}>
+                          {isSelected && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-4 h-4"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Actions */}
+                    {(!isSelectionMode && !isReorderMode) && (
+                      <div className="absolute top-4 right-4 translate-y-[-10px] opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); requestDelete(img.id); }}
+                          className="p-2.5 bg-white/90 dark:bg-zinc-800/90 hover:bg-red-50 hover:text-red-600 text-gray-600 dark:text-gray-300 rounded-full backdrop-blur shadow-lg transition-colors"
+                          title="Xóa ảnh này"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    )}
+
+                    <div className={`absolute bottom-4 left-4 transition-all duration-300 ${(!isSelectionMode && !isReorderMode) ? 'translate-y-[10px] opacity-0 group-hover:opacity-100 group-hover:translate-y-0' : ''}`}>
+                      <span className="text-[10px] font-mono font-bold tracking-widest text-white uppercase bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-md">
+                        {new Date(img.created_at).toLocaleDateString('vi-VN')}
+                      </span>
+                    </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
         )}
       </main>
+
+      {/* Lightbox Preview Modal */}
+      {previewIndex !== null && images[previewIndex] && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md"
+          onClick={() => setPreviewIndex(null)}
+        >
+          {/* Close button */}
+          <button
+            onClick={() => setPreviewIndex(null)}
+            className="absolute top-5 right-5 z-10 p-2 bg-white/10 hover:bg-white/20 text-white rounded-full transition backdrop-blur-sm"
+          >
+            <X size={22} />
+          </button>
+
+          {/* Counter */}
+          <div className="absolute top-5 left-1/2 -translate-x-1/2 text-white/60 text-xs font-mono tracking-widest">
+            {previewIndex + 1} / {images.length}
+          </div>
+
+          {/* Prev button */}
+          <button
+            onClick={(e) => { e.stopPropagation(); setPreviewIndex((previewIndex - 1 + images.length) % images.length); }}
+            className="absolute left-4 z-10 p-3 bg-white/10 hover:bg-white/25 text-white rounded-full transition backdrop-blur-sm"
+          >
+            <ChevronLeft size={28} />
+          </button>
+
+          {/* Image */}
+          <motion.div
+            key={previewIndex}
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.2 }}
+            className="relative max-w-[90vw] max-h-[88vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={images[previewIndex].image_url}
+              alt="Preview"
+              className="max-w-[90vw] max-h-[88vh] object-contain rounded-2xl shadow-2xl select-none"
+              draggable={false}
+            />
+            {/* Date badge */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+              <span className="text-[10px] font-mono font-bold tracking-widest text-white uppercase bg-black/50 px-4 py-1.5 rounded-full backdrop-blur-md">
+                {new Date(images[previewIndex].created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+              </span>
+            </div>
+          </motion.div>
+
+          {/* Next button */}
+          <button
+            onClick={(e) => { e.stopPropagation(); setPreviewIndex((previewIndex + 1) % images.length); }}
+            className="absolute right-4 z-10 p-3 bg-white/10 hover:bg-white/25 text-white rounded-full transition backdrop-blur-sm"
+          >
+            <ChevronRight size={28} />
+          </button>
+
+          {/* Thumbnail strip */}
+          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2 max-w-[80vw] overflow-x-auto px-2 pb-1">
+            {images.map((img, i) => (
+              <button
+                key={img.id}
+                onClick={(e) => { e.stopPropagation(); setPreviewIndex(i); }}
+                className={`flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${i === previewIndex ? 'border-rose-400 scale-110' : 'border-transparent opacity-50 hover:opacity-80'}`}
+              >
+                <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Delete Password Modal */}
       {(deletingId || deletingMultiple) && (

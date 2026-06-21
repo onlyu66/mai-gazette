@@ -29,4 +29,5 @@ export interface GalleryImageRecord {
   category: string;
   image_url: string;
   created_at: string;
+  order_index: number;
 }

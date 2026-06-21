@@ -78,7 +78,12 @@ export const fetchLuuButList = async (): Promise<LuuButRecord[]> => {
 export const fetchGalleryImages = async (category?: string): Promise<any[]> => {
   if (!supabase) return [];
   
-  let query = supabase.from("gallery_images").select("*").order("created_at", { ascending: false });
+  // Sort by order_index ascending, then created_at descending (newest first for default order=0)
+  let query = supabase.from("gallery_images")
+    .select("*")
+    .order("order_index", { ascending: true })
+    .order("created_at", { ascending: false });
+    
   if (category) {
     query = query.eq("category", category);
   }
@@ -115,4 +120,27 @@ export const deleteGalleryImage = async (id: string): Promise<void> => {
     .eq("id", id);
 
   if (error) throw error;
+};
+
+/**
+ * Cập nhật thứ tự hiển thị ảnh
+ */
+export const updateGalleryOrder = async (updates: { id: string; order_index: number }[]): Promise<void> => {
+  if (!supabase) throw new Error("Supabase chưa được cấu hình.");
+
+  // Gán vào biến cục bộ để TypeScript nhận diện kiểu non-null trong closure .map()
+  const db = supabase;
+
+  const promises = updates.map((update) => 
+    db.from("gallery_images")
+      .update({ order_index: update.order_index })
+      .eq("id", update.id)
+  );
+  
+  const results = await Promise.all(promises);
+  const errors = results.filter(r => r.error);
+  
+  if (errors.length > 0) {
+    throw new Error(`Cập nhật thất bại ${errors.length} ảnh. Lỗi đầu tiên: ${errors[0].error?.message}`);
+  }
 };
