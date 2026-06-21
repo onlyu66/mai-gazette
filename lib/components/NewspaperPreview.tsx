@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { LuuButFormData } from '../types';
 
 interface NewspaperPreviewProps {
@@ -32,6 +32,18 @@ export default function NewspaperPreview({ formData, formatDropCapText }: Newspa
   const loai = LOAI_LABELS[formData.tieuDe] ?? { label: 'Lời nhắn', emoji: '💌', color: '#f43f5e' };
   const camXucEmoji = formData.quaTang?.split(' ')[0] ?? '';
   const camXucColor = CAM_XUC_COLORS[formData.quaTang] ?? '#f43f5e';
+
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (formData.anhFile) {
+      const url = URL.createObjectURL(formData.anhFile);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPreviewUrl(null);
+    }
+  }, [formData.anhFile]);
 
   return (
     <div
@@ -94,8 +106,8 @@ export default function NewspaperPreview({ formData, formatDropCapText }: Newspa
           className="w-full aspect-[16/9] rounded-2xl overflow-hidden border border-rose-100 flex items-center justify-center"
           style={{ background: 'linear-gradient(135deg, #fce7f3, #fdf2f8)' }}
         >
-          {formData.anhBase64 ? (
-            <img src={formData.anhBase64} alt="Ảnh kỷ niệm" className="w-full h-full object-cover" />
+          {previewUrl ? (
+            <img src={previewUrl} alt="Ảnh kỷ niệm" className="w-full h-full object-cover" />
           ) : (
             <div className="text-center space-y-2 opacity-40">
               <div className="text-3xl">🖼️</div>
