@@ -99,9 +99,11 @@ body {
     50% { transform: rotate(8deg) scale(1.05); }
   }
 
+
   --animate-float: float 7s ease-in-out infinite;
   --animate-float-reverse: floatReverse 9s ease-in-out infinite;
   --animate-gio-thoi: gioThoi 6s ease-in-out infinite;
+  --animate-marquee: marquee 30s linear infinite;
 
   /* Fallback cho Safari cũ (trước 15.4) không hỗ trợ hệ màu oklch của Tailwind v4 */
   --color-gray-900: #111827;
@@ -156,4 +158,18 @@ body {
 .vung-tin-tuc {
   break-inside: avoid;
   word-break: break-word;
+}
+
+.chay-ngang {
+  animation: marquee 30s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.group:hover .chay-ngang,
+.chay-ngang:hover {
+  animation-play-state: paused;
 }

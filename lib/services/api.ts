@@ -72,3 +72,47 @@ export const fetchLuuButList = async (): Promise<LuuButRecord[]> => {
   return (data || []) as LuuButRecord[];
 };
 
+/**
+ * Lấy danh sách ảnh trong Gallery
+ */
+export const fetchGalleryImages = async (category?: string): Promise<any[]> => {
+  if (!supabase) return [];
+  
+  let query = supabase.from("gallery_images").select("*").order("created_at", { ascending: false });
+  if (category) {
+    query = query.eq("category", category);
+  }
+  
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
+};
+
+/**
+ * Thêm ảnh mới vào Gallery
+ */
+export const insertGalleryImage = async (category: string, imageUrl: string): Promise<any> => {
+  if (!supabase) throw new Error("Supabase chưa được cấu hình.");
+
+  const { data, error } = await supabase
+    .from("gallery_images")
+    .insert([{ category, image_url: imageUrl }])
+    .select();
+
+  if (error) throw error;
+  return data ? data[0] : null;
+};
+
+/**
+ * Xóa ảnh khỏi Gallery
+ */
+export const deleteGalleryImage = async (id: string): Promise<void> => {
+  if (!supabase) throw new Error("Supabase chưa được cấu hình.");
+
+  const { error } = await supabase
+    .from("gallery_images")
+    .delete()
+    .eq("id", id);
+
+  if (error) throw error;
+};

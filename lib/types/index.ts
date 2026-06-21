@@ -23,3 +23,10 @@ export interface InsertLuuButDTO {
   quaTang: string;
   anhUrl: string | null;
 }
+
+export interface GalleryImageRecord {
+  id: string;
+  category: string;
+  image_url: string;
+  created_at: string;
+}

@@ -1,22 +1,40 @@
 'use client';
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { fetchGalleryImages } from '../services/api';
+import Image from 'next/image';
 
-const MEMORIES = [
-  { emoji: '🎓', label: 'Ngày nhận bằng', color: 'from-rose-100 to-pink-50' },
-  { emoji: '📸', label: 'Ảnh kỷ yếu', color: 'from-pink-100 to-rose-50' },
-  { emoji: '🌸', label: 'Mùa hoa đỏ AJC', color: 'from-fuchsia-100 to-pink-50' },
-  { emoji: '📝', label: 'Đêm trắng làm bài', color: 'from-rose-50 to-pink-100' },
-  { emoji: '☕', label: 'Cà phê trước thi', color: 'from-pink-50 to-fuchsia-100' },
-  { emoji: '🎙️', label: 'Phóng sự thực tế', color: 'from-rose-100 to-rose-50' },
-  { emoji: '💕', label: 'Bạn bè thân thương', color: 'from-pink-100 to-pink-50' },
-  { emoji: '🏫', label: 'Giảng đường ký ức', color: 'from-fuchsia-50 to-rose-100' },
-];
+import { MEMORIES } from '../constants';
 
 const STRIP = [...MEMORIES, ...MEMORIES];
 
+
 export default function GallerySlider() {
+  const [covers, setCovers] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const loadImages = async () => {
+      try {
+        const images = await fetchGalleryImages();
+        const newCovers: Record<string, string> = {};
+        
+        // Nhóm ảnh theo danh mục, lấy ảnh đầu tiên (mới nhất vì đã được sort descending)
+        images.forEach(img => {
+          if (!newCovers[img.category]) {
+            newCovers[img.category] = img.image_url;
+          }
+        });
+        
+        setCovers(newCovers);
+      } catch (error) {
+        console.error("Lỗi khi tải ảnh gallery:", error);
+      }
+    };
+    
+    loadImages();
+  }, []);
+
   return (
     <section id="goc-trien-lam" className="py-12 overflow-hidden border-t select-none"
       style={{ background: 'var(--bg-section-2)', borderColor: 'var(--border-section)' }}
@@ -32,38 +50,52 @@ export default function GallerySlider() {
       </div>
 
       {/* Scrolling strip */}
-      <div className="flex w-max flex-nowrap">
-        <motion.div
-          animate={{ x: ['0%', '-50%'] }}
-          transition={{ duration: 30, ease: 'linear', repeat: Infinity }}
-          className="flex flex-nowrap pr-6 space-x-5"
+      <div className="flex w-max flex-nowrap group">
+        <div
+          className="flex flex-nowrap pr-6 space-x-5 chay-ngang"
         >
           {STRIP.map((item, idx) => (
-            <div
+            <Link
+              href={`/gallery/${item.id}`}
               key={idx}
               className={`
-                w-52 h-44 rounded-3xl flex-shrink-0 flex flex-col items-center justify-center gap-3
-                bg-gradient-to-br ${item.color}
+                relative w-52 h-44 rounded-3xl flex-shrink-0 flex flex-col items-center justify-center gap-3
+                bg-gradient-to-br ${item.color} overflow-hidden
                 border shadow-sm
-                hover:shadow-rose-200/60 hover:-translate-y-1
+                hover:shadow-rose-300/80 hover:-translate-y-2
                 transition-all duration-300
               `}
               style={{ borderColor: 'var(--border-card)' }}
             >
-              {/* Decorative dot */}
-              <div className="w-1.5 h-1.5 rounded-full bg-rose-300/60 absolute top-4 right-4" />
-              <span className="text-4xl">{item.emoji}</span>
-              <span className="text-[11px] font-bold text-rose-500/80 tracking-wider uppercase text-center px-4">
-                {item.label}
-              </span>
-            </div>
+              {covers[item.id] ? (
+                <>
+                  <Image src={covers[item.id]} alt={item.label} fill sizes="(max-width: 768px) 100vw, 208px" className="object-cover opacity-90 transition duration-500 hover:scale-110" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                  {/* Decorative dot */}
+                  <div className="w-1.5 h-1.5 rounded-full bg-white/80 absolute top-4 right-4 z-10 shadow-[0_0_8px_rgba(255,255,255,0.8)] animate-pulse" />
+                  <span className="text-xl z-10 drop-shadow-md">{item.emoji}</span>
+                  <span className="text-[12px] font-bold text-white tracking-wider uppercase text-center px-4 z-10 drop-shadow-md">
+                    {item.label}
+                  </span>
+                </>
+              ) : (
+                <>
+                  {/* Decorative dot */}
+                  <div className="w-1.5 h-1.5 rounded-full bg-rose-300/60 absolute top-4 right-4" />
+                  <span className="text-4xl">{item.emoji}</span>
+                  <span className="text-[11px] font-bold text-rose-500/80 tracking-wider uppercase text-center px-4">
+                    {item.label}
+                  </span>
+                </>
+              )}
+            </Link>
           ))}
-        </motion.div>
+        </div>
       </div>
 
       {/* Footer hint */}
       <p className="text-center text-[9px] tracking-widest uppercase mt-6 font-mono" style={{ color: 'var(--text-muted)' }}>
-        Cuộn tự động · Kỷ niệm là mãi mãi 🌷
+        Nhấn vào thẻ để xem và thêm ảnh · Kỷ niệm là mãi mãi 🌷
       </p>
     </section>
   );
