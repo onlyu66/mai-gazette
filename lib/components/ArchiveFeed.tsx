@@ -181,9 +181,9 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
                     )}
 
                     {/* Nội dung */}
-                    <div className="relative pl-3 border-l-2 border-rose-200 group-hover:border-rose-400 transition-colors flex-1">
+                    <div className="relative pl-3 border-rose-200 group-hover:border-rose-400 transition-colors flex-1">
                       {/* Quote mark */}
-                      <span className="absolute -top-1 -left-2 text-rose-200 text-2xl font-serif leading-none select-none">"</span>
+                      <span className="absolute -top-1 -left-1 text-rose-200 text-2xl font-serif leading-none select-none">"</span>
                       <p
                         className="text-sm leading-relaxed line-clamp-4"
                         style={{ fontFamily: 'var(--font-playfair), serif', fontStyle: 'italic', color: 'var(--mau-chu)', opacity: 0.85 }}

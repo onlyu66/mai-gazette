@@ -7,19 +7,19 @@ interface NewspaperPreviewProps {
 }
 
 const LOAI_LABELS: Record<string, { label: string; emoji: string; color: string }> = {
-  'loi-chuc':  { label: 'Lời chúc tốt nghiệp', emoji: '🌸', color: '#f43f5e' },
-  'ky-niem':   { label: 'Kỷ niệm đáng nhớ',    emoji: '📸', color: '#e879a0' },
-  'nhan-nhu':  { label: 'Nhắn nhủ từ trái tim', emoji: '💌', color: '#e11d48' },
-  'hai-huoc':  { label: 'Hài hước & vui vẻ',   emoji: '🎭', color: '#fb7185' },
+  'loi-chuc': { label: 'Lời chúc tốt nghiệp', emoji: '🌸', color: '#f43f5e' },
+  'ky-niem': { label: 'Kỷ niệm đáng nhớ', emoji: '📸', color: '#e879a0' },
+  'nhan-nhu': { label: 'Nhắn nhủ từ trái tim', emoji: '💌', color: '#e11d48' },
+  'hai-huoc': { label: 'Hài hước & vui vẻ', emoji: '🎭', color: '#fb7185' },
 };
 
 const CAM_XUC_COLORS: Record<string, string> = {
   '🥺 Xúc động': '#f43f5e',
-  '🌸 Tự hào':   '#e879a0',
+  '🌸 Tự hào': '#e879a0',
   '🥂 Hào hứng': '#fb923c',
   '😭 Nhớ nhau': '#a855f7',
-  '✨ Biết ơn':   '#eab308',
-  '💕 Yêu quý':  '#ec4899',
+  '✨ Biết ơn': '#eab308',
+  '💕 Yêu quý': '#ec4899',
 };
 
 function today() {
@@ -112,7 +112,7 @@ export default function NewspaperPreview({ formData, formatDropCapText }: Newspa
             "
           </div>
           <div
-            className="text-[13px] leading-[1.85] pl-4 border-l-2"
+            className="text-[13px] leading-[1.85] pl-4"
             style={{ fontFamily: 'var(--font-playfair), serif', fontStyle: 'italic', borderColor: 'var(--border-section)', color: 'var(--mau-chu)', opacity: 0.85 }}
           >
             {formData.noiDung
