@@ -2,7 +2,33 @@ import { supabase } from "@/lib/supabase";
 import { LuuButRecord, InsertLuuButDTO } from "../types";
 
 /**
- * Upload file ảnh từ mã hóa Base64 string lên Supabase Storage
+ * Upload file Blob ảnh lên Supabase Storage.
+ * Hàm nhận Blob đã được nén từ client, không cần decode base64 nữa.
+ */
+export const uploadGalleryImage = async (blob: Blob, mimeType: string): Promise<string | null> => {
+  if (!supabase) return null;
+  try {
+    const ext = mimeType === 'image/png' ? 'png' : 'jpg';
+    const fileName = `gallery-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { data, error } = await supabase.storage
+      .from('images')
+      .upload(fileName, blob, { contentType: mimeType, upsert: false });
+
+    if (error) throw error;
+
+    const { data: publicUrlData } = supabase.storage
+      .from('images')
+      .getPublicUrl(data.path);
+
+    return publicUrlData.publicUrl;
+  } catch (error: any) {
+    console.error('Lỗi khi upload ảnh gallery:', error.message);
+    throw error;
+  }
+};
+
+/**
+ * Upload file ảnh từ mã hóa Base64 string lên Supabase Storage (legacy — dùng cho Luưu bút)
  */
 export const uploadStorageImage = async (
   base64Data: string,
@@ -14,18 +40,18 @@ export const uploadStorageImage = async (
 
     const fileName = `phong-su-${Date.now()}.png`;
     const { data, error } = await supabase.storage
-      .from("images")
-      .upload(fileName, blob, { contentType: "image/png" });
+      .from('images')
+      .upload(fileName, blob, { contentType: 'image/png' });
 
     if (error) throw error;
 
     const { data: publicUrlData } = supabase.storage
-      .from("images")
+      .from('images')
       .getPublicUrl(data.path);
 
     return publicUrlData.publicUrl;
   } catch (error: any) {
-    console.error("Lỗi khi upload ảnh lên Storage:", error.message);
+    console.error('Lỗi khi upload ảnh lên Storage:', error.message);
     throw error;
   }
 };
@@ -126,21 +152,16 @@ export const deleteGalleryImage = async (id: string): Promise<void> => {
  * Cập nhật thứ tự hiển thị ảnh
  */
 export const updateGalleryOrder = async (updates: { id: string; order_index: number }[]): Promise<void> => {
-  if (!supabase) throw new Error("Supabase chưa được cấu hình.");
+  if (!supabase) throw new Error('Supabase chưa được cấu hình.');
+  if (updates.length === 0) return;
 
-  // Gán vào biến cục bộ để TypeScript nhận diện kiểu non-null trong closure .map()
-  const db = supabase;
+  // Dùng upsert 1 lần thay vì N lần update riêng lẻ — giảm số request gửi lên server
+  const { error } = await supabase
+    .from('gallery_images')
+    .upsert(
+      updates.map(u => ({ id: u.id, order_index: u.order_index })),
+      { onConflict: 'id' }
+    );
 
-  const promises = updates.map((update) => 
-    db.from("gallery_images")
-      .update({ order_index: update.order_index })
-      .eq("id", update.id)
-  );
-  
-  const results = await Promise.all(promises);
-  const errors = results.filter(r => r.error);
-  
-  if (errors.length > 0) {
-    throw new Error(`Cập nhật thất bại ${errors.length} ảnh. Lỗi đầu tiên: ${errors[0].error?.message}`);
-  }
+  if (error) throw new Error('Cập nhật thứ tự thất bại: ' + error.message);
 };

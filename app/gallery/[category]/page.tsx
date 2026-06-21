@@ -3,7 +3,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { MEMORIES } from '@/lib/constants';
-import { fetchGalleryImages, insertGalleryImage, deleteGalleryImage, uploadStorageImage, updateGalleryOrder } from '@/lib/services/api';
+import { fetchGalleryImages, insertGalleryImage, deleteGalleryImage, uploadStorageImage, updateGalleryOrder, uploadGalleryImage } from '@/lib/services/api';
+import { compressImage } from '@/lib/utils/compressImage';
 import { GalleryImageRecord } from '@/lib/types';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -21,6 +22,7 @@ export default function GalleryPage() {
   const [images, setImages] = useState<GalleryImageRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deletingMultiple, setDeletingMultiple] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
@@ -84,8 +86,9 @@ export default function GalleryPage() {
         toast.error(`File "${file.name}" không phải là ảnh hợp lệ.`);
         continue;
       }
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(`Ảnh "${file.name}" quá lớn. Vui lòng chọn ảnh dưới 5MB.`);
+      if (file.size > 10 * 1024 * 1024) {
+        // Tăng giới hạn lên 10MB vì sẽ được nén trước khi upload
+        toast.error(`Ảnh "${file.name}" quá lớn (tối đa 10MB).`);
         continue;
       }
       validFiles.push(file);
@@ -93,41 +96,42 @@ export default function GalleryPage() {
 
     if (validFiles.length === 0) return;
 
-    try {
-      setUploading(true);
-      
-      const uploadPromises = validFiles.map((file) => {
-        return new Promise<GalleryImageRecord>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = async () => {
-            try {
-              const base64Data = reader.result as string;
-              const uploadedUrl = await uploadStorageImage(base64Data);
-              if (!uploadedUrl) throw new Error("Không lấy được URL sau khi upload");
-              const newRecord = await insertGalleryImage(categoryId, uploadedUrl);
-              resolve(newRecord);
-            } catch (err) {
-              reject(err);
-            }
-          };
-          reader.onerror = () => reject(new Error("Lỗi đọc file"));
-          reader.readAsDataURL(file);
-        });
-      });
+    setUploading(true);
+    setUploadProgress({ done: 0, total: validFiles.length });
 
-      const newRecords = await Promise.all(uploadPromises);
-      
-      // Update UI with all new images at once, newest first
-      setImages(prev => [...newRecords.reverse(), ...prev]);
-      toast.success(`Đã tải lên thành công ${newRecords.length} ảnh! 📸`);
-      
-    } catch (error: any) {
-      console.error(error);
-      toast.error("Có lỗi xảy ra trong quá trình tải ảnh: " + error.message);
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+    const newRecords: any[] = [];
+    // Upload tuần tự (không song song) — tránh quá tải server khi nhiều ảnh
+    for (let i = 0; i < validFiles.length; i++) {
+      const file = validFiles[i];
+      try {
+        // 1. Nén ảnh client-side trước khi upload
+        const compressedBlob = await compressImage(file);
+        const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+
+        // 2. Upload Blob đã nén lên Supabase Storage
+        const uploadedUrl = await uploadGalleryImage(compressedBlob, mimeType);
+        if (!uploadedUrl) throw new Error('Không nhận được URL sau khi upload');
+
+        // 3. Lưu bản ghi vào Database
+        const newRecord = await insertGalleryImage(categoryId, uploadedUrl);
+        newRecords.push(newRecord);
+
+        // 4. Cập nhật tiến trình
+        setUploadProgress({ done: i + 1, total: validFiles.length });
+      } catch (err: any) {
+        console.error(err);
+        toast.error(`Lỗi khi tải ảnh "${file.name}": ${err.message}`);
+      }
     }
+
+    if (newRecords.length > 0) {
+      setImages(prev => [...newRecords.reverse(), ...prev]);
+      toast.success(`Đã tải lên ${newRecords.length}/${validFiles.length} ảnh thành công! 📸`);
+    }
+
+    setUploading(false);
+    setUploadProgress(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const requestDelete = (id: string) => {
@@ -287,8 +291,19 @@ export default function GalleryPage() {
                   disabled={uploading}
                   className="flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-5 py-2.5 rounded-full text-xs font-bold tracking-widest transition shadow-lg shadow-rose-200 dark:shadow-none disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-                  <span className="hidden sm:inline">{uploading ? 'ĐANG TẢI LÊN...' : 'TẢI ẢNH MỚI'}</span>
+                  {uploading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  <span className="hidden sm:inline">
+                    {uploadProgress ? `${uploadProgress.done}/${uploadProgress.total} Ảnh...` : 'Đang xử lý...'}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Upload size={16} />
+                  <span className="hidden sm:inline">TẢI ẢNH MỚI</span>
+                </>
+              )}
                 </button>
               </>
             )}
