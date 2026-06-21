@@ -76,7 +76,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="font-bao-chi text-5xl md:text-7xl font-bold uppercase tracking-tight leading-none text-gray-900 dark:text-white"
+            className="font-bao-chi text-5xl md:text-7xl font-bold uppercase tracking-tight leading-none text-[#2E1F20] dark:text-white"
           >
             PHAN NGỌC MAI.
           </motion.h1>
@@ -95,7 +95,7 @@ export default function Home() {
             className="pt-2 flex flex-wrap gap-4"
           >
             <MagneticButton>
-              <a href="#studio-anh" className="bg-gray-900 text-white dark:bg-white dark:text-gray-900 text-xs uppercase tracking-widest font-bold px-6 py-4 rounded-xl hover:bg-rose-600 hover:text-white transition shadow-lg inline-block">
+              <a href="#studio-anh" className="bg-[#2E1F20] text-white dark:bg-white dark:text-[#2E1F20] text-xs uppercase tracking-widest font-bold px-6 py-4 rounded-xl hover:bg-rose-600 hover:text-white transition shadow-lg inline-block">
                 Chụp Ảnh Photobooth Kỷ Niệm 📸
               </a>
             </MagneticButton>

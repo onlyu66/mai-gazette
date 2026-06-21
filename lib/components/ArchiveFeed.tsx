@@ -136,7 +136,7 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {currentItems.map((item) => {
+            {currentItems.map((item, index) => {
               const loai = getLoai(item.tieu_de);
               return (
                 <div
@@ -173,6 +173,7 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
                           src={item.anh_url}
                           alt="Ảnh kỷ niệm"
                           fill
+                          priority={index < 3}
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           className="object-cover group-hover:scale-105 transition duration-700"
                         />

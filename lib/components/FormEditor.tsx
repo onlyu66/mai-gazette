@@ -108,7 +108,7 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
             {LOAI_LUU_BUT.map((opt) => {
               const isSelected = formData.tieuDe === opt.value;
               return (
-                <label key={opt.value} className="relative cursor-pointer select-none">
+                <label key={opt.value} className="relative cursor-pointer select-none h-full block">
                   <input
                     type="radio"
                     name="loai"
@@ -118,7 +118,7 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
                     className="sr-only"
                   />
                   <div
-                    className={`px-3.5 py-3 rounded-2xl border-2 transition-all duration-200 ${
+                    className={`h-full px-3.5 py-3 rounded-2xl border-2 transition-all duration-200 flex flex-col justify-center ${
                       isSelected
                         ? 'border-rose-400 shadow-md'
                         : 'border-transparent hover:border-rose-200'

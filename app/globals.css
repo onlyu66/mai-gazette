@@ -4,14 +4,14 @@
   --bg-nen: #FFF5F5;
   --mau-chu: #2E1F20;
   --khung-kinh: rgba(255, 255, 255, 0.5);
-  
+
   /* Thematic variables */
   --bg-section-1: linear-gradient(180deg, #fff5f8 0%, #fef2f6 100%);
   --bg-section-2: linear-gradient(180deg, #fff9fb 0%, #fdf2f8 100%);
   --bg-card: #ffffff;
   --bg-card-gradient: linear-gradient(145deg, #fff9fb, #fef2f6);
-  --border-card: rgba(244,114,182,0.15);
-  --border-section: rgba(244,114,182,0.6);
+  --border-card: rgba(244, 114, 182, 0.15);
+  --border-section: rgba(244, 114, 182, 0.6);
   --text-muted: #fda4af;
   --text-heading: #be123c;
 }
@@ -21,13 +21,13 @@
   --bg-nen: #0B0809;
   --mau-chu: #F3F4F6;
   --khung-kinh: rgba(26, 18, 20, 0.7);
-  
+
   --bg-section-1: linear-gradient(180deg, #170A0D 0%, #0B0809 100%);
   --bg-section-2: linear-gradient(180deg, #0B0809 0%, #170A0D 100%);
   --bg-card: #1C1114;
   --bg-card-gradient: linear-gradient(145deg, #1f1216, #140a0c);
-  --border-card: rgba(244,63,94,0.15);
-  --border-section: rgba(244,63,94,0.2);
+  --border-card: rgba(244, 63, 94, 0.15);
+  --border-section: rgba(244, 63, 94, 0.2);
   --text-muted: #881337;
   --text-heading: #fb7185;
 }
@@ -40,31 +40,60 @@ body {
 }
 
 /* Ánh xạ font chữ từ layout vào class tiện ích */
-.font-bao-chi { 
-  font-family: var(--font-cinzel), serif; 
+.font-bao-chi {
+  font-family: var(--font-cinzel), serif;
 }
-.font-nghe-thuat { 
-  font-family: var(--font-playfair), serif; 
+
+.font-nghe-thuat {
+  font-family: var(--font-playfair), serif;
 }
 
 /* Cấu hình mở rộng dành cho Tập San bằng Tailwind v4 */
 @theme {
   @keyframes tiaSangQuet {
-    0% { transform: skewX(-12deg) translateX(-150%); }
-    100% { transform: skewX(-12deg) translateX(250%); }
+    0% {
+      transform: skewX(-12deg) translateX(-150%);
+    }
+
+    100% {
+      transform: skewX(-12deg) translateX(250%);
+    }
   }
+
   --animate-hieu-ung-quet-sang: tiaSangQuet 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 
   @keyframes float {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    33%       { transform: translateY(-18px) rotate(2deg); }
-    66%       { transform: translateY(-8px) rotate(-1deg); }
+
+    0%,
+    100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+
+    33% {
+      transform: translateY(-18px) rotate(2deg);
+    }
+
+    66% {
+      transform: translateY(-8px) rotate(-1deg);
+    }
   }
+
   @keyframes floatReverse {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    33%       { transform: translateY(14px) rotate(-2deg); }
-    66%       { transform: translateY(6px) rotate(1deg); }
+
+    0%,
+    100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+
+    33% {
+      transform: translateY(14px) rotate(-2deg);
+    }
+
+    66% {
+      transform: translateY(6px) rotate(1deg);
+    }
   }
+
   --animate-float: float 7s ease-in-out infinite;
   --animate-float-reverse: floatReverse 9s ease-in-out infinite;
 
@@ -74,6 +103,48 @@ body {
   --color-gray-700: #374151;
   --color-gray-600: #4b5563;
   --color-gray-500: #6b7280;
+}
+
+@layer base {
+  ::-webkit-scrollbar {
+    width: 0px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 9999px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.55);
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.35);
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+@layer base {
+  button, 
+  [role="button"],
+  a {
+    cursor: pointer;
+  }
+  
+  button:disabled {
+    cursor: not-allowed;
+  }
 }
 
 .vung-tin-tuc {
