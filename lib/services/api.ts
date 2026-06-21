@@ -122,12 +122,12 @@ export const fetchGalleryImages = async (category?: string): Promise<any[]> => {
 /**
  * Thêm ảnh mới vào Gallery
  */
-export const insertGalleryImage = async (category: string, imageUrl: string): Promise<any> => {
+export const insertGalleryImage = async (category: string, imageUrl: string, orderIndex?: number): Promise<any> => {
   if (!supabase) throw new Error("Supabase chưa được cấu hình.");
 
   const { data, error } = await supabase
     .from("gallery_images")
-    .insert([{ category, image_url: imageUrl }])
+    .insert([{ category, image_url: imageUrl, order_index: orderIndex ?? 0 }])
     .select();
 
   if (error) throw error;
