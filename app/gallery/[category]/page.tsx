@@ -490,7 +490,6 @@ export default function GalleryPage() {
                       onTouchStart={(e) => {
                         if (isReorderMode) {
                           setDraggedItemIndex(index);
-                          // Prevent scrolling while dragging
                           document.body.style.overflow = 'hidden';
                         }
                       }}
@@ -505,12 +504,24 @@ export default function GalleryPage() {
                         if (targetItem) {
                           const targetIndex = parseInt(targetItem.getAttribute('data-index') || '-1', 10);
                           if (targetIndex !== -1 && targetIndex !== draggedItemIndex) {
-                            const newImages = [...images];
-                            const draggedItem = newImages[draggedItemIndex];
-                            newImages.splice(draggedItemIndex, 1);
-                            newImages.splice(targetIndex, 0, draggedItem);
-                            setImages(newImages);
-                            setDraggedItemIndex(targetIndex);
+                            const rect = targetItem.getBoundingClientRect();
+                            // Tính vùng an toàn 25% ở giữa ảnh để chống giật
+                            const thresholdX = rect.width * 0.25;
+                            const thresholdY = rect.height * 0.25;
+                            
+                            if (
+                              touch.clientX > rect.left + thresholdX &&
+                              touch.clientX < rect.right - thresholdX &&
+                              touch.clientY > rect.top + thresholdY &&
+                              touch.clientY < rect.bottom - thresholdY
+                            ) {
+                              const newImages = [...images];
+                              const draggedItem = newImages[draggedItemIndex];
+                              newImages.splice(draggedItemIndex, 1);
+                              newImages.splice(targetIndex, 0, draggedItem);
+                              setImages(newImages);
+                              setDraggedItemIndex(targetIndex);
+                            }
                           }
                         }
                       }}
@@ -522,7 +533,7 @@ export default function GalleryPage() {
                         if (isSelectionMode) toggleSelectImage(img.id);
                         else if (!isReorderMode) setPreviewIndex(index);
                       }}
-                      className={`relative group w-full ${viewMode === 'grid' || isReorderMode ? 'h-full' : 'h-auto'} rounded-2xl overflow-hidden bg-rose-50 dark:bg-zinc-900 border transition-all duration-300 ${isReorderMode ? 'cursor-grab active:cursor-grabbing' : isSelectionMode ? 'cursor-pointer' : 'cursor-zoom-in'} ${isSelected ? 'border-rose-500 ring-2 ring-rose-500 shadow-xl' : 'border-rose-100 dark:border-zinc-800 shadow-sm'} ${(draggedItemIndex === index && isReorderMode) ? 'opacity-50 scale-95' : ''}`}
+                      className={`relative group w-full ${viewMode === 'grid' || isReorderMode ? 'h-full' : 'h-auto'} rounded-2xl overflow-hidden bg-rose-50 dark:bg-zinc-900 border transition-all duration-300 ${isReorderMode ? 'cursor-grab active:cursor-grabbing touch-none' : isSelectionMode ? 'cursor-pointer' : 'cursor-zoom-in'} ${isSelected ? 'border-rose-500 ring-2 ring-rose-500 shadow-xl' : 'border-rose-100 dark:border-zinc-800 shadow-sm'} ${(draggedItemIndex === index && isReorderMode) ? 'opacity-50 scale-95' : ''}`}
                     >
                       <img
                         src={img.image_url}
@@ -539,7 +550,7 @@ export default function GalleryPage() {
                       {/* Reorder Overlay */}
                       {isReorderMode && (
                         <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors flex items-center justify-center pointer-events-none">
-                          <div className="bg-white/80 dark:bg-black/50 p-3 rounded-full backdrop-blur-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform scale-90 group-hover:scale-100">
+                          <div className="bg-white/80 dark:bg-black/50 p-3 rounded-full backdrop-blur-md shadow-lg opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 transform scale-100 sm:scale-90 sm:group-hover:scale-100">
                             <Move size={24} className="text-gray-700 dark:text-gray-200" />
                           </div>
                         </div>
