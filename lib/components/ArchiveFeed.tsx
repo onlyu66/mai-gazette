@@ -28,9 +28,27 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(searchInput);
+      setCurrentPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  const filteredList = list.filter((item) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    const authorMatch = item.tac_gia?.toLowerCase().includes(query) || false;
+    const contentMatch = item.noi_dung?.toLowerCase().includes(query) || false;
+    return authorMatch || contentMatch;
+  });
 
   const itemsPerPage = 6;
-  const currentItems = list.slice(0, currentPage * itemsPerPage);
+  const currentItems = filteredList.slice(0, currentPage * itemsPerPage);
   const observerTarget = useRef<HTMLDivElement>(null);
 
   const handleUnlock = (e: React.FormEvent) => {
@@ -47,7 +65,7 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          if (currentPage * itemsPerPage < list.length) {
+          if (currentPage * itemsPerPage < filteredList.length) {
             setCurrentPage((p) => p + 1);
           }
         }
@@ -60,7 +78,7 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
     }
 
     return () => observer.disconnect();
-  }, [currentPage, list.length]);
+  }, [currentPage, filteredList.length]);
 
   return (
     <div className="relative">
@@ -92,11 +110,28 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
 
       {/* Feed Content */}
       <div className={`space-y-10 transition-all duration-700 ${!isUnlocked && list.length > 0 ? 'pointer-events-none opacity-40 select-none' : ''}`}>
-        {list.length === 0 ? (
+        
+        {/* Search Bar */}
+        {list.length > 0 && (
+          <div className="flex justify-center -mt-4 mb-2">
+            <div className="relative w-full max-w-md">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-300">🔍</span>
+              <input 
+                type="text" 
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Tìm kiếm theo tên hoặc lời nhắn..." 
+                className="w-full pl-11 pr-4 py-3 rounded-2xl border-2 border-rose-100 focus:outline-none focus:border-rose-400 bg-white/50 focus:bg-white text-sm font-medium transition-all shadow-sm"
+              />
+            </div>
+          </div>
+        )}
+
+        {filteredList.length === 0 ? (
           <div className="text-center py-20 space-y-3 col-span-full">
             <div className="text-5xl opacity-30">🌸</div>
             <p className="text-sm text-rose-300 font-medium">
-              Chưa có trang lưu bút nào — hãy là người đầu tiên gửi lời chúc nhé!
+              {searchQuery ? 'Không tìm thấy kết quả nào phù hợp!' : 'Chưa có trang lưu bút nào — hãy là người đầu tiên gửi lời chúc nhé!'}
             </p>
           </div>
         ) : (
@@ -178,7 +213,7 @@ export default function ArchiveFeed({ list }: ArchiveFeedProps) {
           </div>
         )}
 
-      {currentPage * itemsPerPage < list.length && (
+      {currentPage * itemsPerPage < filteredList.length && (
         <div ref={observerTarget} className="flex justify-center items-center py-8">
           <div className="w-8 h-8 border-4 border-rose-200 border-t-rose-500 rounded-full animate-spin"></div>
         </div>
