@@ -18,7 +18,7 @@ const LOAI_LUU_BUT = [
 ];
 
 const CAM_XUC = [
-  { value: '🥹 Xúc động', emoji: '🥹', label: 'Xúc động' },
+  { value: '🥺 Xúc động', emoji: '🥺', label: 'Xúc động' },
   { value: '🌸 Tự hào', emoji: '🌸', label: 'Tự hào' },
   { value: '🥂 Hào hứng', emoji: '🥂', label: 'Hào hứng' },
   { value: '😭 Nhớ nhau', emoji: '😭', label: 'Nhớ nhau' },

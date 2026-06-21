@@ -14,7 +14,7 @@ const LOAI_LABELS: Record<string, { label: string; emoji: string; color: string 
 };
 
 const CAM_XUC_COLORS: Record<string, string> = {
-  '🥹 Xúc động': '#f43f5e',
+  '🥺 Xúc động': '#f43f5e',
   '🌸 Tự hào':   '#e879a0',
   '🥂 Hào hứng': '#fb923c',
   '😭 Nhớ nhau': '#a855f7',

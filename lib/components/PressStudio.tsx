@@ -629,7 +629,7 @@ export default function PressStudio() {
       a.href = url; a.click();
 
       toast.success('🎉 Đã tải ảnh siêu nét thành công!');
-      resetAll();
+      setSelectedSlot(currentSlot);
     } catch {
       toast.error('Lỗi tải ảnh, hãy thử lại!');
       setSelectedSlot(currentSlot);
@@ -722,7 +722,7 @@ export default function PressStudio() {
       URL.revokeObjectURL(url);
 
       toast.success('🎉 Đã tải ảnh động GIF thành công!');
-      resetAll();
+      setSelectedSlot(currentSlot);
     } catch {
       toast.error('Lỗi tạo ảnh động, hãy thử lại!');
       setSelectedSlot(currentSlot);
@@ -846,7 +846,7 @@ export default function PressStudio() {
                 className="w-full py-4 rounded-2xl text-sm font-bold uppercase tracking-widest text-white transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 style={{ background: isGridFull ? 'linear-gradient(135deg, #7c3aed, #4c1d95)' : 'linear-gradient(135deg, #cbd5e1, #94a3b8)' }}
               >
-                {isExporting ? `✨ Đang tạo ảnh động… ${exportProgress}%` : '🪄 Tải Ảnh Động (GIF)'}
+                {isExporting ? `✨ Đang tạo ảnh động… ${exportProgress}%` : '🎬 Tải Ảnh Động (GIF)'}
               </button>
               {isExporting && (
                 <div className="w-full h-1.5 rounded-full bg-violet-100 overflow-hidden">

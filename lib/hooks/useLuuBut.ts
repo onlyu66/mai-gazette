@@ -15,7 +15,7 @@ export const useLuuBut = () => {
     tieuDe: "loi-chuc",
     noiDung: "",
     tacGia: "",
-    quaTang: "🥹 Xúc động",
+    quaTang: "🥺 Xúc động",
     anhBase64: "",
   });
 
@@ -84,7 +84,7 @@ export const useLuuBut = () => {
         tieuDe: "loi-chuc",
         noiDung: "",
         tacGia: "",
-        quaTang: "🥹 Xúc động",
+        quaTang: "🥺 Xúc động",
         anhBase64: "",
       });
 

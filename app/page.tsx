@@ -46,7 +46,7 @@ export default function Home() {
               <a href="#kho-luu-tru" className="hover:text-rose-500 transition">Đọc Lưu Bút</a>
             </nav>
             <button onClick={chuyenCheDo} className="flex items-center space-x-2 bg-rose-600 text-white px-4 py-2 rounded-full text-xs font-bold tracking-wider hover:bg-rose-700 transition shadow-md">
-              <span>{isDarkMode ? '☀️' : '🌙'}</span> 
+              <span>{isDarkMode ? '☀️' : '🌙'}</span>
               <span className="hidden sm:inline">{isDarkMode ? 'KÝ ỨC BAN MAI' : 'KÝ ỨC SAO ĐÊM'}</span>
             </button>
           </div>
@@ -114,7 +114,7 @@ export default function Home() {
               <div className="w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:animate-hieu-ung-quet-sang"></div>
             </div>
             <div className="w-full h-full rounded-xl overflow-hidden border border-rose-200/60 relative bg-[#2A1B1C]">
-              <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=600" alt="Phan Ngọc Mai" className="w-full h-full object-cover opacity-85 group-hover:scale-105 transition duration-700" />
+              <img src="/avatar.jpg" alt="Phan Ngọc Mai" className="w-full h-full object-cover opacity-85 group-hover:scale-105 transition duration-700 object-[50%_40%]" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#1A0E0F] via-black/10 to-black/40 mix-blend-multiply"></div>
               <div className="absolute bottom-0 left-0 w-full p-5 text-white z-20 space-y-1">
                 <p className="font-bao-chi text-[10px] tracking-[0.3em] text-rose-400 font-bold uppercase">Graduation 2026</p>
