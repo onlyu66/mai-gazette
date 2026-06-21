@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import {
   fetchLuuButList,
   insertLuuBut,
-  uploadStorageImage,
+  uploadGalleryImage,
 } from "../services/api";
 import { LuuButRecord, LuuButFormData } from "../types";
 import React from "react";
@@ -16,7 +16,7 @@ export const useLuuBut = () => {
     noiDung: "",
     tacGia: "",
     quaTang: "🥺 Xúc động",
-    anhBase64: "",
+    anhFile: null,
   });
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export const useLuuBut = () => {
     loadData();
   }, []);
 
-  const updateField = (field: keyof LuuButFormData, value: string) => {
+  const updateField = (field: keyof LuuButFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -66,8 +66,9 @@ export const useLuuBut = () => {
     setLoading(true);
     try {
       let uploadedUrl: string | null = null;
-      if (formData.anhBase64) {
-        uploadedUrl = await uploadStorageImage(formData.anhBase64);
+      if (formData.anhFile) {
+        const mimeType = formData.anhFile.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        uploadedUrl = await uploadGalleryImage(formData.anhFile, mimeType);
       }
 
       const newRecord = await insertLuuBut({
@@ -85,7 +86,7 @@ export const useLuuBut = () => {
         noiDung: "",
         tacGia: "",
         quaTang: "🥺 Xúc động",
-        anhBase64: "",
+        anhFile: null,
       });
 
       toast.success("🎉 Ấn bản trang nhất đã được lưu trữ và xuất bản thành công!");

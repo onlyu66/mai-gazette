@@ -2,10 +2,11 @@
 
 import React, { ChangeEvent, useRef, useState, useEffect } from 'react';
 import { LuuButFormData } from '../types';
+import { compressImage } from '../utils/compressImage';
 
 interface FormEditorProps {
   formData: LuuButFormData;
-  updateField: (field: keyof LuuButFormData, value: string) => void;
+  updateField: (field: keyof LuuButFormData, value: any) => void;
   onSubmit: () => Promise<void>;
   loading: boolean;
 }
@@ -33,23 +34,34 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
   const [fileName, setFileName] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!formData.anhBase64) {
+    if (!formData.anhFile) {
+      if (preview) URL.revokeObjectURL(preview);
       setPreview(null);
       setFileName(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
-  }, [formData.anhBase64]);
+  }, [formData.anhFile]);
 
-  const processFile = (file: File) => {
+  const processFile = async (file: File) => {
     if (!file.type.startsWith('image/')) return;
+    if (file.size > 10 * 1024 * 1024) {
+      // Giới hạn 10MB — sẽ được nén xuống ~300KB trước khi xử lý
+      alert('Ảnh quá lớn! Vui lòng chọn ảnh dưới 10MB.');
+      return;
+    }
     setFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      setPreview(result);
-      updateField('anhBase64', result);
-    };
-    reader.readAsDataURL(file);
+    try {
+      // Nén ảnh client-side và lưu Blob trực tiếp, không chuyển thành Base64
+      const compressedBlob = await compressImage(file);
+      const objectUrl = URL.createObjectURL(compressedBlob);
+      setPreview(objectUrl);
+      updateField('anhFile', compressedBlob);
+    } catch {
+      // Nếu nén lỗi thì fallback về ảnh gốc
+      const objectUrl = URL.createObjectURL(file);
+      setPreview(objectUrl);
+      updateField('anhFile', file);
+    }
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -65,9 +77,10 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
   };
 
   const clearImage = () => {
+    if (preview) URL.revokeObjectURL(preview);
     setPreview(null);
     setFileName(null);
-    updateField('anhBase64', '');
+    updateField('anhFile', null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 

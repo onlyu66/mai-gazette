@@ -38,7 +38,7 @@ export const uploadStorageImage = async (
     const response = await fetch(base64Data);
     const blob = await response.blob();
 
-    const fileName = `phong-su-${Date.now()}.png`;
+    const fileName = `phong-su-${Date.now()}-${Math.random().toString(36).slice(2)}.png`;
     const { data, error } = await supabase.storage
       .from('images')
       .upload(fileName, blob, { contentType: 'image/png' });

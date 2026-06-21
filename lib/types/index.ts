@@ -13,7 +13,7 @@ export interface LuuButFormData {
   noiDung: string;
   tacGia: string;
   quaTang: string;
-  anhBase64: string;
+  anhFile: Blob | null;
 }
 
 export interface InsertLuuButDTO {
