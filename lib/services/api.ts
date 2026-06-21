@@ -155,13 +155,15 @@ export const updateGalleryOrder = async (updates: { id: string; order_index: num
   if (!supabase) throw new Error('Supabase chưa được cấu hình.');
   if (updates.length === 0) return;
 
-  // Dùng upsert 1 lần thay vì N lần update riêng lẻ — giảm số request gửi lên server
-  const { error } = await supabase
-    .from('gallery_images')
-    .upsert(
-      updates.map(u => ({ id: u.id, order_index: u.order_index })),
-      { onConflict: 'id' }
-    );
+  // Sử dụng update thay vì upsert để tránh lỗi null constraint trên các cột khác
+  const promises = updates.map(u => 
+    supabase!.from('gallery_images').update({ order_index: u.order_index }).eq('id', u.id)
+  );
 
-  if (error) throw new Error('Cập nhật thứ tự thất bại: ' + error.message);
+  const results = await Promise.all(promises);
+  const errors = results.filter(r => r.error).map(r => r.error);
+
+  if (errors.length > 0) {
+    throw new Error('Cập nhật thứ tự thất bại: ' + errors[0]?.message);
+  }
 };

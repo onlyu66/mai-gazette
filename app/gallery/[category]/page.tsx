@@ -9,7 +9,7 @@ import { GalleryImageRecord } from '@/lib/types';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Upload, Trash2, Loader2, ImagePlus, Move, Save, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Upload, Trash2, Loader2, ImagePlus, Move, Save, X, ChevronLeft, ChevronRight, LayoutGrid, Columns, MoreVertical, CheckSquare } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTheme } from 'next-themes';
 
@@ -39,6 +39,13 @@ export default function GalleryPage() {
 
   // Preview / Lightbox
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
+
+  // View Mode
+  const [viewMode, setViewMode] = useState<'grid' | 'masonry'>('grid');
+  const [columnsCount, setColumnsCount] = useState<2 | 3 | 4>(3);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -244,13 +251,13 @@ export default function GalleryPage() {
     <div className="min-h-screen bg-rose-50/30 dark:bg-zinc-950 transition-colors duration-500">
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-md bg-white/70 dark:bg-zinc-900/70 border-b border-rose-200/40 dark:border-zinc-800">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 min-h-[64px] py-2 flex flex-wrap items-center justify-between gap-y-2">
           <Link href="/" className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-medium hover:text-rose-700 transition">
             <ArrowLeft size={18} />
             <span className="text-sm font-bold uppercase tracking-widest hidden sm:inline">Quay lại Trang Chủ</span>
           </Link>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 justify-end ml-auto">
             {isSelectionMode ? (
               <>
                 <button
@@ -288,22 +295,90 @@ export default function GalleryPage() {
               </>
             ) : (
               <>
-                {images.length > 1 && (
+                {/* Desktop Toolbar */}
+                <div className="hidden sm:flex items-center gap-2 lg:gap-3">
+                  <div className="flex items-center bg-rose-50 dark:bg-zinc-800 rounded-full p-1 border border-rose-100 dark:border-zinc-700">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`p-1.5 rounded-full transition-colors ${viewMode === 'grid' ? 'bg-white dark:bg-zinc-700 text-rose-500 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                      title="Chế độ lưới vuông"
+                    >
+                      <LayoutGrid size={16} />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('masonry')}
+                      className={`p-1.5 rounded-full transition-colors ${viewMode === 'masonry' ? 'bg-white dark:bg-zinc-700 text-rose-500 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                      title="Chế độ lưới tự do"
+                    >
+                      <Columns size={16} />
+                    </button>
+                    <div className="w-px h-4 bg-rose-200 dark:bg-zinc-600 mx-1"></div>
+                    {[2, 3, 4].map((num) => (
+                      <button
+                        key={num}
+                        onClick={() => setColumnsCount(num as 2 | 3 | 4)}
+                        className={`w-7 h-7 flex items-center justify-center rounded-full text-[10px] font-bold transition-colors ${columnsCount === num ? 'bg-white dark:bg-zinc-700 text-rose-500 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                        title={`${num} cột`}
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+                  {images.length > 0 && (
+                    <button
+                      onClick={() => setIsReorderMode(true)}
+                      className="px-4 py-2 text-xs font-bold text-indigo-500 hover:bg-indigo-50 dark:hover:bg-zinc-800 rounded-full transition"
+                    >
+                      SẮP XẾP
+                    </button>
+                  )}
+                  {images.length > 0 && (
+                    <button
+                      onClick={toggleSelectionMode}
+                      className="px-4 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-zinc-800 rounded-full transition"
+                    >
+                      CHỌN NHIỀU
+                    </button>
+                  )}
+                </div>
+
+                {/* Mobile Toolbar Dropdown */}
+                <div className="sm:hidden relative">
                   <button
-                    onClick={() => setIsReorderMode(true)}
-                    className="px-4 py-2 text-xs font-bold text-indigo-500 hover:bg-indigo-50 dark:hover:bg-zinc-800 rounded-full transition hidden sm:block"
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className={`p-2.5 rounded-full border transition-colors ${isMobileMenuOpen ? 'bg-rose-100 dark:bg-zinc-700 border-rose-200 dark:border-zinc-600 text-rose-600 dark:text-rose-400' : 'bg-rose-50 dark:bg-zinc-800 border-rose-100 dark:border-zinc-700 text-gray-500 dark:text-gray-300 hover:bg-rose-100 dark:hover:bg-zinc-700'}`}
                   >
-                    SẮP XẾP
+                    <MoreVertical size={16} />
                   </button>
-                )}
-                {images.length > 0 && (
-                  <button
-                    onClick={toggleSelectionMode}
-                    className="px-4 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-zinc-800 rounded-full transition hidden sm:block"
-                  >
-                    CHỌN NHIỀU
-                  </button>
-                )}
+
+                  {isMobileMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-rose-100 dark:border-zinc-800 overflow-hidden flex flex-col z-[100]">
+                      {images.length > 0 && (
+                        <>
+                          <button onClick={() => { setIsReorderMode(true); setIsMobileMenuOpen(false); }} className="px-4 py-3 text-left text-xs font-bold text-indigo-500 hover:bg-rose-50 dark:hover:bg-zinc-800 flex items-center gap-2">
+                            <Move size={14} /> Sắp xếp ảnh
+                          </button>
+                          <button onClick={() => { toggleSelectionMode(); setIsMobileMenuOpen(false); }} className="px-4 py-3 text-left text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-zinc-800 border-b border-rose-50 dark:border-zinc-800 flex items-center gap-2">
+                            <CheckSquare size={14} /> Chọn nhiều ảnh
+                          </button>
+                        </>
+                      )}
+                      <div className="px-4 py-3 bg-gray-50/50 dark:bg-zinc-800/30">
+                        <p className="text-[9px] uppercase tracking-wider font-bold text-gray-400 mb-2">Chế độ xem</p>
+                        <div className="flex gap-2 mb-3">
+                          <button onClick={() => setViewMode('grid')} className={`flex-1 py-1.5 flex justify-center rounded-lg transition-colors border ${viewMode === 'grid' ? 'bg-white dark:bg-zinc-700 border-rose-200 dark:border-zinc-600 text-rose-500' : 'bg-transparent border-transparent text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}><LayoutGrid size={14} /></button>
+                          <button onClick={() => setViewMode('masonry')} className={`flex-1 py-1.5 flex justify-center rounded-lg transition-colors border ${viewMode === 'masonry' ? 'bg-white dark:bg-zinc-700 border-rose-200 dark:border-zinc-600 text-rose-500' : 'bg-transparent border-transparent text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}><Columns size={14} /></button>
+                        </div>
+                        <p className="text-[9px] uppercase tracking-wider font-bold text-gray-400 mb-2">Số cột</p>
+                        <div className="flex gap-1">
+                          {[2, 3, 4].map(num => (
+                            <button key={num} onClick={() => setColumnsCount(num as 2|3|4)} className={`flex-1 py-1 rounded-lg text-xs font-bold transition-colors border ${columnsCount === num ? 'bg-white dark:bg-zinc-700 border-rose-200 dark:border-zinc-600 text-rose-500' : 'bg-transparent border-transparent text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}>{num}</button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -315,7 +390,7 @@ export default function GalleryPage() {
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-5 py-2.5 rounded-full text-xs font-bold tracking-widest transition shadow-lg shadow-rose-200 dark:shadow-none disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white p-2.5 sm:px-5 sm:py-2.5 rounded-full text-xs font-bold tracking-widest transition shadow-lg shadow-rose-200 dark:shadow-none disabled:opacity-70 disabled:cursor-not-allowed flex-shrink-0"
                 >
                   {uploading ? (
                     <>
@@ -373,16 +448,25 @@ export default function GalleryPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className={
+              (viewMode === 'grid' || isReorderMode)
+                ? (columnsCount === 2 ? "grid grid-cols-1 sm:grid-cols-2 gap-6" : 
+                   columnsCount === 3 ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" :
+                                        "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4")
+                : (columnsCount === 2 ? "columns-1 sm:columns-2 gap-6 space-y-6" :
+                   columnsCount === 3 ? "columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6" :
+                                        "columns-2 sm:columns-3 lg:columns-4 gap-4 space-y-4")
+            }>
               {(isReorderMode ? images : images.slice(0, currentPage * itemsPerPage)).map((img, index) => {
                 const isSelected = selectedIds.includes(img.id);
                 return (
                   <motion.div
                     key={img.id}
                     layout
-                    className="rounded-2xl overflow-hidden aspect-square"
+                    className={`rounded-2xl overflow-hidden ${viewMode === 'grid' || isReorderMode ? 'aspect-square' : `break-inside-avoid relative ${columnsCount === 4 ? 'mb-4' : 'mb-6'}`}`}
                   >
                     <div
+                      data-index={index}
                       draggable={isReorderMode}
                       onDragStart={(e: React.DragEvent<HTMLDivElement>) => {
                         if (isReorderMode) {
@@ -403,16 +487,47 @@ export default function GalleryPage() {
                         setDraggedItemIndex(index);
                       }}
                       onDragEnd={() => setDraggedItemIndex(null)}
+                      onTouchStart={(e) => {
+                        if (isReorderMode) {
+                          setDraggedItemIndex(index);
+                          // Prevent scrolling while dragging
+                          document.body.style.overflow = 'hidden';
+                        }
+                      }}
+                      onTouchMove={(e) => {
+                        if (!isReorderMode || draggedItemIndex === null) return;
+                        
+                        const touch = e.touches[0];
+                        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                        if (!target) return;
+                        
+                        const targetItem = target.closest('[data-index]');
+                        if (targetItem) {
+                          const targetIndex = parseInt(targetItem.getAttribute('data-index') || '-1', 10);
+                          if (targetIndex !== -1 && targetIndex !== draggedItemIndex) {
+                            const newImages = [...images];
+                            const draggedItem = newImages[draggedItemIndex];
+                            newImages.splice(draggedItemIndex, 1);
+                            newImages.splice(targetIndex, 0, draggedItem);
+                            setImages(newImages);
+                            setDraggedItemIndex(targetIndex);
+                          }
+                        }
+                      }}
+                      onTouchEnd={() => {
+                        setDraggedItemIndex(null);
+                        document.body.style.overflow = '';
+                      }}
                       onClick={() => {
                         if (isSelectionMode) toggleSelectImage(img.id);
                         else if (!isReorderMode) setPreviewIndex(index);
                       }}
-                      className={`relative group w-full h-full rounded-2xl overflow-hidden bg-rose-50 dark:bg-zinc-900 border transition-all duration-300 ${isReorderMode ? 'cursor-grab active:cursor-grabbing' : isSelectionMode ? 'cursor-pointer' : 'cursor-zoom-in'} ${isSelected ? 'border-rose-500 ring-2 ring-rose-500 shadow-xl' : 'border-rose-100 dark:border-zinc-800 shadow-sm'} ${(draggedItemIndex === index && isReorderMode) ? 'opacity-50 scale-95' : ''}`}
+                      className={`relative group w-full ${viewMode === 'grid' || isReorderMode ? 'h-full' : 'h-auto'} rounded-2xl overflow-hidden bg-rose-50 dark:bg-zinc-900 border transition-all duration-300 ${isReorderMode ? 'cursor-grab active:cursor-grabbing' : isSelectionMode ? 'cursor-pointer' : 'cursor-zoom-in'} ${isSelected ? 'border-rose-500 ring-2 ring-rose-500 shadow-xl' : 'border-rose-100 dark:border-zinc-800 shadow-sm'} ${(draggedItemIndex === index && isReorderMode) ? 'opacity-50 scale-95' : ''}`}
                     >
                       <img
                         src={img.image_url}
                         alt="Kỷ niệm"
-                        className={`w-full h-full object-cover transform transition duration-700 ${(!isSelectionMode && !isReorderMode) ? 'group-hover:scale-105' : ''} ${isSelected ? 'scale-105 opacity-80' : ''}`}
+                        className={`w-full ${viewMode === 'grid' || isReorderMode ? 'h-full object-cover' : 'h-auto object-cover'} transform transition duration-700 ${(!isSelectionMode && !isReorderMode) ? 'group-hover:scale-105' : ''} ${isSelected ? 'scale-105 opacity-80' : ''}`}
                         loading="lazy"
                       />
 
