@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { LuuButRecord, InsertLuuButDTO } from "../types";
+import { LuuButRecord, InsertLuuButDTO, GalleryImageRecord } from "../types";
 
 /**
  * Upload file Blob ảnh lên Supabase Storage.
@@ -21,8 +21,8 @@ export const uploadGalleryImage = async (blob: Blob, mimeType: string): Promise<
       .getPublicUrl(data.path);
 
     return publicUrlData.publicUrl;
-  } catch (error: any) {
-    console.error('Lỗi khi upload ảnh gallery:', error.message);
+  } catch (error: unknown) {
+    console.error('Lỗi khi upload ảnh gallery:', error instanceof Error ? error.message : String(error));
     throw error;
   }
 };
@@ -50,8 +50,8 @@ export const uploadStorageImage = async (
       .getPublicUrl(data.path);
 
     return publicUrlData.publicUrl;
-  } catch (error: any) {
-    console.error('Lỗi khi upload ảnh lên Storage:', error.message);
+  } catch (error: unknown) {
+    console.error('Lỗi khi upload ảnh lên Storage:', error instanceof Error ? error.message : String(error));
     throw error;
   }
 };
@@ -101,7 +101,7 @@ export const fetchLuuButList = async (): Promise<LuuButRecord[]> => {
 /**
  * Lấy danh sách ảnh trong Gallery
  */
-export const fetchGalleryImages = async (category?: string): Promise<any[]> => {
+export const fetchGalleryImages = async (category?: string): Promise<GalleryImageRecord[]> => {
   if (!supabase) return [];
   
   // Sort by order_index ascending, then created_at descending (newest first for default order=0)
@@ -122,7 +122,7 @@ export const fetchGalleryImages = async (category?: string): Promise<any[]> => {
 /**
  * Thêm ảnh mới vào Gallery
  */
-export const insertGalleryImage = async (category: string, imageUrl: string, orderIndex?: number): Promise<any> => {
+export const insertGalleryImage = async (category: string, imageUrl: string, orderIndex?: number): Promise<GalleryImageRecord> => {
   if (!supabase) throw new Error("Supabase chưa được cấu hình.");
 
   const { data, error } = await supabase
@@ -131,7 +131,8 @@ export const insertGalleryImage = async (category: string, imageUrl: string, ord
     .select();
 
   if (error) throw error;
-  return data ? data[0] : null;
+  if (!data || data.length === 0) throw new Error("Không thể khởi tạo bản ghi hình ảnh");
+  return data[0] as GalleryImageRecord;
 };
 
 /**

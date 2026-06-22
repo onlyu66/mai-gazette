@@ -19,7 +19,7 @@ export const useWebcamCard = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       setStreamCamera(stream);
       if (videoRef.current) videoRef.current.srcObject = stream;
-    } catch (err) {
+    } catch {
       toast.error("Không thể kết nối camera.");
     }
   };

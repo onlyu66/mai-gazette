@@ -34,7 +34,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi" className="scroll-smooth" suppressHydrationWarning>
+    <html lang="vi" className="scroll-smooth" data-scroll-behavior="smooth" suppressHydrationWarning>
       {/* Tích hợp các class font vào body */}
       <body className={`${beVietnam.variable} ${cormorant.variable} ${playfair.variable}`}>
         <Providers>

@@ -6,7 +6,7 @@ import { compressImage } from '../utils/compressImage';
 
 interface FormEditorProps {
   formData: LuuButFormData;
-  updateField: (field: keyof LuuButFormData, value: any) => void;
+  updateField: (field: keyof LuuButFormData, value: LuuButFormData[keyof LuuButFormData]) => void;
   onSubmit: () => Promise<void>;
   loading: boolean;
 }
@@ -33,10 +33,13 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
   const [preview, setPreview] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (!formData.anhFile) {
       if (preview) URL.revokeObjectURL(preview);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPreview(null);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFileName(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }

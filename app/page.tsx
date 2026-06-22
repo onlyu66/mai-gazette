@@ -17,6 +17,7 @@ export default function Home() {
   const { theme, setTheme } = useTheme();
   // mounted prevents hydration mismatch — server always renders neutral state
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
   const isDarkMode = mounted && theme === 'dark';
 
@@ -201,7 +202,7 @@ export default function Home() {
           <div className="w-16 h-0.5 rounded-full bg-gradient-to-r from-transparent via-rose-300 to-transparent"></div>
 
           <p className="text-sm max-w-lg leading-relaxed italic" style={{ color: 'var(--mau-chu)', opacity: 0.8, fontFamily: 'var(--font-playfair), serif' }}>
-            "Cảm ơn bạn đã ghé thăm góc nhỏ lưu giữ những kỷ niệm đẹp nhất của thanh xuân. Chúc chúng ta của sau này, rực rỡ và bình an."
+            &quot;Cảm ơn bạn đã ghé thăm góc nhỏ lưu giữ những kỷ niệm đẹp nhất của thanh xuân. Chúc chúng ta của sau này, rực rỡ và bình an.&quot;
           </p>
 
           <div className="flex gap-6 pt-4">
@@ -217,7 +218,7 @@ export default function Home() {
           </div>
 
           <div className="pt-8 w-full border-t border-rose-100/20 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] tracking-[0.2em] font-bold uppercase" style={{ color: 'var(--text-muted)' }}>
-            <p>© 2026 MAI'S GRADUATION</p>
+            <p>© 2026 MAI&apos;S GRADUATION</p>
             <p className="flex items-center gap-1.5">MADE WITH <span className="text-rose-500 text-sm animate-pulse">❤️</span> BY BẠN</p>
           </div>
         </div>

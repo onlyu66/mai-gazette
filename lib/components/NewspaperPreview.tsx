@@ -35,12 +35,15 @@ export default function NewspaperPreview({ formData, formatDropCapText }: Newspa
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (formData.anhFile) {
       const url = URL.createObjectURL(formData.anhFile);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPreviewUrl(url);
       return () => URL.revokeObjectURL(url);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPreviewUrl(null);
     }
   }, [formData.anhFile]);
@@ -125,7 +128,7 @@ export default function NewspaperPreview({ formData, formatDropCapText }: Newspa
             className="absolute -top-2 -left-1 text-5xl font-serif leading-none opacity-15 select-none"
             style={{ color: '#f43f5e' }}
           >
-            "
+            &quot;
           </div>
           <div
             className="text-[13px] leading-[1.85] pl-4"

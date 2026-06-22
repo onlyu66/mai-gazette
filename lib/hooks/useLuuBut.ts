@@ -24,14 +24,14 @@ export const useLuuBut = () => {
       try {
         const data = await fetchLuuButList();
         setLuuButList(data);
-      } catch (err: any) {
-        console.error("Không thể tải danh sách lưu bút:", err.message);
+      } catch (err: unknown) {
+        console.error("Không thể tải danh sách lưu bút:", err instanceof Error ? err.message : String(err));
       }
     };
     loadData();
   }, []);
 
-  const updateField = (field: keyof LuuButFormData, value: any) => {
+  const updateField = (field: keyof LuuButFormData, value: LuuButFormData[keyof LuuButFormData]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -90,8 +90,8 @@ export const useLuuBut = () => {
       });
 
       toast.success("🎉 Ấn bản trang nhất đã được lưu trữ và xuất bản thành công!");
-    } catch (error: any) {
-      toast.error(`Lỗi xuất bản: ${error.message}`);
+    } catch (error: unknown) {
+      toast.error(`Lỗi xuất bản: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setLoading(false);
     }
