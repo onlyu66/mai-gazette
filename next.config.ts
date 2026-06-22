@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  turbopack: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    root: process.cwd() as any,
+  },
 };
 
 export default nextConfig;
