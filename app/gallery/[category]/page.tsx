@@ -17,17 +17,21 @@ export default function GalleryPage() {
   const router = useRouter();
   const categoryId = params.category as string;
 
-  const [viewMode, setViewMode] = useState<'grid' | 'masonry'>(() => {
-    if (typeof window === 'undefined') return 'grid';
-    const saved = localStorage.getItem('gallery_viewMode');
-    return (saved === 'grid' || saved === 'masonry') ? saved : 'grid';
-  });
-  const [columnsCount, setColumnsCount] = useState<2 | 3 | 4>(() => {
-    if (typeof window === 'undefined') return 3;
-    const saved = localStorage.getItem('gallery_columnsCount');
-    const cols = saved ? parseInt(saved, 10) : 3;
-    return (cols === 2 || cols === 3 || cols === 4) ? cols : 3;
-  });
+  const [viewMode, setViewMode] = useState<'grid' | 'masonry'>('grid');
+  const [columnsCount, setColumnsCount] = useState<2 | 3 | 4>(4);
+
+  // Sync with localStorage on client mount to avoid hydration mismatch
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => {
+    const savedView = localStorage.getItem('gallery_viewMode');
+    if (savedView === 'grid' || savedView === 'masonry') setViewMode(savedView);
+    
+    const savedCols = localStorage.getItem('gallery_columnsCount');
+    if (savedCols) {
+      const cols = parseInt(savedCols, 10);
+      if (cols === 2 || cols === 3 || cols === 4) setColumnsCount(cols as 2 | 3 | 4);
+    }
+  }, []);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
