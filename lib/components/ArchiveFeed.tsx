@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import { Eye, EyeOff } from 'lucide-react';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LuuButRecord } from '../types';
 import { formatLuuButDate, LUU_BUT_LOAI } from '../utils/luu-but-constants';
 import LuuButLightbox from './LuuButLightbox';
@@ -32,7 +32,7 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
   const [selectedItem, setSelectedItem] = useState<LuuButRecord | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const checkScroll = () => {
+  const checkScroll = useCallback(() => {
     if (scrollRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
       const atBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight - 30;
@@ -42,7 +42,7 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
         onLoadMore();
       }
     }
-  };
+  }, [hasMore, loadingMore, onLoadMore]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -67,7 +67,7 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
       observer.disconnect();
       window.removeEventListener('resize', checkScroll);
     };
-  }, [list, searchQuery, viewMode, isUnlocked]);
+  }, [list, searchQuery, viewMode, isUnlocked, checkScroll]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -104,8 +104,8 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
         >
           {/* Left accent stripe for list mode / Top stripe for grid */}
           {isList
-            ? <div className="w-1 shrink-0 bg-gradient-to-b from-rose-200 via-rose-400 to-rose-200 opacity-60" />
-            : <div className="h-1 w-full bg-gradient-to-r from-rose-200 via-rose-400 to-rose-200 opacity-60" />
+            ? <div className="w-1 shrink-0 bg-linear-to-b from-rose-200 via-rose-400 to-rose-200 opacity-60" />
+            : <div className="h-1 w-full bg-linear-to-r from-rose-200 via-rose-400 to-rose-200 opacity-60" />
           }
 
           {/* Corner petal (grid only) */}
@@ -145,7 +145,7 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
 
             {/* Ảnh kỷ niệm (grid mode only — list mode shows thumbnail on the left) */}
             {!isList && item.anh_url && (
-              <div className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden border border-rose-100 bg-rose-50/30">
+              <div className="relative w-full aspect-16/10 rounded-2xl overflow-hidden border border-rose-100 bg-rose-50/30">
                 <Image
                   src={item.anh_url}
                   alt="Ảnh kỷ niệm"
@@ -201,7 +201,7 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
             )}
           </div>
 
-          {!isList && <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-rose-200 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />}
+          {!isList && <div className="h-0.5 w-full bg-linear-to-r from-transparent via-rose-200 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />}
         </motion.div>
       );
     });
@@ -316,7 +316,7 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -354,7 +354,7 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
                         }`}
                       autoFocus
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleUnlock(e as any);
+                        if (e.key === 'Enter') handleUnlock(e);
                         if (e.key === 'Escape') {
                           setShowPasswordModal(false);
                           setError(false);
