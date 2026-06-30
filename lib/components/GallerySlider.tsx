@@ -69,7 +69,7 @@ export default function GallerySlider() {
             >
               {covers[item.id] ? (
                 <>
-                  <Image src={covers[item.id]} alt={item.label} fill sizes="(max-width: 768px) 100vw, 208px" className="object-cover opacity-90 transition duration-500 hover:scale-110" />
+                  <Image src={covers[item.id]} alt={item.label} fill sizes="(max-width: 768px) 100vw, 208px" className="object-cover opacity-90 transition duration-500 hover:scale-110" priority={idx < 2} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
                   {/* Decorative dot */}
                   <div className="w-1.5 h-1.5 rounded-full bg-white/80 absolute top-4 right-4 z-10 shadow-[0_0_8px_rgba(255,255,255,0.8)] animate-pulse" />
