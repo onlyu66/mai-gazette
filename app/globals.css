@@ -186,3 +186,29 @@ body {
 .chay-ngang:hover {
   animation-play-state: paused;
 }
+
+/* Smart break CSS */
+.smart-break {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.smart-break .no-spaces {
+  word-break: break-all !important;
+  overflow-wrap: anywhere !important;
+}
+
+.smart-break a[href*="://"],
+.smart-break a[href*="www."],
+.smart-break code,
+.smart-break pre {
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+.smart-break p:not(.no-spaces),
+.smart-break div:not(.no-spaces):not(pre),
+.smart-break span:not(.no-spaces) {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}

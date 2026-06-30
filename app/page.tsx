@@ -163,13 +163,13 @@ export default function Home() {
               Mỗi lời chúc của bạn sẽ được lưu lại mãi mãi trong cuốn lưu bút kỷ yếu đặc biệt này 🌸
             </p>
           </div>
-          <div className="grid lg:grid-cols-12 gap-12">
+          <div className="grid lg:grid-cols-12 gap-12 w-full max-w-full">
             <motion.div 
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.6, ease: "easeOut" }}
-              className="lg:col-span-5"
+              className="lg:col-span-5 min-w-0 w-full"
             >
               <FormEditor formData={formData} updateField={updateField} onSubmit={submitLuuBut} loading={loading} />
             </motion.div>
@@ -178,7 +178,7 @@ export default function Home() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-              className="lg:col-span-7 flex justify-center items-start lg:sticky lg:top-24"
+              className="lg:col-span-7 min-w-0 w-full flex justify-center items-start lg:sticky lg:top-24"
             >
               <NewspaperPreview formData={formData} formatDropCapText={formatDropCapText} />
             </motion.div>

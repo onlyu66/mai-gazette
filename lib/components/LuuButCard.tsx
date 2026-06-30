@@ -57,7 +57,7 @@ export default function LuuButCard({
 
   return (
     <div
-      className="w-full relative rounded-3xl overflow-hidden flex flex-col select-none"
+      className="w-full min-w-0 relative rounded-3xl overflow-hidden flex flex-col select-none smart-break"
       style={{
         background: 'var(--bg-card-gradient)',
         boxShadow: '0 20px 60px rgba(0,0,0,0.06), 0 0 0 1px var(--border-card)',
@@ -75,7 +75,7 @@ export default function LuuButCard({
       </div>
 
       {/* Card body */}
-      <div className="p-6 md:p-8 space-y-5 flex-1">
+      <div className="p-6 md:p-8 space-y-5 flex-1 min-w-0">
 
         {/* Masthead */}
         <div className="text-center space-y-1.5 pb-4 border-b" style={{ borderColor: 'var(--border-section)' }}>
@@ -155,7 +155,7 @@ export default function LuuButCard({
             &quot;
           </div>
           <div
-            className="text-[13px] leading-[1.85] pl-4"
+            className="text-[13px] leading-[1.85] pl-4 smart-break"
             style={{ fontFamily: 'var(--font-playfair), serif', fontStyle: 'italic', color: 'var(--mau-chu)', opacity: 0.85 }}
           >
             {renderContent ?? (
@@ -173,10 +173,10 @@ export default function LuuButCard({
         </div>
 
         {/* Footer */}
-        <div className="pt-4 border-t flex justify-between items-end gap-2" style={{ borderColor: 'var(--border-section)' }}>
-          <div className="space-y-0.5">
+        <div className="pt-4 border-t flex justify-between items-end gap-2 smart-break" style={{ borderColor: 'var(--border-section)' }}>
+          <div className="space-y-0.5 min-w-0 flex-1">
             <p className="text-[9px] uppercase tracking-widest font-mono" style={{ color: 'var(--text-muted)' }}>Người gửi</p>
-            <p className="font-nghe-thuat italic font-bold text-base md:text-lg" style={{ color: 'var(--text-heading)' }}>
+            <p className="font-nghe-thuat italic font-bold text-base md:text-lg smart-break" style={{ color: 'var(--text-heading)' }}>
               {tacGia || 'Người bạn thân mến'}
             </p>
           </div>

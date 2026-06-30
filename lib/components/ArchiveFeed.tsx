@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import Image from 'next/image';
 import { Eye, EyeOff } from 'lucide-react';
+import Image from 'next/image';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LuuButRecord } from '../types';
 import { formatLuuButDate, LUU_BUT_LOAI } from '../utils/luu-but-constants';
@@ -55,7 +55,7 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
     const observer = new ResizeObserver(() => {
       checkScroll();
     });
-    
+
     // Theo dõi chính thẻ cuộn và nội dung bên trong nó
     observer.observe(el);
     if (el.firstElementChild) {
@@ -160,7 +160,7 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
             {/* Nội dung */}
             <div className={`relative min-w-0 overflow-hidden ${isList ? 'flex-1' : 'flex-1'} pl-3`}>
               <p
-                className="text-sm leading-relaxed"
+                className="text-sm leading-relaxed smart-break"
                 style={{
                   fontFamily: 'var(--font-playfair), serif',
                   fontStyle: 'italic',
@@ -180,21 +180,24 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
 
             {/* Footer */}
             {!isList && (
-              <div className="pt-2 border-t border-rose-100/60 flex justify-between items-center mt-auto shrink-0">
+              <div className="pt-2 border-t border-rose-100/60 flex justify-between items-center mt-auto shrink-0 smart-break gap-2">
                 {item.qua_tang && (
-                  <span className="text-xs text-rose-400 font-medium">{item.qua_tang}</span>
+                  <span className="text-xs text-rose-400 font-medium whitespace-nowrap">{item.qua_tang}</span>
                 )}
-                <span className="font-nghe-thuat italic font-bold text-rose-600 text-sm ml-auto">
-                  — {item.tac_gia || 'Ẩn danh'}
-                </span>
+                <div className='flex gap-1 items-center'>
+                  <span className='font-nghe-thuat italic font-bold text-rose-600 text-sm'>—</span>
+                  <span className="font-nghe-thuat italic font-bold text-rose-600 text-sm ml-auto smart-break">
+                    {item.tac_gia || 'Ẩn danh'}
+                  </span>
+                </div>
               </div>
             )}
 
             {/* List mode — author column (always visible, shrink-0) */}
             {isList && (
-              <div className="shrink-0 pl-2 flex flex-col justify-center text-right">
+              <div className="shrink-0 pl-2 flex flex-col justify-center text-right smart-break max-w-[120px] sm:max-w-[180px]">
                 {item.qua_tang && <span className="text-[10px] sm:hidden text-rose-400 font-medium">{item.qua_tang}</span>}
-                <span className="font-nghe-thuat italic font-bold text-rose-500 text-sm ml-auto">
+                <span className="font-nghe-thuat italic font-bold text-rose-500 text-sm ml-auto smart-break">
                   — {item.tac_gia || 'Ẩn danh'}
                 </span>
               </div>
@@ -464,8 +467,8 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
                 onClick={() => setViewMode('grid2')}
                 title="Lưới 2 cột"
                 className={`p-2 rounded-xl transition-all ${viewMode === 'grid2' || viewMode === 'grid3'
-                    ? 'bg-white dark:bg-rose-900/50 shadow text-rose-500' // Active base
-                    : 'text-rose-300 dark:text-rose-300/50 hover:text-rose-400' // Inactive base
+                  ? 'bg-white dark:bg-rose-900/50 shadow text-rose-500' // Active base
+                  : 'text-rose-300 dark:text-rose-300/50 hover:text-rose-400' // Inactive base
                   } ${viewMode === 'grid3'
                     ? 'sm:bg-transparent sm:dark:bg-transparent sm:shadow-none sm:text-rose-300 sm:dark:text-rose-300/50 sm:hover:text-rose-400' // Inactive override for desktop
                     : ''
@@ -504,35 +507,35 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
             className={`overflow-y-auto rounded-2xl pr-1 pt-2 ${!isUnlocked ? 'pointer-events-auto' : ''}`}
             style={{ maxHeight: 'calc(100vh - 220px)' }}
           >
-          {filteredList.length === 0 ? (
-            <div className="text-center py-20 space-y-3">
-              <div className="text-5xl opacity-30 animate-gio-thoi inline-block">🌸</div>
-              <p className="text-sm text-rose-300 font-medium">
-                {searchQuery ? 'Không tìm thấy kết quả nào phù hợp!' : 'Chưa có trang lưu bút nào — hãy là người đầu tiên gửi lời chúc nhé!'}
-              </p>
-            </div>
-          ) : (
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={viewMode}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className={`pb-6 ${viewMode === 'grid3' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5' :
+            {filteredList.length === 0 ? (
+              <div className="text-center py-20 space-y-3">
+                <div className="text-5xl opacity-30 animate-gio-thoi inline-block">🌸</div>
+                <p className="text-sm text-rose-300 font-medium">
+                  {searchQuery ? 'Không tìm thấy kết quả nào phù hợp!' : 'Chưa có trang lưu bút nào — hãy là người đầu tiên gửi lời chúc nhé!'}
+                </p>
+              </div>
+            ) : (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={viewMode}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className={`pb-6 ${viewMode === 'grid3' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5' :
                     viewMode === 'grid2' ? 'grid grid-cols-1 md:grid-cols-2 gap-6' :
                       'flex flex-col gap-4'
-                  }`}
-              >
-                {renderedList}
-              </motion.div>
-            </AnimatePresence>
-          )}
+                    }`}
+                >
+                  {renderedList}
+                </motion.div>
+              </AnimatePresence>
+            )}
           </div>
-          
+
           {/* Lớp phủ mờ (Fade Overlay) ở dưới cùng */}
           {list.length > 0 && (
-            <div 
+            <div
               className={`pointer-events-none absolute bottom-0 left-0 right-2 h-28 rounded-b-2xl transition-opacity duration-700 ${isBottom || !isUnlocked ? 'opacity-0' : 'opacity-100'}`}
               style={{
                 background: 'linear-gradient(to bottom, transparent, var(--bg-nen) 90%)'
