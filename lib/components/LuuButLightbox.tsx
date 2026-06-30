@@ -99,14 +99,14 @@ export default function LuuButLightbox({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+            className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center sm:p-4"
             style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(12px)' }}
             onClick={onClose}
           >
             {/* Close button — floating outside the card, top-right of viewport */}
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all text-white"
+              className="absolute top-3 right-3 z-20 w-9 h-9 rounded-full flex items-center justify-center transition-all text-white"
               style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)' }}
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.25)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.15)')}
@@ -172,7 +172,7 @@ export default function LuuButLightbox({
                 dragElastic={0.2}
                 dragDirectionLock
                 onDragEnd={handleDragEnd}
-                className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl touch-pan-y cursor-grab active:cursor-grabbing"
+                className="relative w-full sm:max-w-lg max-h-[92vh] sm:max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl touch-pan-y cursor-grab active:cursor-grabbing"
                 style={{ boxShadow: '0 40px 100px rgba(0,0,0,0.6)' }}
               >
                 <LuuButCard
