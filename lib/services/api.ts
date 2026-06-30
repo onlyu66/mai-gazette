@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { LuuButRecord, InsertLuuButDTO, GalleryImageRecord } from "../types";
+import { LUU_BUT_LOAI } from "../utils/luu-but-constants";
 
 /**
  * Upload file Blob ảnh lên Supabase Storage.
@@ -104,15 +105,36 @@ export const fetchLuuButList = async (): Promise<LuuButRecord[]> => {
 export const fetchLuuButPage = async (
   page: number,
   pageSize = 12,
+  searchQuery?: string,
 ): Promise<{ records: LuuButRecord[]; hasMore: boolean }> => {
   if (!supabase) return { records: [], hasMore: false };
 
   const from = page * pageSize;
   const to = from + pageSize - 1;
 
-  const { data, error, count } = await supabase
+  let query = supabase
     .from("luu_but")
-    .select("*", { count: "exact" })
+    .select("*", { count: "exact" });
+
+  if (searchQuery) {
+    const term = searchQuery.toLowerCase();
+    
+    // Find matching slugs from LUU_BUT_LOAI
+    const matchingSlugs = Object.entries(LUU_BUT_LOAI)
+      .filter(([slug, loai]) => 
+        loai.label.toLowerCase().includes(term) || slug.toLowerCase().includes(term)
+      )
+      .map(([slug]) => slug);
+
+    const tieuDeCondition = matchingSlugs.length > 0 ? `tieu_de.in.(${matchingSlugs.join(',')}),` : '';
+    
+    // Combine search conditions
+    query = query.or(
+      `tac_gia.ilike.%${term}%,noi_dung.ilike.%${term}%,qua_tang.ilike.%${term}%,${tieuDeCondition}tieu_de.ilike.%${term}%`
+    );
+  }
+
+  const { data, error, count } = await query
     .order("created_at", { ascending: false })
     .range(from, to);
 

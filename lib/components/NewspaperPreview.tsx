@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { memo, ReactNode } from 'react';
 import { LuuButFormData } from '../types';
 import LuuButCard from './LuuButCard';
 
@@ -7,7 +7,7 @@ interface NewspaperPreviewProps {
   formatDropCapText: (text: string) => ReactNode;
 }
 
-export default function NewspaperPreview({ formData, formatDropCapText }: NewspaperPreviewProps) {
+const NewspaperPreview = memo(function NewspaperPreview({ formData, formatDropCapText }: NewspaperPreviewProps) {
   return (
     <LuuButCard
       tieuDe={formData.tieuDe}
@@ -23,4 +23,6 @@ export default function NewspaperPreview({ formData, formatDropCapText }: Newspa
       }
     />
   );
-}
+});
+
+export default NewspaperPreview;

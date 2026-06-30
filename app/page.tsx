@@ -21,7 +21,7 @@ export default function Home() {
   useEffect(() => setMounted(true), []);
   const isDarkMode = mounted && theme === 'dark';
 
-  const { formData, luuButList, loading, hasMore, loadingMore, loadMore, updateField, formatDropCapText, submitLuuBut } = useLuuBut();
+  const { formData, luuButList, loading, hasMore, loadingMore, loadMore, updateField, formatDropCapText, submitLuuBut, searchLuuBut } = useLuuBut();
 
   // Parallax scroll
   const { scrollY } = useScroll();
@@ -202,6 +202,7 @@ export default function Home() {
           hasMore={hasMore} 
           loadingMore={loadingMore} 
           onLoadMore={loadMore} 
+          onSearch={searchLuuBut}
         />
       </section>
 

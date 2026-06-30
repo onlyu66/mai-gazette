@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LuuButRecord } from '../types';
 import { formatLuuButDate, LUU_BUT_LOAI } from '../utils/luu-but-constants';
 import LuuButLightbox from './LuuButLightbox';
@@ -10,6 +10,7 @@ interface ArchiveFeedProps {
   hasMore?: boolean;
   loadingMore?: boolean;
   onLoadMore?: () => Promise<LuuButRecord[] | null | void> | void;
+  onSearch?: (query: string) => void;
 }
 
 function getLoai(tieu_de: string) {
@@ -17,7 +18,7 @@ function getLoai(tieu_de: string) {
   return { label: loai.label, emoji: loai.emoji, color: loai.twColor };
 }
 
-export default function ArchiveFeed({ list, hasMore = false, loadingMore = false, onLoadMore }: ArchiveFeedProps) {
+export default function ArchiveFeed({ list, hasMore = false, loadingMore = false, onLoadMore, onSearch }: ArchiveFeedProps) {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [password, setPassword] = useState('');
@@ -69,17 +70,140 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearchQuery(searchInput);
+      if (onSearch) onSearch(searchInput);
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchInput]);
+  }, [searchInput, onSearch]);
 
-  const filteredList = list.filter((item) => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    const authorMatch = item.tac_gia?.toLowerCase().includes(query) || false;
-    const contentMatch = item.noi_dung?.toLowerCase().includes(query) || false;
-    return authorMatch || contentMatch;
-  });
+  // Bỏ filter client-side, hiển thị trực tiếp danh sách được truyền vào
+  const filteredList = list;
+
+  const renderedList = useMemo(() => {
+    return filteredList.map((item, index) => {
+      const loai = getLoai(item.tieu_de);
+      const isList = viewMode === 'list';
+      const isGrid3 = viewMode === 'grid3';
+      return (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.4, delay: (index % 9) * 0.05, type: "spring", bounce: 0.25 }}
+          key={item.id}
+          onClick={() => setSelectedItem(item)}
+          className={`relative rounded-3xl overflow-hidden group cursor-pointer transition-all duration-500 hover:shadow-xl hover:shadow-rose-100/60 dark:hover:shadow-rose-900/20 ${isList ? 'flex flex-row items-stretch hover:-translate-x-0.5' : 'flex flex-col hover:-translate-y-1'
+            } ${!isUnlocked ? 'pointer-events-none' : ''}`}
+          style={{
+            background: 'var(--bg-card-gradient)',
+            boxShadow: '0 4px 20px rgba(244,114,182,0.08), 0 0 0 1px var(--border-card)',
+            maxHeight: isList ? '88px' : isGrid3 ? '300px' : '360px',
+            height: isList ? '88px' : 'auto',
+          }}
+        >
+          {/* Left accent stripe for list mode / Top stripe for grid */}
+          {isList
+            ? <div className="w-1 shrink-0 bg-gradient-to-b from-rose-200 via-rose-400 to-rose-200 opacity-60" />
+            : <div className="h-1 w-full bg-gradient-to-r from-rose-200 via-rose-400 to-rose-200 opacity-60" />
+          }
+
+          {/* Corner petal (grid only) */}
+          {!isList && (
+            <div className="pointer-events-none absolute top-3 right-3 opacity-10 rotate-12 select-none">
+              <div className="text-2xl animate-gio-thoi" style={{ animationDelay: `${index * 0.2}s` }}>🌸</div>
+            </div>
+          )}
+
+          {/* Thumbnail image (list mode — left side) */}
+          {isList && item.anh_url && (
+            <div className="relative w-24 sm:w-28 md:w-36 shrink-0 overflow-hidden">
+              <Image
+                src={item.anh_url}
+                alt="Ảnh kỷ niệm"
+                fill
+                priority={index < 4}
+                sizes="144px"
+                className="object-cover group-hover:scale-105 transition duration-700"
+              />
+            </div>
+          )}
+
+          <div className={`p-3 sm:p-4 flex gap-2 sm:gap-3 flex-1 min-w-0 overflow-hidden ${isList ? 'flex-row items-center' : 'flex-col gap-3'
+            }`}>
+            {/* Meta row */}
+            <div className={`flex flex-wrap gap-2 items-center ${isList ? '' : 'justify-between'}`}>
+              <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border ${loai.color}`}>
+                {loai.emoji} {loai.label}
+              </span>
+              {item.created_at && !isList && (
+                <span className="text-[9px] font-mono text-rose-300">
+                  {formatLuuButDate(item.created_at)}
+                </span>
+              )}
+            </div>
+
+            {/* Ảnh kỷ niệm (grid mode only — list mode shows thumbnail on the left) */}
+            {!isList && item.anh_url && (
+              <div className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden border border-rose-100 bg-rose-50/30">
+                <Image
+                  src={item.anh_url}
+                  alt="Ảnh kỷ niệm"
+                  fill
+                  priority={index < 3}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover group-hover:scale-105 transition duration-700"
+                />
+              </div>
+            )}
+
+            {/* Nội dung */}
+            <div className={`relative min-w-0 overflow-hidden ${isList ? 'flex-1' : 'flex-1'} pl-3`}>
+              <p
+                className="text-sm leading-relaxed"
+                style={{
+                  fontFamily: 'var(--font-playfair), serif',
+                  fontStyle: 'italic',
+                  color: 'var(--mau-chu)',
+                  opacity: 0.85,
+                  display: '-webkit-box',
+                  WebkitBoxOrient: 'vertical',
+                  WebkitLineClamp: isList ? 2 : isGrid3 ? 5 : 6,
+                  overflow: 'hidden',
+                }}
+              >
+                <span className="text-rose-200 text-xl font-serif not-italic select-none align-middle mr-0.5">&ldquo;</span>
+                {item.noi_dung || <span className="text-rose-200 italic">Không có nội dung</span>}
+                <span className="text-rose-200 text-xl font-serif not-italic select-none align-middle ml-0.5">&rdquo;</span>
+              </p>
+            </div>
+
+            {/* Footer */}
+            {!isList && (
+              <div className="pt-2 border-t border-rose-100/60 flex justify-between items-center mt-auto shrink-0">
+                {item.qua_tang && (
+                  <span className="text-xs text-rose-400 font-medium">{item.qua_tang}</span>
+                )}
+                <span className="font-nghe-thuat italic font-bold text-rose-600 text-sm ml-auto">
+                  — {item.tac_gia || 'Ẩn danh'}
+                </span>
+              </div>
+            )}
+
+            {/* List mode — author column (always visible, shrink-0) */}
+            {isList && (
+              <div className="shrink-0 pl-2 flex flex-col justify-center text-right">
+                {item.qua_tang && <span className="text-[10px] sm:hidden text-rose-400 font-medium">{item.qua_tang}</span>}
+                <span className="font-nghe-thuat italic font-bold text-rose-500 text-sm ml-auto">
+                  — {item.tac_gia || 'Ẩn danh'}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {!isList && <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-rose-200 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />}
+        </motion.div>
+      );
+    });
+  }, [filteredList, viewMode, isUnlocked]);
 
   const handleUnlock = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -280,7 +404,7 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
       <div className={`transition-all duration-700 ${!isUnlocked && list.length > 0 ? 'pointer-events-none opacity-40 select-none' : ''}`}>
 
         {/* Search Bar + View Mode — thanh điều khiển trên cùng */}
-        {list.length > 0 && (
+        {(list.length > 0 || searchInput !== '' || searchQuery !== '') && (
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-4">
             {/* Search input */}
             <div className="relative flex-1 w-full">
@@ -383,117 +507,7 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
                       'flex flex-col gap-4'
                   }`}
               >
-                {filteredList.map((item, index) => {
-                  const loai = getLoai(item.tieu_de);
-                  const isList = viewMode === 'list';
-                  return (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, margin: "-50px" }}
-                      transition={{ duration: 0.4, delay: (index % 9) * 0.05, type: "spring", bounce: 0.25 }}
-                      key={item.id}
-                      onClick={() => setSelectedItem(item)}
-                      className={`relative rounded-3xl overflow-hidden group cursor-pointer transition-all duration-500 hover:shadow-xl hover:shadow-rose-100/60 dark:hover:shadow-rose-900/20 ${isList ? 'flex flex-row items-stretch hover:-translate-x-0.5' : 'flex flex-col hover:-translate-y-1'
-                        } ${!isUnlocked ? 'pointer-events-none' : ''}`}
-                      style={{
-                        background: 'var(--bg-card-gradient)',
-                        boxShadow: '0 4px 20px rgba(244,114,182,0.08), 0 0 0 1px var(--border-card)',
-                      }}
-                    >
-                      {/* Left accent stripe for list mode / Top stripe for grid */}
-                      {isList
-                        ? <div className="w-1 shrink-0 bg-gradient-to-b from-rose-200 via-rose-400 to-rose-200 opacity-60" />
-                        : <div className="h-1 w-full bg-gradient-to-r from-rose-200 via-rose-400 to-rose-200 opacity-60" />
-                      }
-
-                      {/* Corner petal (grid only) */}
-                      {!isList && (
-                        <div className="pointer-events-none absolute top-3 right-3 opacity-10 rotate-12 select-none">
-                          <div className="text-2xl animate-gio-thoi" style={{ animationDelay: `${index * 0.2}s` }}>🌸</div>
-                        </div>
-                      )}
-
-                      {/* Thumbnail image (list mode — left side) */}
-                      {isList && item.anh_url && (
-                        <div className="relative w-24 sm:w-28 md:w-36 shrink-0 overflow-hidden">
-                          <Image
-                            src={item.anh_url}
-                            alt="Ảnh kỷ niệm"
-                            fill
-                            priority={index < 4}
-                            sizes="144px"
-                            className="object-cover group-hover:scale-105 transition duration-700"
-                          />
-                        </div>
-                      )}
-
-                      <div className={`p-3 sm:p-4 flex gap-2 sm:gap-3 flex-1 ${isList ? 'flex-col sm:flex-row justify-center sm:items-center' : 'flex-col gap-4'
-                        }`}>
-                        {/* Meta row */}
-                        <div className={`flex flex-wrap gap-2 items-center ${isList ? '' : 'justify-between'}`}>
-                          <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border ${loai.color}`}>
-                            {loai.emoji} {loai.label}
-                          </span>
-                          {item.created_at && !isList && (
-                            <span className="text-[9px] font-mono text-rose-300">
-                              {formatLuuButDate(item.created_at)}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Ảnh kỷ niệm (grid mode only — list mode shows thumbnail on the left) */}
-                        {!isList && item.anh_url && (
-                          <div className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden border border-rose-100 bg-rose-50/30">
-                            <Image
-                              src={item.anh_url}
-                              alt="Ảnh kỷ niệm"
-                              fill
-                              priority={index < 3}
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                              className="object-cover group-hover:scale-105 transition duration-700"
-                            />
-                          </div>
-                        )}
-
-                        {/* Nội dung */}
-                        <div className="relative pl-3 flex-1">
-                          <span className="absolute -top-1 -left-1 text-rose-200 text-2xl font-serif leading-none select-none">&quot;</span>
-                          <p
-                            className={`text-sm leading-relaxed ${isList ? 'line-clamp-2' : 'line-clamp-4'}`}
-                            style={{ fontFamily: 'var(--font-playfair), serif', fontStyle: 'italic', color: 'var(--mau-chu)', opacity: 0.85 }}
-                          >
-                            {item.noi_dung || <span className="text-rose-200 italic">Không có nội dung</span>}
-                          </p>
-                        </div>
-
-                        {/* Footer */}
-                        {!isList && (
-                          <div className="pt-3 border-t border-rose-100/60 flex justify-between items-center mt-auto">
-                            {item.qua_tang && (
-                              <span className="text-xs text-rose-400 font-medium">{item.qua_tang}</span>
-                            )}
-                            <span className="font-nghe-thuat italic font-bold text-rose-600 text-sm ml-auto">
-                              — {item.tac_gia || 'Ẩn danh'}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* List mode — author inline (on mobile, it wraps) */}
-                        {isList && (
-                          <div className="flex items-center justify-between sm:justify-end mt-2 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-0 border-rose-100/30 sm:ml-auto sm:pl-3 shrink-0">
-                            {item.qua_tang && <span className="text-[10px] sm:hidden text-rose-400 font-medium">{item.qua_tang}</span>}
-                            <span className="font-nghe-thuat italic font-bold text-rose-500 text-sm ml-auto">
-                              — {item.tac_gia || 'Ẩn danh'}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {!isList && <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-rose-200 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />}
-                    </motion.div>
-                  );
-                })}
+                {renderedList}
               </motion.div>
             </AnimatePresence>
           )}

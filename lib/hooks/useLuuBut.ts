@@ -23,12 +23,14 @@ export const useLuuBut = () => {
     anhFile: null,
   });
 
-  // Load first page on mount
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Load first page on mount or when searchQuery changes
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const { records, hasMore: more } = await fetchLuuButPage(0, PAGE_SIZE);
+        const { records, hasMore: more } = await fetchLuuButPage(0, PAGE_SIZE, searchQuery);
         setLuuButList(records);
         setHasMore(more);
         pageRef.current = 0;
@@ -39,6 +41,10 @@ export const useLuuBut = () => {
       }
     };
     loadData();
+  }, [searchQuery]);
+
+  const searchLuuBut = useCallback((query: string) => {
+    setSearchQuery(query);
   }, []);
 
   const loadMore = useCallback(async () => {
@@ -46,7 +52,7 @@ export const useLuuBut = () => {
     setLoadingMore(true);
     try {
       const nextPage = pageRef.current + 1;
-      const { records, hasMore: more } = await fetchLuuButPage(nextPage, PAGE_SIZE);
+      const { records, hasMore: more } = await fetchLuuButPage(nextPage, PAGE_SIZE, searchQuery);
       setLuuButList((prev) => [...prev, ...records]);
       setHasMore(more);
       pageRef.current = nextPage;
@@ -135,5 +141,6 @@ export const useLuuBut = () => {
     updateField,
     formatDropCapText,
     submitLuuBut,
+    searchLuuBut,
   };
 };

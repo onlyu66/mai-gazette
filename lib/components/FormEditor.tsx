@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ChangeEvent, useRef, useState, useEffect } from 'react';
+import React, { ChangeEvent, useRef, useState, useEffect, useCallback } from 'react';
 import { LuuButFormData } from '../types';
 import { compressImage } from '../utils/compressImage';
 
@@ -33,6 +33,31 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
   const [preview, setPreview] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
+  // ── Local state for text inputs: decouples typing from the heavy preview re-render ──
+  const [localNoiDung, setLocalNoiDung] = useState(formData.noiDung);
+  const [localTacGia, setLocalTacGia] = useState(formData.tacGia);
+  const noiDungTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tacGiaTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Push to parent only 300ms after user stops typing → preview updates without blocking keystrokes
+  const handleNoiDungChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setLocalNoiDung(val);
+    if (noiDungTimer.current) clearTimeout(noiDungTimer.current);
+    noiDungTimer.current = setTimeout(() => updateField('noiDung', val), 300);
+  }, [updateField]);
+
+  const handleTacGiaChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setLocalTacGia(val);
+    if (tacGiaTimer.current) clearTimeout(tacGiaTimer.current);
+    tacGiaTimer.current = setTimeout(() => updateField('tacGia', val), 300);
+  }, [updateField]);
+
+  // Sync local when parent resets form (e.g. after successful submit)
+  useEffect(() => { setLocalNoiDung(formData.noiDung); }, [formData.noiDung]);
+  useEffect(() => { setLocalTacGia(formData.tacGia); }, [formData.tacGia]);
+
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (!formData.anhFile) {
@@ -48,19 +73,16 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
   const processFile = async (file: File) => {
     if (!file.type.startsWith('image/')) return;
     if (file.size > 10 * 1024 * 1024) {
-      // Giới hạn 10MB — sẽ được nén xuống ~300KB trước khi xử lý
       alert('Ảnh quá lớn! Vui lòng chọn ảnh dưới 10MB.');
       return;
     }
     setFileName(file.name);
     try {
-      // Nén ảnh client-side và lưu Blob trực tiếp, không chuyển thành Base64
       const compressedBlob = await compressImage(file);
       const objectUrl = URL.createObjectURL(compressedBlob);
       setPreview(objectUrl);
       updateField('anhFile', compressedBlob);
     } catch {
-      // Nếu nén lỗi thì fallback về ảnh gốc
       const objectUrl = URL.createObjectURL(file);
       setPreview(objectUrl);
       updateField('anhFile', file);
@@ -86,6 +108,7 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
     updateField('anhFile', null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
+
 
   return (
     <div
@@ -227,14 +250,14 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
           <div className="relative">
             <textarea
               rows={6}
-              value={formData.noiDung}
-              onChange={(e) => updateField('noiDung', e.target.value)}
+              value={localNoiDung}
+              onChange={handleNoiDungChange}
               placeholder="Hãy để lại những lời chúc ấm áp, kỷ niệm đáng nhớ hoặc những điều bạn muốn nói với Mai nhé... 🌸"
               className="w-full px-4 py-3.5 rounded-2xl text-sm leading-relaxed resize-none border border-transparent focus:outline-none focus:ring-2 focus:ring-rose-300/50 focus:border-rose-300 placeholder:text-rose-200 transition-all duration-200"
               style={{ fontFamily: 'var(--font-playfair), serif', background: 'var(--khung-kinh)', color: 'var(--mau-chu)' }}
             />
             <span className="absolute bottom-3 right-3.5 text-[9px] text-rose-200 font-mono">
-              {formData.noiDung.length} ký tự
+              {localNoiDung.length} ký tự
             </span>
           </div>
         </div>
@@ -287,8 +310,8 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-300 text-sm">✍️</span>
             <input
               type="text"
-              value={formData.tacGia}
-              onChange={(e) => updateField('tacGia', e.target.value)}
+              value={localTacGia}
+              onChange={handleTacGiaChange}
               placeholder="Bạn là ai? Để lại dấu ấn nhé..."
               className="w-full pl-10 pr-4 py-3.5 rounded-2xl text-sm border border-transparent focus:outline-none focus:ring-2 focus:ring-rose-300/50 focus:border-rose-300 placeholder:text-rose-200 transition-all duration-200"
               style={{ background: 'var(--khung-kinh)', color: 'var(--mau-chu)' }}

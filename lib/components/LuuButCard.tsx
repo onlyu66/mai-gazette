@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { formatLuuButDate, LUU_BUT_LOAI, QUA_TANG_COLORS } from '../utils/luu-but-constants';
 import WashiRibbon from './WashiRibbon';
 
@@ -40,8 +40,20 @@ export default function LuuButCard({
   const quaTangEmoji = quaTang?.split(' ')[0] ?? '';
   const quaTangText = quaTang?.replace(/^\S+\s/, '') ?? '';
 
-  // Resolve image: prefer live File blob over saved URL
-  const imgSrc = anhFile ? URL.createObjectURL(anhFile) : anhUrl;
+  // Optimize image preview rendering to avoid lag during typing
+  const [objectUrl, setObjectUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!anhFile) {
+      setObjectUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(anhFile);
+    setObjectUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [anhFile]);
+
+  const imgSrc = objectUrl || anhUrl;
 
   return (
     <div
