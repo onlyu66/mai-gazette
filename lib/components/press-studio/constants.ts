@@ -1,4 +1,4 @@
-import { Theme, SlotCount } from './types';
+import { SlotCount, Theme } from './types';
 
 export function hexToRgba(hex: string, alpha: number) {
   const h = hex.replace('#', '');
@@ -162,7 +162,7 @@ export const ANIMATION_CSS = `
 .pb-sweep { position: absolute; top: -40%; left: -10%; width: 55%; height: 180%;
   background: linear-gradient(100deg, transparent 10%, rgba(255,255,255,0.75) 50%, transparent 90%);
   animation: pb-sweep-move 3.6s ease-in-out infinite alternate; pointer-events: none; }
-.pb-sweep.is-overlay { mix-blend-mode: overlay; }
+.pb-sweep.is-overlay { mix-blend-mode: overlay; opacity: 0.75; }
 .pb-sweep.is-screen { mix-blend-mode: screen; opacity: 0.25; }
 .pb-mote { position: absolute; pointer-events: none; animation: pb-mote-drift 5.5s ease-in infinite; will-change: transform, opacity; filter: drop-shadow(0 0 4px rgba(255,255,255,0.6)); }
 .pb-tape { position: absolute; animation: pb-tape-settle 0.5s ease-out backwards; }

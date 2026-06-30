@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, PanInfo, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { GalleryImageRecord } from '@/lib/types';
+import { useState, useEffect, useRef } from 'react';
 
 interface LightboxModalProps {
   images: GalleryImageRecord[];
@@ -13,17 +14,43 @@ interface LightboxModalProps {
 }
 
 export default function LightboxModal({ images, previewIndex, onClose, onNavigate }: LightboxModalProps) {
+  const [direction, setDirection] = useState(0);
+  const activeThumbRef = useRef<HTMLButtonElement>(null);
+  
   const image = images[previewIndex];
   const total = images.length;
 
-  const goPrev = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  useEffect(() => {
+    if (activeThumbRef.current) {
+      activeThumbRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      });
+    }
+  }, [previewIndex]);
+
+  const goPrev = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setDirection(-1);
     onNavigate((previewIndex - 1 + total) % total);
   };
 
-  const goNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const goNext = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setDirection(1);
     onNavigate((previewIndex + 1) % total);
+  };
+
+  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const swipe = info.offset.x;
+    const swipePower = Math.abs(swipe) * info.velocity.x;
+    
+    if (swipe < -60 || swipePower < -10000) {
+      goNext();
+    } else if (swipe > 60 || swipePower > 10000) {
+      goPrev();
+    }
   };
 
   return (
@@ -45,20 +72,27 @@ export default function LightboxModal({ images, previewIndex, onClose, onNavigat
       </div>
 
       {/* Prev button */}
-      <button onClick={goPrev} className="absolute left-4 z-10 p-3 bg-white/10 hover:bg-white/25 text-white rounded-full transition backdrop-blur-sm">
+      <button onClick={goPrev} className="hidden sm:block absolute left-4 z-10 p-3 bg-white/10 hover:bg-white/25 text-white rounded-full transition backdrop-blur-sm">
         <ChevronLeft size={28} />
       </button>
 
       {/* Main Image */}
-      <motion.div
-        key={previewIndex}
-        initial={{ opacity: 0, scale: 0.96 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.96 }}
-        transition={{ duration: 0.2 }}
-        className="relative max-w-[90vw] max-h-[88vh] flex items-center justify-center"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <AnimatePresence mode="wait" custom={direction}>
+        <motion.div
+          key={previewIndex}
+          custom={direction}
+          initial={{ opacity: 0, x: direction > 0 ? 50 : direction < 0 ? -50 : 0, scale: 0.96 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={{ opacity: 0, x: direction < 0 ? 50 : direction > 0 ? -50 : 0, scale: 0.96 }}
+          transition={{ duration: 0.25 }}
+          className="relative max-w-[90vw] max-h-[88vh] flex items-center justify-center touch-pan-y cursor-grab active:cursor-grabbing"
+          onClick={(e) => e.stopPropagation()}
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.2}
+          dragDirectionLock
+          onDragEnd={handleDragEnd}
+        >
         <img
           src={image.image_url}
           alt="Preview"
@@ -71,17 +105,19 @@ export default function LightboxModal({ images, previewIndex, onClose, onNavigat
           </span>
         </div>
       </motion.div>
+      </AnimatePresence>
 
       {/* Next button */}
-      <button onClick={goNext} className="absolute right-4 z-10 p-3 bg-white/10 hover:bg-white/25 text-white rounded-full transition backdrop-blur-sm">
+      <button onClick={goNext} className="hidden sm:block absolute right-4 z-10 p-3 bg-white/10 hover:bg-white/25 text-white rounded-full transition backdrop-blur-sm">
         <ChevronRight size={28} />
       </button>
 
       {/* Thumbnail strip */}
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2 max-w-[80vw] overflow-x-auto px-2 pb-1">
+      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2 max-w-[80vw] overflow-x-auto px-2 pb-1 scrollbar-hide" style={{ scrollBehavior: 'smooth' }}>
         {images.map((img, i) => (
           <button
             key={img.id}
+            ref={i === previewIndex ? activeThumbRef : null}
             onClick={(e) => { e.stopPropagation(); onNavigate(i); }}
             className={`flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${
               i === previewIndex ? 'border-rose-400 scale-110' : 'border-transparent opacity-50 hover:opacity-80'

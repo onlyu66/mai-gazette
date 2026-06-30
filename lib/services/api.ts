@@ -84,10 +84,10 @@ export const insertLuuBut = async (
 };
 
 /**
- * Lấy danh sách lưu bút đã xuất bản
+ * Lấy danh sách lưu bút đã xuất bản (toàn bộ — legacy)
  */
 export const fetchLuuButList = async (): Promise<LuuButRecord[]> => {
-  if (!supabase) return []; // Trả về mảng rỗng khi chưa cấu hình Supabase
+  if (!supabase) return [];
 
   const { data, error } = await supabase
     .from("luu_but")
@@ -96,6 +96,31 @@ export const fetchLuuButList = async (): Promise<LuuButRecord[]> => {
 
   if (error) throw error;
   return (data || []) as LuuButRecord[];
+};
+
+/**
+ * Lấy danh sách lưu bút theo trang (pagination)
+ */
+export const fetchLuuButPage = async (
+  page: number,
+  pageSize = 12,
+): Promise<{ records: LuuButRecord[]; hasMore: boolean }> => {
+  if (!supabase) return { records: [], hasMore: false };
+
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+
+  const { data, error, count } = await supabase
+    .from("luu_but")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (error) throw error;
+
+  const records = (data || []) as LuuButRecord[];
+  const total = count ?? 0;
+  return { records, hasMore: from + records.length < total };
 };
 
 /**

@@ -21,7 +21,7 @@ export default function Home() {
   useEffect(() => setMounted(true), []);
   const isDarkMode = mounted && theme === 'dark';
 
-  const { formData, luuButList, loading, updateField, formatDropCapText, submitLuuBut } = useLuuBut();
+  const { formData, luuButList, loading, hasMore, loadingMore, loadMore, updateField, formatDropCapText, submitLuuBut } = useLuuBut();
 
   // Parallax scroll
   const { scrollY } = useScroll();
@@ -105,12 +105,29 @@ export default function Home() {
 
         {/* Khung ảnh quét sáng */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.92 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.3, type: 'spring' }}
+          initial={{ opacity: 0, scale: 0.92, y: 0 }}
+          animate={{ opacity: 1, scale: 1, y: [0, -9, 0] }}
+          transition={{
+            opacity: { duration: 0.8, delay: 0.3, type: 'spring' },
+            scale: { duration: 0.8, delay: 0.3, type: 'spring' },
+            y: { duration: 5.5, repeat: Infinity, ease: 'easeInOut' }
+          }}
           className="lg:col-span-4 lg:col-start-9 flex justify-center items-center relative z-10"
         >
-          <div className="relative group w-full max-w-[340px] aspect-[3/4] rounded-2xl p-3.5 bg-gradient-to-br from-white/60 via-rose-50/30 to-rose-100/40 dark:from-zinc-900/60 dark:via-zinc-900/40 dark:to-rose-950/30 backdrop-blur-md border border-rose-200/40 dark:border-zinc-800 shadow-xl hover:-translate-y-2 hover:rotate-1 transition-all duration-700 ease-out grid grid-cols-1">
+          {/* Pulsating glow background */}
+          <motion.div 
+            animate={{ opacity: [0.3, 0.7, 0.3], scale: [0.9, 1.1, 0.9] }}
+            transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute inset-0 bg-rose-400/20 dark:bg-rose-600/20 blur-xl rounded-full -z-10 w-[80%] h-[80%] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" 
+          />
+          
+          <div className="relative group w-full max-w-[340px] aspect-[3/4] rounded-2xl p-3.5 shadow-xl hover:-translate-y-2 hover:rotate-1 transition-all duration-700 ease-out grid grid-cols-1">
+            {/* Animated Frame Background/Border */}
+            <motion.div 
+              animate={{ opacity: [0.5, 1, 0.5], boxShadow: ['0 0 5px rgba(244,114,182,0.2)', '0 0 20px rgba(244,114,182,0.6)', '0 0 5px rgba(244,114,182,0.2)'] }}
+              transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
+              className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/60 via-rose-50/30 to-rose-100/40 dark:from-zinc-900/60 dark:via-zinc-900/40 dark:to-rose-950/30 backdrop-blur-md border border-rose-200/40 dark:border-zinc-800 pointer-events-none group-hover:!opacity-100 group-hover:!shadow-[0_0_20px_rgba(244,114,182,0.6)]" 
+            />
             <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-10">
               <div className="w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:animate-hieu-ung-quet-sang"></div>
             </div>
@@ -180,7 +197,12 @@ export default function Home() {
             Từng lời chúc là một bông hoa trong vườn thanh xuân 🌷
           </p>
         </div>
-        <ArchiveFeed list={luuButList} />
+        <ArchiveFeed 
+          list={luuButList} 
+          hasMore={hasMore} 
+          loadingMore={loadingMore} 
+          onLoadMore={loadMore} 
+        />
       </section>
 
       <footer className="relative mt-20 border-t overflow-hidden" style={{ borderColor: 'var(--border-section)', background: 'var(--bg-section-2)' }}>
