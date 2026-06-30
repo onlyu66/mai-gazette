@@ -7,7 +7,7 @@ import Image from 'next/image';
 
 import { MEMORIES } from '../constants';
 
-const STRIP = [...MEMORIES, ...MEMORIES];
+const STRIP = [...MEMORIES, ...MEMORIES, ...MEMORIES, ...MEMORIES];
 
 
 export default function GallerySlider() {
@@ -18,20 +18,20 @@ export default function GallerySlider() {
       try {
         const images = await fetchGalleryImages();
         const newCovers: Record<string, string> = {};
-        
+
         // Nhóm ảnh theo danh mục, lấy ảnh đầu tiên (mới nhất vì đã được sort descending)
         images.forEach(img => {
           if (!newCovers[img.category]) {
             newCovers[img.category] = img.image_url;
           }
         });
-        
+
         setCovers(newCovers);
       } catch (error) {
         console.error("Lỗi khi tải ảnh gallery:", error);
       }
     };
-    
+
     loadImages();
   }, []);
 
@@ -95,7 +95,7 @@ export default function GallerySlider() {
 
       {/* Footer hint */}
       <p className="text-center text-[9px] tracking-widest uppercase mt-6 font-mono" style={{ color: 'var(--text-muted)' }}>
-        Nhấn vào thẻ để xem và thêm ảnh · Kỷ niệm là mãi mãi 🌷
+        Nhấn vào thẻ để xem và thêm ảnh 🌷
       </p>
     </section>
   );

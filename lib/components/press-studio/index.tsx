@@ -54,7 +54,8 @@ export default function PressStudio() {
             Photobooth Thanh Xuân
           </h2>
           <p className="text-sm text-rose-400/80 max-w-md mx-auto">
-            Tự tay thiết kế và lưu giữ những tấm ảnh photobooth siêu xinh xắn 📸
+            Tự tay thiết kế và lưu giữ những tấm ảnh photobooth siêu xinh xắn
+
           </p>
         </div>
 
@@ -133,7 +134,7 @@ export default function PressStudio() {
               </div>
 
               <div className="space-y-2.5">
-                <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-rose-500">3. Tên Kỷ Niệm</label>
+                <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-rose-500">3. Khách mời</label>
                 <input type="text" value={name} onChange={e => setName(e.target.value)}
                   placeholder="Nhập tên của bạn..."
                   className="w-full px-4 py-3 rounded-xl text-sm border-2 border-rose-100 focus:outline-none focus:border-rose-400 bg-white text-gray-800 font-medium" />

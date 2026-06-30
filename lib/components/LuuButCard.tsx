@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { ReactNode, useState, useEffect } from 'react';
-import { formatLuuButDate, LUU_BUT_LOAI, QUA_TANG_COLORS } from '../utils/luu-but-constants';
+import { formatLuuButDate, LUU_BUT_LOAI } from '../utils/luu-but-constants';
 import WashiRibbon from './WashiRibbon';
 
 interface LuuButCardProps {
@@ -36,9 +36,7 @@ export default function LuuButCard({
 }: LuuButCardProps) {
   const loaiData = LUU_BUT_LOAI[tieuDe] ?? LUU_BUT_LOAI['loi-chuc'];
   const loaiColor = loaiData.hexColor;
-  const quaTangColor = QUA_TANG_COLORS[quaTang ?? ''] ?? '#f43f5e';
-  const quaTangEmoji = quaTang?.split(' ')[0] ?? '';
-  const quaTangText = quaTang?.replace(/^\S+\s/, '') ?? '';
+
 
   // Optimize image preview rendering to avoid lag during typing
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
@@ -97,23 +95,6 @@ export default function LuuButCard({
           </div>
         </div>
 
-        {/* Badges */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider text-white"
-            style={{ background: loaiColor }}
-          >
-            {loaiData.emoji} {loaiData.fullLabel.toUpperCase()}
-          </span>
-          {quaTang && (
-            <span
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-bold border"
-              style={{ borderColor: `${quaTangColor}40`, color: quaTangColor, background: `${quaTangColor}12` }}
-            >
-              {quaTangEmoji} {quaTangText}
-            </span>
-          )}
-        </div>
 
         {/* Image */}
         {imgSrc ? (
@@ -133,8 +114,8 @@ export default function LuuButCard({
             )}
           </div>
         ) : showPlaceholderImage ? (
-          <div 
-            className="w-full aspect-[16/10] rounded-2xl overflow-hidden border flex items-center justify-center" 
+          <div
+            className="w-full aspect-[16/10] rounded-2xl overflow-hidden border flex items-center justify-center"
             style={{ borderColor: 'var(--border-card)', background: 'rgba(244,114,182,0.05)' }}
           >
             <div className="text-center space-y-2 opacity-40">
@@ -182,7 +163,7 @@ export default function LuuButCard({
           </div>
           <div className="text-right space-y-0.5">
             <p className="text-[9px] uppercase tracking-widest font-mono" style={{ color: 'var(--text-muted)' }}>Lưu bút</p>
-            <p className="text-[11px] font-bold" style={{ color: 'var(--text-heading)' }}>N°MAI · 2026 🌷</p>
+            <p className="text-[11px] font-bold" style={{ color: 'var(--text-heading)' }}>N.MAI · 2026</p>
           </div>
         </div>
       </div>

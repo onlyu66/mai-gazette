@@ -11,21 +11,7 @@ interface FormEditorProps {
   loading: boolean;
 }
 
-const LOAI_LUU_BUT = [
-  { value: 'loi-chuc', label: '🌸 Lời chúc tốt nghiệp', desc: 'Gửi những điều tốt đẹp nhất' },
-  { value: 'ky-niem', label: '📸 Kỷ niệm đáng nhớ', desc: 'Kể về một khoảnh khắc chúng ta' },
-  { value: 'nhan-nhu', label: '💌 Nhắn nhủ từ trái tim', desc: 'Những lời muốn nói mà chưa nói' },
-  { value: 'hai-huoc', label: '🎭 Hài hước & vui vẻ', desc: 'Mang lại nụ cười cho ngày tốt nghiệp' },
-];
 
-const CAM_XUC = [
-  { value: '🥺 Xúc động', emoji: '🥺', label: 'Xúc động' },
-  { value: '🌸 Tự hào', emoji: '🌸', label: 'Tự hào' },
-  { value: '🥂 Hào hứng', emoji: '🥂', label: 'Hào hứng' },
-  { value: '😭 Nhớ nhau', emoji: '😭', label: 'Nhớ nhau' },
-  { value: '✨ Biết ơn', emoji: '✨', label: 'Biết ơn' },
-  { value: '💕 Yêu quý', emoji: '💕', label: 'Yêu quý' },
-];
 
 export default function FormEditor({ formData, updateField, onSubmit, loading }: FormEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -142,54 +128,6 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
           </p>
         </div>
 
-        {/* ── 1. Loại lưu bút ── */}
-        <div className="space-y-3">
-          <label className="block text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: 'var(--text-heading)', opacity: 0.8 }}>
-            ✦ Bạn muốn viết gì?
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {LOAI_LUU_BUT.map((opt) => {
-              const isSelected = formData.tieuDe === opt.value;
-              return (
-                <label key={opt.value} className="relative cursor-pointer select-none h-full block">
-                  <input
-                    type="radio"
-                    name="loai"
-                    value={opt.value}
-                    checked={isSelected}
-                    onChange={() => updateField('tieuDe', opt.value)}
-                    className="sr-only"
-                  />
-                  <div
-                    className={`h-full px-3.5 py-3 rounded-2xl border-2 transition-all duration-200 flex flex-col justify-center ${
-                      isSelected
-                        ? 'border-rose-400 shadow-md'
-                        : 'border-transparent hover:border-rose-200'
-                    }`}
-                    style={{
-                      background: isSelected ? 'linear-gradient(135deg, #fff0f5, #fce7f3)' : 'var(--khung-kinh)',
-                      boxShadow: isSelected ? '0 4px 16px rgba(244,114,182,0.2)' : 'none',
-                    }}
-                  >
-                    {isSelected && (
-                      <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-rose-400 flex items-center justify-center">
-                        <svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="1.5 5 4 7.5 8.5 2.5" />
-                        </svg>
-                      </span>
-                    )}
-                    <p className={`text-xs font-bold mb-0.5 ${isSelected ? 'text-rose-600' : 'text-[var(--mau-chu)]'}`}>
-                      {opt.label}
-                    </p>
-                    <p className={`text-[10px] leading-tight ${isSelected ? 'text-rose-400' : 'text-[var(--mau-chu)] opacity-60'}`}>
-                      {opt.desc}
-                    </p>
-                  </div>
-                </label>
-              );
-            })}
-          </div>
-        </div>
 
         {/* ── 2. Ảnh kỷ niệm ── */}
         <div className="space-y-2.5">
@@ -262,44 +200,6 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
           </div>
         </div>
 
-        {/* ── 4. Cảm xúc ── */}
-        <div className="space-y-2.5">
-          <label className="block text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: 'var(--text-heading)', opacity: 0.8 }}>
-            ✦ Cảm xúc hôm nay của bạn
-          </label>
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            {CAM_XUC.map((cx) => {
-              const isSelected = formData.quaTang === cx.value;
-              return (
-                <label key={cx.value} className="cursor-pointer select-none">
-                  <input
-                    type="radio"
-                    name="camXuc"
-                    value={cx.value}
-                    checked={isSelected}
-                    onChange={() => updateField('quaTang', cx.value)}
-                    className="sr-only"
-                  />
-                  <div
-                    className={`flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl border-2 transition-all duration-200 ${
-                      isSelected
-                        ? 'border-rose-400 scale-105'
-                        : 'border-transparent hover:border-rose-100'
-                    }`}
-                    style={isSelected ? { background: 'linear-gradient(135deg, #fff0f5, #fce7f3)' } : { background: 'var(--khung-kinh)' }}
-                  >
-                    <span className={`text-xl transition-transform duration-200 ${isSelected ? 'scale-110' : ''}`}>
-                      {cx.emoji}
-                    </span>
-                    <span className={`text-[8px] font-bold text-center leading-tight ${isSelected ? 'text-rose-500' : 'text-[var(--mau-chu)] opacity-60'}`}>
-                      {cx.label}
-                    </span>
-                  </div>
-                </label>
-              );
-            })}
-          </div>
-        </div>
 
         {/* ── 5. Tên bạn ── */}
         <div className="space-y-2.5">

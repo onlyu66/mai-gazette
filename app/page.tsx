@@ -8,9 +8,9 @@ import MarqueeTicker from '@/lib/components/MarqueeTicker';
 import NewspaperPreview from '@/lib/components/NewspaperPreview';
 import PressStudio from '@/lib/components/PressStudio';
 import { useLuuBut } from '@/lib/hooks/useLuuBut';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 
 export default function Home() {
@@ -22,6 +22,27 @@ export default function Home() {
   const isDarkMode = mounted && theme === 'dark';
 
   const { formData, luuButList, loading, hasMore, loadingMore, loadMore, updateField, formatDropCapText, submitLuuBut, searchLuuBut } = useLuuBut();
+
+  // Secret trigger for ArchiveFeed
+  const [showSecretArchive, setShowSecretArchive] = useState(false);
+  const pressTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const startPress = () => {
+    pressTimer.current = setTimeout(() => {
+      setShowSecretArchive(true);
+      // Cuộn tới sau khi mở
+      setTimeout(() => {
+        document.getElementById('kho-luu-tru')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }, 2000); // Giữ 2 giây
+  };
+
+  const cancelPress = () => {
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+  };
 
   // Parallax scroll
   const { scrollY } = useScroll();
@@ -44,7 +65,7 @@ export default function Home() {
               <a href="#goc-trien-lam" className="hover:text-rose-500 transition">Triển Lãm Ảnh</a>
               <a href="#studio-anh" className="hover:text-rose-500 transition">Photobooth</a>
               <a href="#thiet-ke-bao" className="hover:text-rose-500 transition">Viết Lưu Bút</a>
-              <a href="#kho-luu-tru" className="hover:text-rose-500 transition">Đọc Lưu Bút</a>
+              {showSecretArchive && <a href="#kho-luu-tru" className="hover:text-rose-500 transition">Đọc Lưu Bút</a>}
             </nav>
             <button onClick={chuyenCheDo} className="flex items-center space-x-2 bg-rose-600 text-white px-4 py-2 rounded-full text-xs font-bold tracking-wider hover:bg-rose-700 transition shadow-md">
               <span>{isDarkMode ? '☀️' : '🌙'}</span>
@@ -71,7 +92,7 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="inline-block bg-rose-100/60 text-rose-600 text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full border border-rose-200"
           >
-            🌸 Mùa hoa tốt nghiệp năm 2026
+            Mùa tốt nghiệp năm 2026
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
@@ -96,8 +117,8 @@ export default function Home() {
             className="pt-2 flex flex-wrap gap-4"
           >
             <MagneticButton>
-              <a href="#studio-anh" className="bg-[#2E1F20] text-white dark:bg-white dark:text-[#2E1F20] text-xs uppercase tracking-widest font-bold px-6 py-4 rounded-xl hover:bg-rose-600 hover:text-white transition shadow-lg inline-block">
-                Chụp Ảnh Photobooth Kỷ Niệm 📸
+              <a href="#thiet-ke-bao" className="bg-[#2E1F20] text-white dark:bg-white dark:text-[#2E1F20] text-xs uppercase tracking-widest font-bold px-6 py-4 rounded-xl hover:bg-rose-600 hover:text-white transition shadow-lg inline-block">
+                Viết lưu bút cho Ngọc Mai được hem?
               </a>
             </MagneticButton>
           </motion.div>
@@ -115,18 +136,18 @@ export default function Home() {
           className="lg:col-span-4 lg:col-start-9 flex justify-center items-center relative z-10"
         >
           {/* Pulsating glow background */}
-          <motion.div 
+          <motion.div
             animate={{ opacity: [0.3, 0.7, 0.3], scale: [0.9, 1.1, 0.9] }}
             transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute inset-0 bg-rose-400/20 dark:bg-rose-600/20 blur-xl rounded-full -z-10 w-[80%] h-[80%] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" 
+            className="absolute inset-0 bg-rose-400/20 dark:bg-rose-600/20 blur-xl rounded-full -z-10 w-[80%] h-[80%] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
           />
-          
+
           <div className="relative group w-full max-w-[340px] aspect-[3/4] rounded-2xl p-3.5 shadow-xl hover:-translate-y-2 hover:rotate-1 transition-all duration-700 ease-out grid grid-cols-1">
             {/* Animated Frame Background/Border */}
-            <motion.div 
+            <motion.div
               animate={{ opacity: [0.5, 1, 0.5], boxShadow: ['0 0 5px rgba(244,114,182,0.2)', '0 0 20px rgba(244,114,182,0.6)', '0 0 5px rgba(244,114,182,0.2)'] }}
               transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/60 via-rose-50/30 to-rose-100/40 dark:from-zinc-900/60 dark:via-zinc-900/40 dark:to-rose-950/30 backdrop-blur-md border border-rose-200/40 dark:border-zinc-800 pointer-events-none group-hover:!opacity-100 group-hover:!shadow-[0_0_20px_rgba(244,114,182,0.6)]" 
+              className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/60 via-rose-50/30 to-rose-100/40 dark:from-zinc-900/60 dark:via-zinc-900/40 dark:to-rose-950/30 backdrop-blur-md border border-rose-200/40 dark:border-zinc-800 pointer-events-none group-hover:!opacity-100 group-hover:!shadow-[0_0_20px_rgba(244,114,182,0.6)]"
             />
             <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-10">
               <div className="w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:animate-hieu-ung-quet-sang"></div>
@@ -160,11 +181,11 @@ export default function Home() {
               Viết Trang Lưu Bút Cho Mai
             </h2>
             <p className="text-sm text-rose-300 max-w-md mx-auto leading-relaxed">
-              Mỗi lời chúc của bạn sẽ được lưu lại mãi mãi trong cuốn lưu bút kỷ yếu đặc biệt này 🌸
+              Mỗi lời chúc của bạn sẽ được lưu lại mãi mãi trong cuốn lưu bút kỷ yếu đặc biệt này
             </p>
           </div>
           <div className="grid lg:grid-cols-12 gap-12 w-full max-w-full">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-100px" }}
@@ -173,7 +194,7 @@ export default function Home() {
             >
               <FormEditor formData={formData} updateField={updateField} onSubmit={submitLuuBut} loading={loading} />
             </motion.div>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-100px" }}
@@ -186,25 +207,34 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 5. Vườn lưu bút */}
-      <section id="kho-luu-tru" className="py-20 border-t max-w-6xl mx-auto px-6" style={{ borderColor: 'var(--border-section)' }}>
-        <div className="text-center mb-12 space-y-2">
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-rose-400 block">✦ Vườn kỷ niệm</span>
-          <h2 className="font-nghe-thuat italic text-3xl font-bold" style={{ color: 'var(--text-heading)' }}>
-            Những Trang Lưu Bút Gửi Đến Mai
-          </h2>
-          <p className="text-sm text-rose-300 max-w-sm mx-auto">
-            Từng lời chúc là một bông hoa trong vườn thanh xuân 🌷
-          </p>
-        </div>
-        <ArchiveFeed 
-          list={luuButList} 
-          hasMore={hasMore} 
-          loadingMore={loadingMore} 
-          onLoadMore={loadMore} 
-          onSearch={searchLuuBut}
-        />
-      </section>
+      {/* 5. Vườn lưu bút (Secret Mode) */}
+      <AnimatePresence>
+        {showSecretArchive && (
+          <motion.section 
+            initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+            animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
+            exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+            id="kho-luu-tru" className="py-20 border-t max-w-6xl mx-auto px-6 w-full" style={{ borderColor: 'var(--border-section)' }}>
+            <div className="text-center mb-12 space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-rose-400 block">✦ Vườn kỷ niệm</span>
+              <h2 className="font-nghe-thuat italic text-3xl font-bold" style={{ color: 'var(--text-heading)' }}>
+                Những Trang Lưu Bút Gửi Đến Mai
+              </h2>
+              <p className="text-sm text-rose-300 max-w-sm mx-auto">
+                Từng lời chúc là một bông hoa trong vườn thanh xuân 🌷
+              </p>
+            </div>
+            <ArchiveFeed
+              list={luuButList}
+              hasMore={hasMore}
+              loadingMore={loadingMore}
+              onLoadMore={loadMore}
+              onSearch={searchLuuBut}
+            />
+          </motion.section>
+        )}
+      </AnimatePresence>
 
       <footer className="relative mt-20 border-t overflow-hidden" style={{ borderColor: 'var(--border-section)', background: 'var(--bg-section-2)' }}>
         <div className="absolute inset-0 pointer-events-none opacity-30">
@@ -229,9 +259,11 @@ export default function Home() {
           </p>
 
           <div className="flex gap-6 pt-4">
-            <a href="#kho-luu-tru" aria-label="Đọc Lưu Bút" className="w-11 h-11 rounded-full flex items-center justify-center text-xl border-2 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-rose-200/50" style={{ borderColor: 'var(--border-card)', background: 'var(--khung-kinh)', color: 'var(--text-heading)' }}>
-              📘
-            </a>
+            {showSecretArchive && (
+              <a href="#kho-luu-tru" aria-label="Đọc Lưu Bút" className="w-11 h-11 rounded-full flex items-center justify-center text-xl border-2 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-rose-200/50" style={{ borderColor: 'var(--border-card)', background: 'var(--khung-kinh)', color: 'var(--text-heading)' }}>
+                📘
+              </a>
+            )}
             <a href="#studio-anh" aria-label="Studio Kỷ Yếu" className="w-11 h-11 rounded-full flex items-center justify-center text-xl border-2 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-rose-200/50" style={{ borderColor: 'var(--border-card)', background: 'var(--khung-kinh)', color: 'var(--text-heading)' }}>
               📸
             </a>
@@ -242,7 +274,14 @@ export default function Home() {
 
           <div className="pt-8 w-full border-t border-rose-100/20 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] tracking-[0.2em] font-bold uppercase" style={{ color: 'var(--text-muted)' }}>
             <p>© 2026 MAI&apos;S GRADUATION</p>
-            <p className="flex items-center gap-1.5">MADE WITH <span className="text-rose-500 text-sm animate-pulse">❤️</span> BY BẠN</p>
+            <p className="flex items-center gap-1.5 select-none">MADE WITH <span 
+              className="text-rose-500 text-sm animate-pulse cursor-pointer hover:scale-125 transition-transform"
+              onMouseDown={startPress}
+              onMouseUp={cancelPress}
+              onMouseLeave={cancelPress}
+              onTouchStart={startPress}
+              onTouchEnd={cancelPress}
+            >❤️</span> BY BẠN</p>
           </div>
         </div>
       </footer>

@@ -3,8 +3,7 @@
 import { motion } from 'framer-motion';
 
 const MESSAGES = [
-  '🌸 Chúc mừng tốt nghiệp Phan Ngọc Mai — Cử nhân Báo chí xuất sắc 2026!',
-  '💌 Hãy để lại trang lưu bút và gửi những lời chúc ấm áp nhất đến Mai nhé',
+  '🌸 Chúc mừng tốt nghiệp Phan Ngọc Mai — Cử nhân Báo chí 2026!',
   '🎓 Hành trình 4 năm kết thúc, nhưng ký ức thanh xuân sẽ mãi còn đây',
   '🌷 Mỗi lời chúc là một bông hoa trong vườn kỷ niệm của chúng ta',
   '✨ Cảm ơn bạn đã ghé thăm lưu bút kỷ yếu tốt nghiệp của Mai',
