@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
+import { Eye, EyeOff } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LuuButRecord } from '../types';
 import { formatLuuButDate, LUU_BUT_LOAI } from '../utils/luu-but-constants';
@@ -22,6 +23,7 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -339,26 +341,41 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
                 </p>
 
                 <div className="pt-2">
-                  <motion.input
-                    whileFocus={{ scale: 1.05, boxShadow: '0 0 20px rgba(244, 114, 182, 0.4)' }}
-                    type="password"
-                    value={password}
-                    onChange={(e) => { setPassword(e.target.value); setError(false); }}
-                    placeholder="Nhập mật khẩu..."
-                    className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none transition-colors duration-300 text-center font-bold tracking-widest placeholder:font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 ${error
-                      ? 'border-red-400 dark:border-red-500/50 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400'
-                      : 'border-rose-100 dark:border-zinc-700 focus:border-rose-400 dark:focus:border-rose-500 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-200'
-                      }`}
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleUnlock(e as any);
-                      if (e.key === 'Escape') {
-                        setShowPasswordModal(false);
-                        setError(false);
-                        setPassword('');
-                      }
-                    }}
-                  />
+                  <div className="relative">
+                    <motion.input
+                      whileFocus={{ scale: 1.01, boxShadow: '0 0 20px rgba(244, 114, 182, 0.4)' }}
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => { setPassword(e.target.value); setError(false); }}
+                      placeholder="Nhập mật khẩu..."
+                      className={`w-full px-4 pr-12 py-3 rounded-xl border-2 focus:outline-none transition-colors duration-300 text-center font-bold tracking-widest placeholder:font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 ${error
+                        ? 'border-red-400 dark:border-red-500/50 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400'
+                        : 'border-rose-100 dark:border-zinc-700 focus:border-rose-400 dark:focus:border-rose-500 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-200'
+                        }`}
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleUnlock(e as any);
+                        if (e.key === 'Escape') {
+                          setShowPasswordModal(false);
+                          setError(false);
+                          setPassword('');
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(v => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-rose-300 hover:text-rose-500 dark:text-zinc-500 dark:hover:text-rose-400 transition-colors"
+                      tabIndex={-1}
+                      aria-label={showPassword ? 'Aẩn mật khẩu' : 'Hiện mật khẩu'}
+                    >
+                      {showPassword ? (
+                        <EyeOff size={18} strokeWidth={1.75} />
+                      ) : (
+                        <Eye size={18} strokeWidth={1.75} />
+                      )}
+                    </button>
+                  </div>
                   {error && (
                     <motion.p
                       initial={{ opacity: 0, height: 0 }}
