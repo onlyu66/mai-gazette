@@ -11,6 +11,7 @@ import GalleryHeader from '@/lib/components/gallery/GalleryHeader';
 import GalleryGrid from '@/lib/components/gallery/GalleryGrid';
 import LightboxModal from '@/lib/components/gallery/LightboxModal';
 import DeleteConfirmModal from '@/lib/components/gallery/DeleteConfirmModal';
+import PasswordModal from '@/lib/components/gallery/PasswordModal';
 
 export default function GalleryPage() {
   const params = useParams();
@@ -36,6 +37,8 @@ export default function GalleryPage() {
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [actionPending, setActionPending] = useState<'upload' | 'reorder' | null>(null);
+  const [actionPasswordError, setActionPasswordError] = useState(false);
 
   useEffect(() => { localStorage.setItem('gallery_viewMode', viewMode); }, [viewMode]);
   useEffect(() => { localStorage.setItem('gallery_columnsCount', columnsCount.toString()); }, [columnsCount]);
@@ -101,10 +104,10 @@ export default function GalleryPage() {
         onSetColumnsCount={setColumnsCount}
         onToggleSelectionMode={toggleSelectionMode}
         onRequestMultipleDelete={requestMultipleDelete}
-        onStartReorder={() => setIsReorderMode(true)}
+        onStartReorder={() => setActionPending('reorder')}
         onCancelReorder={() => setIsReorderMode(false)}
         onSaveOrder={handleSaveOrder}
-        onUploadClick={() => fileInputRef.current?.click()}
+        onUploadClick={() => setActionPending('upload')}
         onFileChange={handleFileChange}
         fileInputRef={fileInputRef}
       />
@@ -136,7 +139,7 @@ export default function GalleryPage() {
           onDeleteRequest={requestDelete}
           onSelectImage={toggleSelectImage}
           onPreview={setPreviewIndex}
-          onUploadClick={() => fileInputRef.current?.click()}
+          onUploadClick={() => setActionPending('upload')}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnter={handleDragEnter}
@@ -167,6 +170,32 @@ export default function GalleryPage() {
           onPasswordChange={(p) => { setDeletePassword(p); setDeleteError(false); }}
           onConfirm={confirmDelete}
           onCancel={cancelDelete}
+        />
+      )}
+
+      {/* Upload/Reorder confirmation */}
+      {actionPending && (
+        <PasswordModal
+          title={actionPending === 'upload' ? 'Thêm ảnh mới?' : 'Sắp xếp lại ảnh?'}
+          passwordError={actionPasswordError}
+          onConfirm={(password) => {
+            if (password.toLowerCase() !== '15042025') {
+              setActionPasswordError(true);
+              return;
+            }
+            setActionPasswordError(false);
+            if (actionPending === 'upload') {
+              fileInputRef.current?.click();
+            } else if (actionPending === 'reorder') {
+              setIsReorderMode(true);
+            }
+            setActionPending(null);
+          }}
+          onCancel={() => {
+            setActionPending(null);
+            setActionPasswordError(false);
+          }}
+          confirmText="XÁC NHẬN"
         />
       )}
     </div>
