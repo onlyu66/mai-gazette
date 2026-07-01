@@ -1,14 +1,12 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { fetchGalleryImages } from '../services/api';
 import Image from 'next/image';
-
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { fetchGalleryImages } from '../services/api';
 import { MEMORIES } from '../constants';
 
-const STRIP = [...MEMORIES, ...MEMORIES, ...MEMORIES, ...MEMORIES];
-
+const STRIP = [...MEMORIES, ...MEMORIES, ...MEMORIES, ...MEMORIES, ...MEMORIES, ...MEMORIES];
 
 export default function GallerySlider() {
   const [covers, setCovers] = useState<Record<string, string>>({});
@@ -59,8 +57,8 @@ export default function GallerySlider() {
               href={`/gallery/${item.id}`}
               key={idx}
               className={`
-                relative w-52 h-44 rounded-3xl flex-shrink-0 flex flex-col items-center justify-center gap-3
-                bg-gradient-to-br ${item.color} overflow-hidden
+                relative w-52 h-44 rounded-3xl shrink-0 flex flex-col items-center justify-center gap-3
+                bg-linear-to-br ${item.color} overflow-hidden
                 border shadow-sm
                 hover:shadow-rose-300/80 hover:-translate-y-2
                 transition-all duration-300
@@ -70,7 +68,7 @@ export default function GallerySlider() {
               {covers[item.id] ? (
                 <>
                   <Image src={covers[item.id]} alt={item.label} fill sizes="(max-width: 768px) 100vw, 208px" className="object-cover opacity-90 transition duration-500 hover:scale-110" priority={idx < 2} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                  <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent"></div>
                   {/* Decorative dot */}
                   <div className="w-1.5 h-1.5 rounded-full bg-white/80 absolute top-4 right-4 z-10 shadow-[0_0_8px_rgba(255,255,255,0.8)] animate-pulse" />
                   <span className="text-xl z-10 drop-shadow-md">{item.emoji}</span>
