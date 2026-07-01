@@ -88,7 +88,7 @@ export default function UpdatePasswordPage() {
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               className="w-24 h-24 mx-auto rounded-full overflow-hidden border-4 border-white dark:border-zinc-800 shadow-xl mb-4"
             >
-              <Image src="/avatar.jpg" alt="Mai" className="w-full h-full object-cover object-[50%_40%]" />
+              <Image src="/avatar.jpg" alt="Mai" width={96} height={96} className="w-full h-full object-cover object-[50%_40%]" />
             </motion.div>
             <h1 className="font-nghe-thuat italic text-3xl font-bold text-rose-600 dark:text-rose-400 mb-2">
               Thiết lập mật khẩu
