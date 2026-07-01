@@ -16,10 +16,8 @@ export const useLuuBut = () => {
   const [hasMore, setHasMore] = useState<boolean>(false);
   const pageRef = useRef<number>(0);
   const [formData, setFormData] = useState<LuuButFormData>({
-    tieuDe: "loi-chuc",
     noiDung: "",
     tacGia: "",
-    quaTang: "🥺 Xúc động",
     anhFile: null,
   });
 
@@ -105,21 +103,18 @@ export const useLuuBut = () => {
         uploadedUrl = await uploadGalleryImage(formData.anhFile, mimeType);
       }
 
-      const newRecord = await insertLuuBut({
-        tieuDe: formData.tieuDe,
+      const postData = {
         noiDung: formData.noiDung,
-        tacGia: formData.tacGia,
-        quaTang: formData.quaTang,
+        tacGia: formData.tacGia.trim(),
         anhUrl: uploadedUrl,
-      });
+      };
+      const newRecord = await insertLuuBut(postData);
 
       setLuuButList((prev) => [newRecord, ...prev]);
 
       setFormData({
-        tieuDe: "loi-chuc",
         noiDung: "",
         tacGia: "",
-        quaTang: "🥺 Xúc động",
         anhFile: null,
       });
 

@@ -1,9 +1,10 @@
+import { useAuth } from '@/lib/contexts/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LuuButRecord } from '../types';
-import { formatLuuButDate, LUU_BUT_LOAI } from '../utils/luu-but-constants';
+import { formatLuuButDate } from '../utils/luu-but-constants';
 import LuuButLightbox from './LuuButLightbox';
 
 interface ArchiveFeedProps {
@@ -14,13 +15,10 @@ interface ArchiveFeedProps {
   onSearch?: (query: string) => void;
 }
 
-function getLoai(tieu_de: string) {
-  const loai = LUU_BUT_LOAI[tieu_de] ?? LUU_BUT_LOAI['loi-chuc'];
-  return { label: loai.label, emoji: loai.emoji, color: loai.twColor };
-}
-
 export default function ArchiveFeed({ list, hasMore = false, loadingMore = false, onLoadMore, onSearch }: ArchiveFeedProps) {
-  const [isUnlocked, setIsUnlocked] = useState(false);
+  const { user } = useAuth();
+  const [isUnlockedState, setIsUnlockedState] = useState(false);
+  const isUnlocked = isUnlockedState || !!user;
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -82,7 +80,6 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
 
   const renderedList = useMemo(() => {
     return filteredList.map((item, index) => {
-      const loai = getLoai(item.tieu_de);
       const isList = viewMode === 'list';
       const isGrid3 = viewMode === 'grid3';
       return (
@@ -131,17 +128,7 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
 
           <div className={`p-3 sm:p-4 flex gap-2 sm:gap-3 flex-1 min-w-0 overflow-hidden ${isList ? 'flex-row items-center' : 'flex-col gap-3'
             }`}>
-            {/* Meta row */}
-            <div className={`flex flex-wrap gap-2 items-center ${isList ? '' : 'justify-between'}`}>
-              <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border ${loai.color}`}>
-                {loai.emoji} {loai.label}
-              </span>
-              {item.created_at && !isList && (
-                <span className="text-[9px] font-mono text-rose-300">
-                  {formatLuuButDate(item.created_at)}
-                </span>
-              )}
-            </div>
+
 
             {/* Ảnh kỷ niệm (grid mode only — list mode shows thumbnail on the left) */}
             {!isList && item.anh_url && (
@@ -158,48 +145,55 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
             )}
 
             {/* Nội dung */}
-            <div className={`relative min-w-0 overflow-hidden ${isList ? 'flex-1' : 'flex-1'} pl-3`}>
+            <div className={`relative min-w-0 overflow-hidden ${isList ? 'flex-1' : 'flex-1 px-1 mt-1'}`}>
               <p
-                className="text-sm leading-relaxed smart-break"
+                className="text-sm sm:text-[15px] leading-relaxed smart-break"
                 style={{
                   fontFamily: 'var(--font-playfair), serif',
                   fontStyle: 'italic',
                   color: 'var(--mau-chu)',
-                  opacity: 0.85,
+                  opacity: 0.9,
                   display: '-webkit-box',
                   WebkitBoxOrient: 'vertical',
-                  WebkitLineClamp: isList ? 2 : isGrid3 ? 5 : 6,
+                  WebkitLineClamp: isList ? 2 : isGrid3 ? 6 : 7,
                   overflow: 'hidden',
                 }}
               >
-                <span className="text-rose-200 text-xl font-serif not-italic select-none align-middle mr-0.5">&ldquo;</span>
-                {item.noi_dung || <span className="text-rose-200 italic">Không có nội dung</span>}
-                <span className="text-rose-200 text-xl font-serif not-italic select-none align-middle ml-0.5">&rdquo;</span>
+                <span className="text-rose-300/50 text-2xl font-serif not-italic select-none leading-none mr-1 inline-block translate-y-2">&ldquo;</span>
+                {item.noi_dung || <span className="text-rose-200 italic font-normal">Không có nội dung</span>}
+                <span className="text-rose-300/50 text-2xl font-serif not-italic select-none leading-none ml-1 inline-block translate-y-2">&rdquo;</span>
               </p>
             </div>
 
             {/* Footer */}
             {!isList && (
-              <div className="pt-2 border-t border-rose-100/60 flex justify-between items-center mt-auto shrink-0 smart-break gap-2">
-                {item.qua_tang && (
-                  <span className="text-xs text-rose-400 font-medium whitespace-nowrap">{item.qua_tang}</span>
-                )}
-                <div className='flex gap-1 items-center'>
-                  <span className='font-nghe-thuat italic font-bold text-rose-600 text-sm'>—</span>
-                  <span className="font-nghe-thuat italic font-bold text-rose-600 text-sm ml-auto smart-break">
-                    {item.tac_gia || 'Ẩn danh'}
-                  </span>
-                </div>
+              <div className="pt-3 mt-1 border-t border-rose-100/50 flex justify-between items-center shrink-0 smart-break gap-3">
+                <span className="text-[10px] font-mono text-rose-300/80 tracking-wider shrink-0 uppercase">
+                  {item.created_at ? formatLuuButDate(item.created_at) : ''}
+                </span>
+                <span 
+                  className="font-nghe-thuat italic font-bold text-rose-600 text-[15px] text-right smart-break line-clamp-1"
+                  title={item.tac_gia || 'Ẩn danh'}
+                >
+                  —&nbsp;{item.tac_gia || 'Ẩn danh'}
+                </span>
               </div>
             )}
 
             {/* List mode — author column (always visible, shrink-0) */}
             {isList && (
-              <div className="shrink-0 pl-2 flex flex-col justify-center text-right smart-break max-w-[120px] sm:max-w-[180px]">
-                {item.qua_tang && <span className="text-[10px] sm:hidden text-rose-400 font-medium">{item.qua_tang}</span>}
-                <span className="font-nghe-thuat italic font-bold text-rose-500 text-sm ml-auto smart-break">
-                  — {item.tac_gia || 'Ẩn danh'}
+              <div className="shrink-0 pl-3 border-l border-rose-100/50 flex flex-col justify-center text-right smart-break max-w-27.5 sm:max-w-40">
+                <span 
+                  className="font-nghe-thuat italic font-bold text-rose-600 text-sm smart-break line-clamp-2"
+                  title={item.tac_gia || 'Ẩn danh'}
+                >
+                  —&nbsp;{item.tac_gia || 'Ẩn danh'}
                 </span>
+                {item.created_at && (
+                  <span className="text-[9px] font-mono text-rose-300/80 mt-1 uppercase tracking-wider">
+                    {formatLuuButDate(item.created_at)}
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -213,7 +207,7 @@ export default function ArchiveFeed({ list, hasMore = false, loadingMore = false
   const handleUnlock = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (password.toLowerCase() === '15042025') {
-      setIsUnlocked(true);
+      setIsUnlockedState(true);
       setShowPasswordModal(false);
       setError(false);
     } else {

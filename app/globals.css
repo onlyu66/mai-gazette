@@ -15,6 +15,7 @@
   --border-section: rgba(244, 114, 182, 0.6);
   --text-muted: #fda4af;
   --text-heading: #be123c;
+  --mau-hong: #fb7185;
 }
 
 /* next-themes adds .dark class to <html> */
@@ -31,6 +32,7 @@
   --border-section: rgba(244, 63, 94, 0.2);
   --text-muted: #881337;
   --text-heading: #fb7185;
+  --mau-hong: #fb7185;
 }
 
 body {
@@ -100,12 +102,16 @@ body {
     0%, 100% { transform: rotate(-15deg) scale(1); }
     50% { transform: rotate(15deg) scale(1.05); }
   }
-
+  @keyframes skeletonShimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+  }
 
   --animate-float: float 7s ease-in-out infinite;
   --animate-float-reverse: floatReverse 9s ease-in-out infinite;
   --animate-gio-thoi: gioThoi 4s ease-in-out infinite;
   --animate-marquee: marquee 30s linear infinite;
+  --animate-skeleton-shimmer: skeletonShimmer 1.5s ease-in-out infinite;
 
   /* Fallback cho Safari cũ (trước 15.4) không hỗ trợ hệ màu oklch của Tailwind v4 */
   --color-gray-900: #111827;

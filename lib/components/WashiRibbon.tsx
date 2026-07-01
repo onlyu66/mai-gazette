@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 
 export default function WashiRibbon({ color, bottom = false }: { color: string; bottom?: boolean }) {
   return (
-    <div className={`relative h-3 w-full overflow-hidden bg-white/20 ${bottom ? 'rounded-b-3xl' : ''}`}>
+    <div className={`relative w-full overflow-hidden bg-white/20 ${bottom ? 'h-1.5 rounded-b-3xl' : 'h-3'}`}>
       <div className="absolute inset-0 opacity-30" style={{ backgroundImage: `repeating-linear-gradient(-45deg, ${color}, ${color} 4px, transparent 4px, transparent 8px)` }} />
       <div className="absolute inset-0 opacity-30" style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }} />
       <div className="absolute inset-0 flex mix-blend-overlay">

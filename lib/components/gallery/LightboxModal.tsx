@@ -5,6 +5,9 @@ import { motion, PanInfo, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { GalleryImageRecord } from '@/lib/types';
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import ImageWithSkeleton from '@/lib/components/ImageWithSkeleton';
+import NextImage from 'next/image';
 
 interface LightboxModalProps {
   images: GalleryImageRecord[];
@@ -16,9 +19,14 @@ interface LightboxModalProps {
 export default function LightboxModal({ images, previewIndex, onClose, onNavigate }: LightboxModalProps) {
   const [direction, setDirection] = useState(0);
   const activeThumbRef = useRef<HTMLButtonElement>(null);
+  const [mounted, setMounted] = useState(false);
   
   const image = images[previewIndex];
   const total = images.length;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (activeThumbRef.current) {
@@ -53,9 +61,11 @@ export default function LightboxModal({ images, previewIndex, onClose, onNavigat
     }
   };
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md"
       onClick={onClose}
     >
       {/* Close button */}
@@ -93,18 +103,22 @@ export default function LightboxModal({ images, previewIndex, onClose, onNavigat
           dragDirectionLock
           onDragEnd={handleDragEnd}
         >
-        <img
-          src={image.image_url}
-          alt="Preview"
-          className="max-w-[90vw] max-h-[calc(100vh-160px)] object-contain rounded-2xl shadow-2xl select-none"
-          draggable={false}
-        />
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-          <span className="text-[10px] font-mono font-bold tracking-widest text-white uppercase bg-black/50 px-4 py-1.5 rounded-full backdrop-blur-md">
-            {new Date(image.created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-          </span>
-        </div>
-      </motion.div>
+          <NextImage
+            src={image.image_url}
+            alt="Preview"
+            width={1600}
+            height={1200}
+            sizes="90vw"
+            priority
+            draggable={false}
+            className="max-w-[90vw] max-h-[calc(100vh-160px)] w-auto h-auto object-contain rounded-2xl shadow-2xl select-none"
+          />
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+            <span className="text-[10px] font-mono font-bold tracking-widest text-white uppercase bg-black/50 px-4 py-1.5 rounded-full backdrop-blur-md">
+              {new Date(image.created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+            </span>
+          </div>
+        </motion.div>
       </AnimatePresence>
 
       {/* Next button */}
@@ -123,10 +137,11 @@ export default function LightboxModal({ images, previewIndex, onClose, onNavigat
               i === previewIndex ? 'border-rose-400 scale-110' : 'border-transparent opacity-50 hover:opacity-80'
             }`}
           >
-            <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+            <ImageWithSkeleton src={img.image_url} alt="" />
           </button>
         ))}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

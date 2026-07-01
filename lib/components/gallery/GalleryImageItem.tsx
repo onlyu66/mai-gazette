@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Move, Trash2 } from 'lucide-react';
 import { GalleryImageRecord } from '@/lib/types';
+import ImageWithSkeleton from '@/lib/components/ImageWithSkeleton';
 
 interface GalleryImageItemProps {
   img: GalleryImageRecord;
@@ -69,18 +70,33 @@ export default function GalleryImageItem({
           ${isDragging ? 'opacity-50 scale-95' : ''}
         `}
       >
-        <img
-          src={img.image_url}
-          alt="Kỷ niệm"
-          className={`
-            w-full ${isGrid ? 'h-full object-cover' : 'h-auto object-cover'}
-            transform transition duration-700
-            ${(!isSelectionMode && !isReorderMode) ? 'group-hover:scale-105' : ''}
-            ${isSelected ? 'scale-105 opacity-80' : ''}
-          `}
-          loading={index < 6 ? "eager" : "lazy"}
-          fetchPriority={index < 6 ? "high" : "auto"}
-        />
+        {isGrid ? (
+          <ImageWithSkeleton
+            src={img.image_url}
+            alt="Kỷ niệm"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            priority={index < 6}
+            className={`
+              transform transition duration-700
+              ${(!isSelectionMode && !isReorderMode) ? 'group-hover:scale-105' : ''}
+              ${isSelected ? 'scale-105 opacity-80' : ''}
+            `}
+          />
+        ) : (
+          /* Masonry: height is content-driven, plain img is appropriate */
+          <img
+            src={img.image_url}
+            alt="Kỷ niệm"
+            className={`
+              w-full h-auto object-cover
+              transform transition duration-700
+              ${(!isSelectionMode && !isReorderMode) ? 'group-hover:scale-105' : ''}
+              ${isSelected ? 'scale-105 opacity-80' : ''}
+            `}
+            loading={index < 6 ? 'eager' : 'lazy'}
+            fetchPriority={index < 6 ? 'high' : 'auto'}
+          />
+        )}
 
         {/* Hover overlay gradient */}
         {(!isSelectionMode && !isReorderMode) && (

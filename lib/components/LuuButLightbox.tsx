@@ -176,10 +176,8 @@ export default function LuuButLightbox({
                 style={{ boxShadow: '0 40px 100px rgba(0,0,0,0.6)' }}
               >
                 <LuuButCard
-                  tieuDe={item.tieu_de}
                   noiDung={item.noi_dung}
                   tacGia={item.tac_gia}
-                  quaTang={item.qua_tang}
                   anhUrl={item.anh_url}
                   createdAt={item.created_at}
                   bottomSlot={

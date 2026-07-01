@@ -1,16 +1,15 @@
 'use client';
 
-import Image from 'next/image';
-import { ReactNode, useState, useEffect } from 'react';
-import { formatLuuButDate, LUU_BUT_LOAI } from '../utils/luu-but-constants';
+import { GalleryImageRecord } from '@/lib/types';
+import { ReactNode, useEffect, useState } from 'react';
+import { formatLuuButDate } from '../utils/luu-but-constants';
+import ImageWithSkeleton from './ImageWithSkeleton';
 import WashiRibbon from './WashiRibbon';
+import LightboxModal from './gallery/LightboxModal';
 
 interface LuuButCardProps {
-  // Data — either from a saved record (strings) or from a live form preview (File)
-  tieuDe: string;
   noiDung?: string;
   tacGia?: string;
-  quaTang?: string;
   anhUrl?: string | null;       // saved URL from Supabase
   anhFile?: Blob | null;        // live blob for preview
   createdAt?: string;
@@ -23,10 +22,8 @@ interface LuuButCardProps {
 }
 
 export default function LuuButCard({
-  tieuDe,
   noiDung,
   tacGia,
-  quaTang,
   anhUrl,
   anhFile,
   createdAt,
@@ -34,10 +31,6 @@ export default function LuuButCard({
   bottomSlot,
   showPlaceholderImage = false,
 }: LuuButCardProps) {
-  const loaiData = LUU_BUT_LOAI[tieuDe] ?? LUU_BUT_LOAI['loi-chuc'];
-  const loaiColor = loaiData.hexColor;
-
-
   // Optimize image preview rendering to avoid lag during typing
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
 
@@ -52,6 +45,7 @@ export default function LuuButCard({
   }, [anhFile]);
 
   const imgSrc = objectUrl || anhUrl;
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   return (
     <div
@@ -62,7 +56,7 @@ export default function LuuButCard({
       }}
     >
       {/* Top Washi Ribbon */}
-      <WashiRibbon color={loaiColor} />
+      <WashiRibbon color="var(--mau-hong)" />
 
       {/* Decorative petals */}
       <div className="pointer-events-none absolute top-5 right-5 opacity-[0.12] rotate-12 select-none">
@@ -98,29 +92,60 @@ export default function LuuButCard({
 
         {/* Image */}
         {imgSrc ? (
-          <div className="w-full aspect-[16/10] rounded-2xl overflow-hidden border" style={{ borderColor: 'var(--border-card)' }}>
-            {anhFile ? (
-              // blob preview — use img tag (Next Image can't handle blobs)
-              <img src={imgSrc} alt="Ảnh kỷ niệm" className="w-full h-full object-cover" />
-            ) : (
-              <Image
-                src={imgSrc}
-                alt="Ảnh kỷ niệm"
-                width={600}
-                height={375}
-                className="w-full h-full object-cover"
-                priority
-              />
-            )}
-          </div>
+          <>
+            <div
+              className="w-full aspect-16/10 rounded-2xl overflow-hidden border cursor-zoom-in group relative"
+              style={{ borderColor: 'var(--border-card)' }}
+              onClick={() => setLightboxOpen(true)}
+              title="Bấm để xem ảnh lớn"
+            >
+              {/* Image — blob preview loads instantly; remote URL uses skeleton */}
+              {/* {anhFile ? (
+                <img src={imgSrc} alt="Ảnh kỷ niệm" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              ) : ( */}
+                <ImageWithSkeleton
+                  src={imgSrc}
+                  alt="Ảnh kỷ niệm"
+                  className="group-hover:scale-105"
+                />
+              
+              {/* Zoom hint overlay */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 dark:bg-black/70 rounded-full p-2 shadow-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500">
+                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Lightbox Modal */}
+            {lightboxOpen && (() => {
+              const fakeRecord: GalleryImageRecord = {
+                id: 'luu-but-img',
+                image_url: imgSrc,
+                category: '',
+                order_index: 0,
+                created_at: new Date().toISOString(),
+              };
+              return (
+                <LightboxModal
+                  images={[fakeRecord]}
+                  previewIndex={0}
+                  onClose={() => setLightboxOpen(false)}
+                  onNavigate={() => { }}
+                />
+              );
+            })()}
+          </>
         ) : showPlaceholderImage ? (
           <div
-            className="w-full aspect-[16/10] rounded-2xl overflow-hidden border flex items-center justify-center"
+            className="w-full aspect-16/10 rounded-2xl overflow-hidden border flex items-center justify-center"
             style={{ borderColor: 'var(--border-card)', background: 'rgba(244,114,182,0.05)' }}
           >
             <div className="text-center space-y-2 opacity-40">
               <div className="text-3xl">🖼️</div>
-              <p className="text-[10px] font-mono uppercase tracking-wider" style={{ color: loaiColor }}>
+              <p className="text-[10px] font-mono uppercase tracking-wider" style={{ color: 'var(--rose-400)' }}>
                 Chưa có ảnh kỷ niệm
               </p>
             </div>
@@ -131,7 +156,7 @@ export default function LuuButCard({
         <div className="relative">
           <div
             className="absolute -top-2 -left-1 text-5xl font-serif leading-none select-none opacity-15"
-            style={{ color: loaiColor }}
+            style={{ color: 'var(--mau-hong)' }}
           >
             &quot;
           </div>
@@ -147,7 +172,7 @@ export default function LuuButCard({
           </div>
           <div
             className="text-right text-5xl font-serif leading-none select-none opacity-15 -mt-2"
-            style={{ color: loaiColor }}
+            style={{ color: 'var(--mau-hong)' }}
           >
             &quot;
           </div>
@@ -158,7 +183,7 @@ export default function LuuButCard({
           <div className="space-y-0.5 min-w-0 flex-1">
             <p className="text-[9px] uppercase tracking-widest font-mono" style={{ color: 'var(--text-muted)' }}>Người gửi</p>
             <p className="font-nghe-thuat italic font-bold text-base md:text-lg smart-break" style={{ color: 'var(--text-heading)' }}>
-              {tacGia || 'Người bạn thân mến'}
+              {tacGia || 'Bạn ẩn danh'}
             </p>
           </div>
           <div className="text-right space-y-0.5">
@@ -169,7 +194,7 @@ export default function LuuButCard({
       </div>
 
       {/* Bottom Washi Ribbon */}
-      <WashiRibbon color={loaiColor} bottom={!bottomSlot} />
+      <WashiRibbon color="var(--mau-hong)" bottom={true} />
 
       {/* Optional bottom slot (e.g. mobile nav) */}
       {bottomSlot}

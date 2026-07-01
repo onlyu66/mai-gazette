@@ -10,10 +10,8 @@ interface NewspaperPreviewProps {
 const NewspaperPreview = memo(function NewspaperPreview({ formData, formatDropCapText }: NewspaperPreviewProps) {
   return (
     <LuuButCard
-      tieuDe={formData.tieuDe}
       noiDung={formData.noiDung}
       tacGia={formData.tacGia}
-      quaTang={formData.quaTang}
       anhFile={formData.anhFile}
       showPlaceholderImage={true}
       renderContent={
