@@ -20,6 +20,7 @@ export default function GalleryPage() {
   const categoryId = params.category as string;
   const { user } = useAuth();
   const isAdmin = !!user;
+  const canUpload = true;
 
   const [viewMode, setViewMode] = useState<'grid' | 'masonry'>('grid');
   const [columnsCount, setColumnsCount] = useState<2 | 3 | 4>(4);
@@ -103,6 +104,7 @@ export default function GalleryPage() {
         hasImages={images.length > 0}
         isMobileMenuOpen={isMobileMenuOpen}
         isAdmin={isAdmin}
+        canUpload={canUpload}
         onToggleMobileMenu={() => setIsMobileMenuOpen(v => !v)}
         onSetViewMode={setViewMode}
         onSetColumnsCount={setColumnsCount}
@@ -155,6 +157,7 @@ export default function GalleryPage() {
           observerTarget={observerTarget}
           categoryLabel={categoryInfo.label}
           isAdmin={isAdmin}
+          canUpload={canUpload}
           onDeleteRequest={requestDelete}
           onSelectImage={toggleSelectImage}
           onPreview={setPreviewIndex}

@@ -18,6 +18,7 @@ interface GalleryHeaderProps {
   columnsCount: 2 | 3 | 4;
   hasImages: boolean;
   isAdmin: boolean;
+  canUpload: boolean;
   isMobileMenuOpen: boolean;
   onToggleMobileMenu: () => void;
   onSetViewMode: (mode: 'grid' | 'masonry') => void;
@@ -39,6 +40,7 @@ export default function GalleryHeader({
   onToggleSelectionMode, onRequestMultipleDelete,
   onStartReorder, onCancelReorder, onSaveOrder,
   onUploadClick, onFileChange, fileInputRef,
+  canUpload,
 }: GalleryHeaderProps) {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-white/70 dark:bg-zinc-900/70 border-b border-rose-200/40 dark:border-zinc-800">
@@ -63,6 +65,7 @@ export default function GalleryHeader({
               columnsCount={columnsCount}
               hasImages={hasImages}
               isAdmin={isAdmin}
+              canUpload={canUpload}
               uploading={uploading}
               uploadProgress={uploadProgress}
               isMobileMenuOpen={isMobileMenuOpen}
@@ -129,6 +132,7 @@ interface DefaultToolbarProps {
   columnsCount: 2 | 3 | 4;
   hasImages: boolean;
   isAdmin: boolean;
+  canUpload: boolean;
   uploading: boolean;
   uploadProgress: { done: number; total: number } | null;
   isMobileMenuOpen: boolean;
@@ -143,7 +147,7 @@ interface DefaultToolbarProps {
 }
 
 function DefaultToolbar({
-  viewMode, columnsCount, hasImages, isAdmin, uploading, uploadProgress,
+  viewMode, columnsCount, hasImages, isAdmin, canUpload, uploading, uploadProgress,
   isMobileMenuOpen, fileInputRef,
   onSetViewMode, onSetColumnsCount, onToggleMobileMenu,
   onToggleSelectionMode, onStartReorder, onUploadClick, onFileChange,
@@ -230,7 +234,7 @@ function DefaultToolbar({
       </div>
 
       {/* Upload button */}
-      {isAdmin && (
+      {canUpload && (
         <>
           <input type="file" ref={fileInputRef} onChange={onFileChange} accept="image/*" multiple className="hidden" />
           <button
