@@ -18,25 +18,46 @@ const AuthContext = createContext<AuthContextType>({
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(Boolean(supabase));
 
   useEffect(() => {
     if (!supabase) {
-      setLoading(false);
       return;
+    }
+
+    // Check if we are loading from an invite link before Supabase clears the hash
+    if (typeof window !== 'undefined' && window.location.hash) {
+      if (
+        window.location.hash.includes('type=invite') ||
+        window.location.hash.includes('type=recovery')
+      ) {
+        sessionStorage.setItem('requiresPasswordUpdate', 'true');
+      }
     }
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      if (session?.user && sessionStorage.getItem('requiresPasswordUpdate') === 'true') {
+        sessionStorage.removeItem('requiresPasswordUpdate');
+        window.location.href = '/update-password';
+      }
     });
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      
+      if (session?.user && (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY')) {
+        if (sessionStorage.getItem('requiresPasswordUpdate') === 'true') {
+          sessionStorage.removeItem('requiresPasswordUpdate');
+          window.location.href = '/update-password';
+        }
+      }
     });
 
     return () => subscription.unsubscribe();
