@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff, Lock, User, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -67,7 +68,7 @@ export default function LoginPage() {
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               className="w-24 h-24 mx-auto rounded-full overflow-hidden border-4 border-white dark:border-zinc-800 shadow-xl mb-4"
             >
-              <img src="/avatar.jpg" alt="Mai" className="w-full h-full object-cover object-[50%_40%]" />
+              <Image src="/avatar.jpg" alt="Mai" width={96} height={96} className="w-full h-full object-cover object-[50%_40%]" />
             </motion.div>
             <h1 className="font-nghe-thuat italic text-3xl font-bold text-rose-600 dark:text-rose-400 mb-2">
               Chào mừng trở lại!
@@ -110,6 +111,12 @@ export default function LoginPage() {
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
+            </div>
+            
+            <div className="flex justify-end">
+              <Link href="/forgot-password" className="text-sm font-medium text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-300 transition-colors">
+                Quên mật khẩu?
+              </Link>
             </div>
 
             <motion.button
