@@ -61,7 +61,7 @@ export default function LightboxModal({ images, previewIndex, onClose, onNavigat
       {/* Close button */}
       <button
         onClick={onClose}
-        className="absolute top-5 right-5 z-10 p-2 bg-white/10 hover:bg-white/20 text-white rounded-full transition backdrop-blur-sm"
+        className="absolute top-5 right-5 z-10 p-2 bg-white/10 hover:bg-white/20 text-white hover:text-rose-300 rounded-full transition-all duration-300 hover:scale-110 hover:rotate-90 active:scale-90 backdrop-blur-sm shadow-lg"
       >
         <X size={22} />
       </button>
@@ -72,7 +72,7 @@ export default function LightboxModal({ images, previewIndex, onClose, onNavigat
       </div>
 
       {/* Prev button */}
-      <button onClick={goPrev} className="hidden sm:block absolute left-4 z-10 p-3 bg-white/10 hover:bg-white/25 text-white rounded-full transition backdrop-blur-sm">
+      <button onClick={goPrev} className="hidden sm:block absolute left-4 z-10 p-3 bg-white/10 hover:bg-white/25 text-white hover:text-rose-300 rounded-full transition-all duration-300 hover:scale-110 hover:-translate-x-1 active:scale-90 backdrop-blur-sm shadow-lg">
         <ChevronLeft size={28} />
       </button>
 
@@ -85,7 +85,7 @@ export default function LightboxModal({ images, previewIndex, onClose, onNavigat
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: direction < 0 ? 50 : direction > 0 ? -50 : 0, scale: 0.96 }}
           transition={{ duration: 0.25 }}
-          className="relative max-w-[90vw] max-h-[88vh] flex items-center justify-center touch-pan-y cursor-grab active:cursor-grabbing"
+          className="relative max-w-[90vw] max-h-[calc(100vh-160px)] flex items-center justify-center touch-pan-y cursor-grab active:cursor-grabbing mb-10"
           onClick={(e) => e.stopPropagation()}
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
@@ -96,7 +96,7 @@ export default function LightboxModal({ images, previewIndex, onClose, onNavigat
         <img
           src={image.image_url}
           alt="Preview"
-          className="max-w-[90vw] max-h-[88vh] object-contain rounded-2xl shadow-2xl select-none"
+          className="max-w-[90vw] max-h-[calc(100vh-160px)] object-contain rounded-2xl shadow-2xl select-none"
           draggable={false}
         />
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
@@ -108,12 +108,12 @@ export default function LightboxModal({ images, previewIndex, onClose, onNavigat
       </AnimatePresence>
 
       {/* Next button */}
-      <button onClick={goNext} className="hidden sm:block absolute right-4 z-10 p-3 bg-white/10 hover:bg-white/25 text-white rounded-full transition backdrop-blur-sm">
+      <button onClick={goNext} className="hidden sm:block absolute right-4 z-10 p-3 bg-white/10 hover:bg-white/25 text-white hover:text-rose-300 rounded-full transition-all duration-300 hover:scale-110 hover:translate-x-1 active:scale-90 backdrop-blur-sm shadow-lg">
         <ChevronRight size={28} />
       </button>
 
       {/* Thumbnail strip */}
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2 max-w-[80vw] overflow-x-auto px-2 pb-1 scrollbar-hide" style={{ scrollBehavior: 'smooth' }}>
+      <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex gap-2 max-w-[90vw] overflow-x-auto px-2 py-2 scrollbar-hide z-20" style={{ scrollBehavior: 'smooth' }}>
         {images.map((img, i) => (
           <button
             key={img.id}

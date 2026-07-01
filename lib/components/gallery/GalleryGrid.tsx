@@ -26,6 +26,7 @@ interface GalleryGridProps {
   columnsCount: 2 | 3 | 4;
   currentPage: number;
   itemsPerPage: number;
+  isAdmin: boolean;
   isReorderMode: boolean;
   isSelectionMode: boolean;
   selectedIds: string[];
@@ -47,7 +48,7 @@ interface GalleryGridProps {
 
 export default function GalleryGrid({
   images, loading, viewMode, columnsCount,
-  currentPage, itemsPerPage,
+  currentPage, itemsPerPage, isAdmin,
   isReorderMode, isSelectionMode, selectedIds, draggedItemIndex,
   observerTarget, categoryLabel,
   onDeleteRequest, onSelectImage, onPreview, onUploadClick,
@@ -74,12 +75,14 @@ export default function GalleryGrid({
             Hãy là người đầu tiên đóng góp những khoảnh khắc tuyệt vời cho bộ sưu tập <strong>{categoryLabel}</strong> nhé!
           </p>
         </div>
-        <button
-          onClick={onUploadClick}
-          className="mt-4 px-8 py-3 bg-white dark:bg-zinc-800 border border-rose-200 dark:border-zinc-700 rounded-full text-rose-600 dark:text-rose-400 font-bold tracking-widest text-xs shadow-sm hover:shadow-md transition-all hover:-translate-y-1"
-        >
-          CHỌN ẢNH TỪ THIẾT BỊ
-        </button>
+        {isAdmin && (
+          <button
+            onClick={onUploadClick}
+            className="mt-4 px-8 py-3 bg-white dark:bg-zinc-800 border border-rose-200 dark:border-zinc-700 rounded-full text-rose-600 dark:text-rose-400 font-bold tracking-widest text-xs shadow-sm hover:shadow-md transition-all hover:-translate-y-1"
+          >
+            CHỌN ẢNH TỪ THIẾT BỊ
+          </button>
+        )}
       </div>
     );
   }
@@ -97,6 +100,7 @@ export default function GalleryGrid({
             viewMode={viewMode}
             columnsCount={columnsCount}
             isReorderMode={isReorderMode}
+            isAdmin={isAdmin}
             isSelectionMode={isSelectionMode}
             isSelected={selectedIds.includes(img.id)}
             isDragging={draggedItemIndex === index && isReorderMode}

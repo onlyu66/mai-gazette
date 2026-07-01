@@ -10,6 +10,7 @@ interface GalleryImageItemProps {
   index: number;
   viewMode: 'grid' | 'masonry';
   columnsCount: 2 | 3 | 4;
+  isAdmin: boolean;
   isReorderMode: boolean;
   isSelectionMode: boolean;
   isSelected: boolean;
@@ -27,7 +28,7 @@ interface GalleryImageItemProps {
 }
 
 export default function GalleryImageItem({
-  img, index, viewMode, columnsCount,
+  img, index, viewMode, columnsCount, isAdmin,
   isReorderMode, isSelectionMode, isSelected, isDragging,
   onDelete, onSelect, onPreview,
   onDragStart, onDragOver, onDragEnter, onDragEnd,
@@ -109,11 +110,11 @@ export default function GalleryImageItem({
         )}
 
         {/* Delete button (hover) */}
-        {(!isSelectionMode && !isReorderMode) && (
+        {(!isSelectionMode && !isReorderMode && isAdmin) && (
           <div className="absolute top-4 right-4 translate-y-[-10px] opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
             <button
               onClick={(e) => { e.stopPropagation(); onDelete(img.id); }}
-              className="p-2.5 bg-white/90 dark:bg-zinc-800/90 hover:bg-red-50 hover:text-red-600 text-gray-600 dark:text-gray-300 rounded-full backdrop-blur shadow-lg transition-colors"
+              className="p-2.5 bg-white/90 dark:bg-zinc-800/90 hover:bg-red-50 hover:text-red-600 text-gray-600 dark:text-gray-300 rounded-full backdrop-blur shadow-lg transition-all hover:scale-110 active:scale-90"
               title="Xóa ảnh này"
             >
               <Trash2 size={16} />

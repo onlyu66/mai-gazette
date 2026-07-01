@@ -11,6 +11,9 @@ import { useLuuBut } from '@/lib/hooks/useLuuBut';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
 import { useEffect, useState, useRef } from 'react';
+import { useAuth } from '@/lib/contexts/AuthContext';
+import Link from 'next/link';
+import { LogIn, LogOut } from 'lucide-react';
 
 
 export default function Home() {
@@ -24,8 +27,15 @@ export default function Home() {
   const { formData, luuButList, loading, hasMore, loadingMore, loadMore, updateField, formatDropCapText, submitLuuBut, searchLuuBut } = useLuuBut();
 
   // Secret trigger for ArchiveFeed
+  const { user, signOut } = useAuth();
   const [showSecretArchive, setShowSecretArchive] = useState(false);
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setShowSecretArchive(true);
+    }
+  }, [user]);
 
   const startPress = () => {
     pressTimer.current = setTimeout(() => {
@@ -67,10 +77,23 @@ export default function Home() {
               <a href="#thiet-ke-bao" className="hover:text-rose-500 transition">Viết Lưu Bút</a>
               {showSecretArchive && <a href="#kho-luu-tru" className="hover:text-rose-500 transition">Đọc Lưu Bút</a>}
             </nav>
-            <button onClick={chuyenCheDo} className="flex items-center space-x-2 bg-rose-600 text-white px-4 py-2 rounded-full text-xs font-bold tracking-wider hover:bg-rose-700 transition shadow-md">
-              <span>{isDarkMode ? '☀️' : '🌙'}</span>
-              <span className="hidden sm:inline">{isDarkMode ? 'KÝ ỨC BAN MAI' : 'KÝ ỨC SAO ĐÊM'}</span>
-            </button>
+            <div className="flex items-center space-x-3">
+              {user ? (
+                <button onClick={() => signOut()} className="flex items-center justify-center w-8 h-8 md:w-auto md:px-4 md:py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-full text-xs font-bold tracking-wider hover:bg-zinc-200 dark:hover:bg-zinc-700 transition shadow-sm" title="Đăng xuất">
+                  <LogOut size={14} className="md:mr-2" />
+                  <span className="hidden md:inline">ĐĂNG XUẤT</span>
+                </button>
+              ) : (
+                <Link href="/login" className="flex items-center justify-center w-8 h-8 md:w-auto md:px-4 md:py-2 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 rounded-full text-xs font-bold tracking-wider hover:bg-rose-100 dark:hover:bg-rose-900/50 transition shadow-sm" title="Đăng nhập cho Mai">
+                  <LogIn size={14} className="md:mr-2" />
+                  <span className="hidden md:inline">MAI ĐĂNG NHẬP</span>
+                </Link>
+              )}
+              <button onClick={chuyenCheDo} className="flex items-center space-x-2 bg-rose-600 text-white px-4 py-2 rounded-full text-xs font-bold tracking-wider hover:bg-rose-700 transition shadow-md">
+                <span>{isDarkMode ? '☀️' : '🌙'}</span>
+                <span className="hidden sm:inline">{isDarkMode ? 'KÝ ỨC BAN MAI' : 'KÝ ỨC SAO ĐÊM'}</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>

@@ -1,15 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Eye, EyeOff, Trash2 } from 'lucide-react';
+import React from 'react';
+import { Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface DeleteConfirmModalProps {
   deletingMultiple: boolean;
   selectedCount: number;
-  deletePassword: string;
-  deleteError: boolean;
-  onPasswordChange: (password: string) => void;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -17,18 +14,12 @@ interface DeleteConfirmModalProps {
 export default function DeleteConfirmModal({
   deletingMultiple,
   selectedCount,
-  deletePassword,
-  deleteError,
-  onPasswordChange,
   onConfirm,
   onCancel,
 }: DeleteConfirmModalProps) {
-  const [showPassword, setShowPassword] = useState(false);
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <motion.div 
-        animate={deleteError ? { x: [-15, 15, -15, 15, 0] } : {}}
-        transition={{ duration: 0.5, ease: "easeInOut" }}
         className="bg-white dark:bg-zinc-900 rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-rose-100 dark:border-zinc-800 animate-in zoom-in-95 duration-200"
       >
         <div className="text-center space-y-4">
@@ -42,49 +33,12 @@ export default function DeleteConfirmModal({
           <h3 className="text-xl font-bold font-nghe-thuat text-rose-600 dark:text-rose-400">
             {deletingMultiple ? `Xóa ${selectedCount} bức ảnh?` : 'Xóa bức ảnh này?'}
           </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Bạn cần nhập mật khẩu bí mật (như ở Vườn Lưu Bút) để có quyền xóa ảnh.
-          </p>
 
-          <div className="pt-2">
-            <div className="relative">
-              <motion.input
-                whileFocus={{ scale: 1.01, boxShadow: '0 0 20px rgba(244, 114, 182, 0.4)' }}
-                type={showPassword ? 'text' : 'password'}
-                value={deletePassword}
-                onChange={(e) => { onPasswordChange(e.target.value); }}
-                placeholder="Nhập mật khẩu..."
-                className={`w-full px-4 pr-12 py-3 rounded-xl border-2 focus:outline-none transition-colors duration-300 text-center font-bold tracking-widest placeholder:font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 ${
-                  deleteError
-                    ? 'border-red-400 dark:border-red-500/50 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400'
-                    : 'border-rose-100 dark:border-zinc-700 focus:border-rose-400 dark:focus:border-rose-500 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-200'
-                }`}
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') onConfirm();
-                  if (e.key === 'Escape') onCancel();
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(v => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-rose-300 hover:text-rose-500 dark:text-zinc-500 dark:hover:text-rose-400 transition-colors"
-                tabIndex={-1}
-                aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-              >
-                {showPassword ? <EyeOff size={18} strokeWidth={1.75} /> : <Eye size={18} strokeWidth={1.75} />}
-              </button>
-            </div>
-            {deleteError && (
-              <motion.p 
-                initial={{ opacity: 0, height: 0 }} 
-                animate={{ opacity: 1, height: 'auto' }} 
-                className="text-[11px] text-red-500 mt-2 font-medium overflow-hidden"
-              >
-                Mật khẩu không đúng! Gợi ý: Ngày kỷ niệm 😉
-              </motion.p>
-            )}
-          </div>
+          <p className="pt-1 text-sm text-rose-400 dark:text-rose-300 italic whitespace-nowrap">
+            {deletingMultiple
+              ? `🌸 ${selectedCount} bức ảnh sẽ biến mất mãi mãi đó Mai ơi...`
+              : '🌸 Bức ảnh này sẽ biến mất mãi mãi đó Mai ơi...'}
+          </p>
 
           <div className="flex gap-3 pt-4">
             <motion.button

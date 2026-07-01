@@ -1,44 +1,48 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { MEMORIES } from '@/lib/constants';
+import DeleteConfirmModal from '@/lib/components/gallery/DeleteConfirmModal';
+import GalleryGrid from '@/lib/components/gallery/GalleryGrid';
+import GalleryHeader from '@/lib/components/gallery/GalleryHeader';
+import LightboxModal from '@/lib/components/gallery/LightboxModal';
 import { useGalleryData } from '@/lib/components/gallery/useGalleryData';
-import { useGalleryUpload } from '@/lib/components/gallery/useGalleryUpload';
 import { useGalleryDelete } from '@/lib/components/gallery/useGalleryDelete';
 import { useGalleryReorder } from '@/lib/components/gallery/useGalleryReorder';
-import GalleryHeader from '@/lib/components/gallery/GalleryHeader';
-import GalleryGrid from '@/lib/components/gallery/GalleryGrid';
-import LightboxModal from '@/lib/components/gallery/LightboxModal';
-import DeleteConfirmModal from '@/lib/components/gallery/DeleteConfirmModal';
-import PasswordModal from '@/lib/components/gallery/PasswordModal';
+import { useGalleryUpload } from '@/lib/components/gallery/useGalleryUpload';
+import { MEMORIES } from '@/lib/constants';
+import { useAuth } from '@/lib/contexts/AuthContext';
+import { motion } from 'framer-motion';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function GalleryPage() {
   const params = useParams();
   const router = useRouter();
   const categoryId = params.category as string;
+  const { user } = useAuth();
+  const isAdmin = !!user;
 
   const [viewMode, setViewMode] = useState<'grid' | 'masonry'>('grid');
   const [columnsCount, setColumnsCount] = useState<2 | 3 | 4>(4);
 
   // Sync with localStorage on client mount to avoid hydration mismatch
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     const savedView = localStorage.getItem('gallery_viewMode');
-    if (savedView === 'grid' || savedView === 'masonry') setViewMode(savedView);
-    
     const savedCols = localStorage.getItem('gallery_columnsCount');
-    if (savedCols) {
-      const cols = parseInt(savedCols, 10);
-      if (cols === 2 || cols === 3 || cols === 4) setColumnsCount(cols as 2 | 3 | 4);
-    }
+
+    // Dùng setTimeout để tránh lỗi gọi setState đồng bộ trong useEffect của Next.js
+    setTimeout(() => {
+      if (savedView === 'grid' || savedView === 'masonry') setViewMode(savedView);
+
+      if (savedCols) {
+        const cols = parseInt(savedCols, 10);
+        if (cols === 2 || cols === 3 || cols === 4) setColumnsCount(cols as 2 | 3 | 4);
+      }
+    }, 0);
   }, []);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [actionPending, setActionPending] = useState<'upload' | 'reorder' | null>(null);
-  const [actionPasswordError, setActionPasswordError] = useState(false);
 
   useEffect(() => { localStorage.setItem('gallery_viewMode', viewMode); }, [viewMode]);
   useEffect(() => { localStorage.setItem('gallery_columnsCount', columnsCount.toString()); }, [columnsCount]);
@@ -55,8 +59,7 @@ export default function GalleryPage() {
   const { uploading, uploadProgress, fileInputRef, handleFileChange } = useGalleryUpload(categoryId, images, setImages);
 
   const {
-    deletingId, deletingMultiple, deletePassword, deleteError,
-    setDeletePassword, setDeleteError,
+    deletingId, deletingMultiple,
     requestDelete, requestMultipleDelete, confirmDelete, cancelDelete,
   } = useGalleryDelete(setImages, selectedIds, setSelectedIds, setIsSelectionMode);
 
@@ -99,22 +102,37 @@ export default function GalleryPage() {
         columnsCount={columnsCount}
         hasImages={images.length > 0}
         isMobileMenuOpen={isMobileMenuOpen}
+        isAdmin={isAdmin}
         onToggleMobileMenu={() => setIsMobileMenuOpen(v => !v)}
         onSetViewMode={setViewMode}
         onSetColumnsCount={setColumnsCount}
         onToggleSelectionMode={toggleSelectionMode}
         onRequestMultipleDelete={requestMultipleDelete}
-        onStartReorder={() => setActionPending('reorder')}
+        onStartReorder={() => setIsReorderMode(true)}
         onCancelReorder={() => setIsReorderMode(false)}
         onSaveOrder={handleSaveOrder}
-        onUploadClick={() => setActionPending('upload')}
+        onUploadClick={() => fileInputRef.current?.click()}
         onFileChange={handleFileChange}
         fileInputRef={fileInputRef}
       />
 
       <main className="max-w-7xl mx-auto px-6 py-12">
         <div className="text-center mb-12 space-y-4">
-          <div className="text-6xl animate-bounce-slow inline-block drop-shadow-md">{categoryInfo.emoji}</div>
+          <motion.div
+            animate={{
+              y: [0, -12, 0],
+              rotate: [-6, 6, -6],
+              scale: [1, 1.08, 1],
+            }}
+            transition={{
+              duration: 3.5,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+            className="text-6xl inline-block drop-shadow-lg cursor-default select-none"
+          >
+            {categoryInfo.emoji}
+          </motion.div>
           <h1 className="font-nghe-thuat italic text-4xl md:text-5xl font-bold text-[#2E1F20] dark:text-white">
             {categoryInfo.label}
           </h1>
@@ -136,10 +154,11 @@ export default function GalleryPage() {
           draggedItemIndex={draggedItemIndex}
           observerTarget={observerTarget}
           categoryLabel={categoryInfo.label}
+          isAdmin={isAdmin}
           onDeleteRequest={requestDelete}
           onSelectImage={toggleSelectImage}
           onPreview={setPreviewIndex}
-          onUploadClick={() => setActionPending('upload')}
+          onUploadClick={() => fileInputRef.current?.click()}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnter={handleDragEnter}
@@ -165,37 +184,8 @@ export default function GalleryPage() {
         <DeleteConfirmModal
           deletingMultiple={deletingMultiple}
           selectedCount={selectedIds.length}
-          deletePassword={deletePassword}
-          deleteError={deleteError}
-          onPasswordChange={(p) => { setDeletePassword(p); setDeleteError(false); }}
           onConfirm={confirmDelete}
           onCancel={cancelDelete}
-        />
-      )}
-
-      {/* Upload/Reorder confirmation */}
-      {actionPending && (
-        <PasswordModal
-          title={actionPending === 'upload' ? 'Thêm ảnh mới?' : 'Sắp xếp lại ảnh?'}
-          passwordError={actionPasswordError}
-          onConfirm={(password) => {
-            if (password.toLowerCase() !== '15042025') {
-              setActionPasswordError(true);
-              return;
-            }
-            setActionPasswordError(false);
-            if (actionPending === 'upload') {
-              fileInputRef.current?.click();
-            } else if (actionPending === 'reorder') {
-              setIsReorderMode(true);
-            }
-            setActionPending(null);
-          }}
-          onCancel={() => {
-            setActionPending(null);
-            setActionPasswordError(false);
-          }}
-          confirmText="XÁC NHẬN"
         />
       )}
     </div>

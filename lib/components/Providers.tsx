@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from '@/lib/contexts/AuthContext';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -50,7 +51,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           },
         }}
       />
-      {children}
+      <AuthProvider>
+        {children}
+      </AuthProvider>
     </ThemeProvider>
   );
 }
