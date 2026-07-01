@@ -70,7 +70,7 @@ export default function ForgotPasswordPage() {
               Quên mật khẩu?
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Đừng lo, chỉ cần nhập email, tôi sẽ gửi link khôi phục cho bạn 🌷
+              Nhập email tài khoản của bạn để nhận link đặt lại mật khẩu 🌷
             </p>
           </div>
 
@@ -83,9 +83,11 @@ export default function ForgotPasswordPage() {
               <div className="flex justify-center text-green-500 mb-4">
                 <CheckCircle2 size={64} />
               </div>
-              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">Đã gửi email khôi phục</h3>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">Đã tiếp nhận yêu cầu!</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 pb-4">
-                Nếu tài khoản hợp lệ, một email chứa link khôi phục đã được gửi tới <strong>{email}</strong>. Vui lòng kiểm tra hộp thư đến (hoặc thư mục Spam) và click vào link để đặt lại mật khẩu mới.
+                Nếu <strong>{email}</strong> là tài khoản hợp lệ do Admin cấp, hệ thống sẽ gửi một đường link đặt lại mật khẩu vào hộp thư của bạn (hãy kiểm tra cả mục Spam).
+                <br /><br />
+                <span className="text-xs text-rose-400">Lưu ý: Nếu bạn chưa có tài khoản, vui lòng liên hệ Admin để được cấp quyền truy cập.</span>
               </p>
               <Link 
                 href="/login"
