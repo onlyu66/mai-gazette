@@ -99,7 +99,7 @@ export default function LuuButLightbox({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center sm:p-4"
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4"
             style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(12px)' }}
             onClick={onClose}
           >

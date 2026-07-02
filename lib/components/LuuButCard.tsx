@@ -1,7 +1,7 @@
 'use client';
 
 import { GalleryImageRecord } from '@/lib/types';
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { formatLuuButDate } from '../utils/luu-but-constants';
 import ImageWithSkeleton from './ImageWithSkeleton';
 import WashiRibbon from './WashiRibbon';
@@ -32,21 +32,51 @@ export default function LuuButCard({
   showPlaceholderImage = false,
 }: LuuButCardProps) {
   // Optimize image preview rendering to avoid lag during typing
-  const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const objectUrl = useMemo(() => {
+    if (!anhFile) return null;
+    return URL.createObjectURL(anhFile);
+  }, [anhFile]);
 
   useEffect(() => {
-    if (!anhFile) {
-      setObjectUrl(null);
-      return;
-    }
-    const url = URL.createObjectURL(anhFile);
-    setObjectUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [anhFile]);
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [objectUrl]);
 
   const imgSrc = objectUrl || anhUrl;
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const displayDate = createdAt ? formatLuuButDate(createdAt, 'long') : 'Đang cập nhật';
+  const [mounted, setMounted] = useState(false);
+  const [currentTime, setCurrentTime] = useState<number | null>(null);
+
+  useEffect(() => {
+    let interval: number | null = null;
+    const timeout = window.setTimeout(() => {
+      setMounted(true);
+      if (!createdAt) {
+        setCurrentTime(Date.now());
+        interval = window.setInterval(() => {
+          setCurrentTime(Date.now());
+        }, 1000);
+      }
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeout);
+      if (interval !== null) {
+        window.clearInterval(interval);
+      }
+    };
+  }, [createdAt]);
+
+  const displayDate = useMemo(() => {
+    if (createdAt) {
+      return formatLuuButDate(createdAt, 'long');
+    }
+    if (!mounted || currentTime === null) {
+      return 'Đang cập nhật';
+    }
+    return formatLuuButDate(new Date(currentTime).toISOString(), 'long');
+  }, [createdAt, currentTime, mounted]);
 
   return (
     <div
@@ -96,9 +126,6 @@ export default function LuuButCard({
               title="Bấm để xem ảnh lớn"
             >
               {/* Image — blob preview loads instantly; remote URL uses skeleton */}
-              {/* {anhFile ? (
-                <img src={imgSrc} alt="Ảnh kỷ niệm" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-              ) : ( */}
                 <ImageWithSkeleton
                   src={imgSrc}
                   alt="Ảnh kỷ niệm"
