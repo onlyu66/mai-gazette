@@ -10,6 +10,7 @@ import { useGalleryReorder } from '@/lib/components/gallery/useGalleryReorder';
 import { useGalleryUpload } from '@/lib/components/gallery/useGalleryUpload';
 import { MEMORIES } from '@/lib/constants';
 import { useAuth } from '@/lib/contexts/AuthContext';
+import { MemoryIcon } from '@/lib/components/MemoryIcon';
 import { motion } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -24,6 +25,7 @@ export default function GalleryPage() {
 
   const [viewMode, setViewMode] = useState<'grid' | 'masonry'>('grid');
   const [columnsCount, setColumnsCount] = useState<2 | 3 | 4>(4);
+  const itemsPerPage = viewMode === 'grid' ? columnsCount * 3 : columnsCount * 4;
 
   // Sync with localStorage on client mount to avoid hydration mismatch
   useEffect(() => {
@@ -55,7 +57,7 @@ export default function GalleryPage() {
   }, [categoryInfo, router]);
 
   // ─── Hooks ───
-  const { images, setImages, currentPage, itemsPerPage, loading, observerTarget } = useGalleryData(categoryId);
+  const { images, setImages, loading, loadingMore, observerTarget, hasMore } = useGalleryData(categoryId, itemsPerPage);
 
   const { uploading, uploadProgress, fileInputRef, handleFileChange } = useGalleryUpload(categoryId, images, setImages);
 
@@ -131,9 +133,9 @@ export default function GalleryPage() {
               repeat: Infinity,
               ease: 'easeInOut',
             }}
-            className="text-6xl inline-block drop-shadow-lg cursor-default select-none"
+            className="inline-block drop-shadow-lg cursor-default select-none"
           >
-            {categoryInfo.emoji}
+            <MemoryIcon itemId={categoryId} className="w-16 h-16 text-rose-400/90" />
           </motion.div>
           <h1 className="font-nghe-thuat italic text-4xl md:text-5xl font-bold text-[#2E1F20] dark:text-white">
             {categoryInfo.label}
@@ -148,8 +150,6 @@ export default function GalleryPage() {
           loading={loading}
           viewMode={viewMode}
           columnsCount={columnsCount}
-          currentPage={currentPage}
-          itemsPerPage={itemsPerPage}
           isReorderMode={isReorderMode}
           isSelectionMode={isSelectionMode}
           selectedIds={selectedIds}
@@ -169,6 +169,8 @@ export default function GalleryPage() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          hasMore={hasMore}
+          loadingMore={loadingMore}
         />
       </main>
 

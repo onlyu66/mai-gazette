@@ -64,7 +64,7 @@ export default function GalleryImageItem({
         onClick={handleClick}
         className={`
           relative group w-full ${isGrid ? 'h-full' : 'h-auto'} rounded-2xl overflow-hidden
-          bg-rose-50 dark:bg-zinc-900 border transition-all duration-300
+          bg-rose-50 dark:bg-zinc-900 border transition-colors duration-300 ease-out will-change-transform
           ${isReorderMode ? 'cursor-grab active:cursor-grabbing touch-none' : isSelectionMode ? 'cursor-pointer' : 'cursor-zoom-in'}
           ${isSelected ? 'border-rose-500 ring-2 ring-rose-500 shadow-xl' : 'border-rose-100 dark:border-zinc-800 shadow-sm'}
           ${isDragging ? 'opacity-50 scale-95' : ''}
@@ -77,20 +77,21 @@ export default function GalleryImageItem({
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             priority={index < 6}
             className={`
-              transform transition duration-700
-              ${(!isSelectionMode && !isReorderMode) ? 'group-hover:scale-105' : ''}
+              transform-gpu transition-transform duration-500 ease-out will-change-transform
+              ${(!isSelectionMode && !isReorderMode) ? 'group-hover:scale-103' : ''}
               ${isSelected ? 'scale-105 opacity-80' : ''}
             `}
           />
         ) : (
           /* Masonry: height is content-driven, plain img is appropriate */
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={img.image_url}
             alt="Kỷ niệm"
             className={`
               w-full h-auto object-cover
-              transform transition duration-700
-              ${(!isSelectionMode && !isReorderMode) ? 'group-hover:scale-105' : ''}
+              transform transition-transform duration-700 ease-out will-change-transform
+              ${(!isSelectionMode && !isReorderMode) ? 'group-hover:scale-103' : ''}
               ${isSelected ? 'scale-105 opacity-80' : ''}
             `}
             loading={index < 6 ? 'eager' : 'lazy'}
@@ -100,7 +101,7 @@ export default function GalleryImageItem({
 
         {/* Hover overlay gradient */}
         {(!isSelectionMode && !isReorderMode) && (
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out will-change-opacity pointer-events-none" />
         )}
 
         {/* Reorder overlay */}
@@ -127,7 +128,7 @@ export default function GalleryImageItem({
 
         {/* Delete button (hover) */}
         {(!isSelectionMode && !isReorderMode && isAdmin) && (
-          <div className="absolute top-4 right-4 translate-y-[-10px] opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+          <div className="absolute top-4 right-4 -translate-y-2.5 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out will-change-transform will-change-opacity">
             <button
               onClick={(e) => { e.stopPropagation(); onDelete(img.id); }}
               className="p-2.5 bg-white/90 dark:bg-zinc-800/90 hover:bg-red-50 hover:text-red-600 text-gray-600 dark:text-gray-300 rounded-full backdrop-blur shadow-lg transition-all hover:scale-110 active:scale-90"
@@ -139,7 +140,7 @@ export default function GalleryImageItem({
         )}
 
         {/* Date badge */}
-        <div className={`absolute bottom-4 left-4 transition-all duration-300 ${(!isSelectionMode && !isReorderMode) ? 'translate-y-[10px] opacity-0 group-hover:opacity-100 group-hover:translate-y-0' : ''}`}>
+        <div className={`absolute bottom-4 left-4 transition-all duration-300 ease-out will-change-transform will-change-opacity ${(!isSelectionMode && !isReorderMode) ? 'translate-y-2.5 opacity-0 group-hover:opacity-100 group-hover:translate-y-0' : ''}`}>
           <span className="text-[10px] font-mono font-bold tracking-widest text-white uppercase bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-md">
             {new Date(img.created_at).toLocaleDateString('vi-VN')}
           </span>

@@ -1,30 +1,31 @@
 'use client';
 
+import { Camera, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { fetchGalleryImages } from '../services/api';
 import { MEMORIES } from '../constants';
-
-const STRIP = [...MEMORIES, ...MEMORIES, ...MEMORIES, ...MEMORIES, ...MEMORIES, ...MEMORIES];
+import { MemoryIcon } from './MemoryIcon';
+import { fetchGalleryImages } from '../services/api';
 
 export default function GallerySlider() {
-  const [covers, setCovers] = useState<Record<string, string>>({});
+  const [categoryImages, setCategoryImages] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     const loadImages = async () => {
       try {
-        const images = await fetchGalleryImages();
-        const newCovers: Record<string, string> = {};
+        const { images: fetchedImages } = await fetchGalleryImages();
+        const grouped: Record<string, string[]> = {};
 
-        // Nhóm ảnh theo danh mục, lấy ảnh đầu tiên (mới nhất vì đã được sort descending)
-        images.forEach(img => {
-          if (!newCovers[img.category]) {
-            newCovers[img.category] = img.image_url;
+        // Nhóm tất cả ảnh theo danh mục
+        fetchedImages.forEach(img => {
+          if (!grouped[img.category]) {
+            grouped[img.category] = [];
           }
+          grouped[img.category].push(img.image_url);
         });
 
-        setCovers(newCovers);
+        setCategoryImages(grouped);
       } catch (error) {
         console.error("Lỗi khi tải ảnh gallery:", error);
       }
@@ -32,6 +33,30 @@ export default function GallerySlider() {
 
     loadImages();
   }, []);
+
+  // Tạo uniqueStrip với số lần lặp tương ứng
+  const uniqueStrip = Array.from({ length: 3 }).flatMap(() => MEMORIES);
+
+  // Ánh xạ ảnh cụ thể cho từng vị trí của uniqueStrip
+  const uniqueStripWithCovers = [];
+  const occurrences: Record<string, number> = {};
+
+  for (const item of uniqueStrip) {
+    const count = occurrences[item.id] || 0;
+    occurrences[item.id] = count + 1;
+
+    const imgs = categoryImages[item.id] || [];
+    const coverUrl = imgs[count] || null;
+
+    uniqueStripWithCovers.push({
+      ...item,
+      coverUrl,
+    });
+  }
+
+  // Nhân đôi để tạo hiệu ứng cuộn vô tận (infinite scroll marquee) không bị giật/nhảy hình
+  const finalStrip = [...uniqueStripWithCovers, ...uniqueStripWithCovers];
+
 
   return (
     <section id="goc-trien-lam" className="py-12 overflow-hidden border-t select-none"
@@ -48,53 +73,84 @@ export default function GallerySlider() {
       </div>
 
       {/* Scrolling strip */}
-      <div className="flex w-max flex-nowrap group">
-        <div
-          className="flex flex-nowrap pr-6 space-x-5 chay-ngang"
-        >
-          {STRIP.map((item, idx) => (
-            <Link
-              href={`/gallery/${item.id}`}
-              key={idx}
-              className={`
-                relative w-52 h-44 rounded-3xl shrink-0 flex flex-col items-center justify-center gap-3
-                bg-linear-to-br ${item.color} overflow-hidden
-                border shadow-sm
-                hover:shadow-rose-300/80 hover:-translate-y-2
-                transition-all duration-300
-              `}
-              style={{ borderColor: 'var(--border-card)' }}
-            >
-              {covers[item.id] ? (
-                <>
-                  <Image src={covers[item.id]} alt={item.label} fill sizes="(max-width: 768px) 100vw, 208px" className="object-cover opacity-90 transition duration-500 hover:scale-110" priority={idx < 2} />
-                  <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent"></div>
-                  {/* Decorative dot */}
-                  <div className="w-1.5 h-1.5 rounded-full bg-white/80 absolute top-4 right-4 z-10 shadow-[0_0_8px_rgba(255,255,255,0.8)] animate-pulse" />
-                  <span className="text-xl z-10 drop-shadow-md">{item.emoji}</span>
-                  <span className="text-[12px] font-bold text-white tracking-wider uppercase text-center px-4 z-10 drop-shadow-md">
-                    {item.label}
-                  </span>
-                </>
-              ) : (
-                <>
-                  {/* Decorative dot */}
-                  <div className="w-1.5 h-1.5 rounded-full bg-rose-300/60 absolute top-4 right-4" />
-                  <span className="text-4xl">{item.emoji}</span>
-                  <span className="text-[11px] font-bold text-rose-500/80 tracking-wider uppercase text-center px-4">
-                    {item.label}
-                  </span>
-                </>
-              )}
-            </Link>
-          ))}
-        </div>
-      </div>
+      <div className="group">
+        <div className="flex w-max flex-nowrap">
+          <div
+            className="flex flex-nowrap pr-6 space-x-5 chay-ngang"
+            style={{ animationDuration: `${finalStrip.length * 1}s` }}
+          >
+            {finalStrip.map((item, idx) => (
+              <Link
+                href={`/gallery/${item.id}`}
+                key={idx}
+                className={`
+                  relative w-52 h-44 rounded-3xl shrink-0 flex flex-col items-center justify-center gap-3
+                  bg-linear-to-br ${item.color} overflow-hidden
+                  border shadow-sm group/card
+                  hover:shadow-rose-400/40 hover:-translate-y-2 hover:border-rose-300/50
+                  transition-all duration-500 ease-out
+                `}
+                style={{ borderColor: 'var(--border-card)' }}
+              >
+                {item.coverUrl ? (
+                  <>
+                    <Image
+                      src={item.coverUrl}
+                      alt={item.label}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 208px"
+                      className="object-cover opacity-90 transition-all duration-700 ease-out group-hover/card:scale-115 group-hover/card:brightness-105"
+                      priority={idx < 2}
+                    />
+                    {/* Premium Overlay Gradient */}
+                    <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/30 to-black/10 z-10 transition-all duration-500 group-hover/card:from-black/85 group-hover/card:via-black/45 group-hover/card:to-black/20" />
 
-      {/* Footer hint */}
-      <p className="text-center text-[9px] tracking-widest uppercase mt-6 font-mono" style={{ color: 'var(--text-muted)' }}>
-        Nhấn vào thẻ để xem và thêm ảnh 🌷
-      </p>
+                    {/* Animated camera icon on the top-left */}
+                    <div className="absolute top-3 left-3 z-20 flex items-center justify-center w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white opacity-95 group-hover/card:opacity-100 group-hover/card:scale-110 group-hover/card:bg-rose-500/80 group-hover/card:border-rose-400/30 transition-all duration-300">
+                      <Camera className="w-4 h-4 transition-transform duration-500 group-hover/card:scale-110 group-hover/card:rotate-12" />
+                    </div>
+
+                    {/* Animated spinning sparkle icon on the top-right */}
+                    <div className="absolute top-3 right-3 z-20 text-rose-200 opacity-90 group-hover/card:opacity-100 transition-all duration-300">
+                      <Sparkles className="w-4 h-4 animate-spin [animation-duration:8s]" />
+                    </div>
+
+                    {/* Text details */}
+                    <div className="z-20 drop-shadow-md transition-all duration-300 group-hover/card:scale-110">
+                      <MemoryIcon itemId={item.id} className="w-6 h-6 text-rose-50" />
+                    </div>
+                    <span className="text-[12px] font-bold text-rose-50 tracking-wider uppercase text-center px-4 z-20 drop-shadow-md transition-all duration-300 group-hover/card:tracking-widest">
+                      {item.label}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    {/* Default decorative elements */}
+                    <div className="absolute top-3 right-3 z-10 text-rose-300/60 group-hover/card:text-rose-400 transition-colors duration-300">
+                      <Sparkles className="w-4 h-4 transition-transform duration-500 group-hover/card:rotate-45" />
+                    </div>
+                    <div className="absolute top-3 left-3 z-10 text-rose-300/40 group-hover/card:text-rose-400 transition-colors duration-300">
+                      <Camera className="w-4 h-4 transition-transform duration-500 group-hover/card:scale-110" />
+                    </div>
+
+                    <div className="transition-transform duration-500 group-hover/card:scale-120 group-hover/card:rotate-6">
+                      <MemoryIcon itemId={item.id} className="w-7 h-7 text-rose-500/80" />
+                    </div>
+                    <span className="text-[11px] font-bold text-rose-500/80 tracking-wider uppercase text-center px-4 transition-all duration-300 group-hover/card:text-rose-600 group-hover/card:tracking-widest">
+                      {item.label}
+                    </span>
+                  </>
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer hint */}
+        <p className="text-center text-[9px] tracking-widest uppercase mt-6 font-mono transition-all duration-300 group-hover:-translate-y-1 group-hover:text-rose-500" style={{ color: 'var(--text-muted)' }}>
+          Nhấn vào thẻ để xem và thêm ảnh 🌷
+        </p>
+      </div>
     </section>
   );
 }

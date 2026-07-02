@@ -1,45 +1,79 @@
-import { useState, useEffect, useRef } from 'react';
-import { fetchGalleryImages } from '@/lib/services/api';
-import { GalleryImageRecord } from '@/lib/types';
-import toast from 'react-hot-toast';
+import { useState, useEffect, useRef } from "react";
+import { fetchGalleryImages } from "@/lib/services/api";
+import { GalleryImageRecord } from "@/lib/types";
+import toast from "react-hot-toast";
 
-export function useGalleryData(categoryId: string | undefined) {
+export function useGalleryData(
+  categoryId: string | undefined,
+  itemsPerPage = 6,
+) {
   const [images, setImages] = useState<GalleryImageRecord[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     if (!categoryId) return;
 
+    const resetGalleryState = () => {
+      setImages([]);
+      setCurrentPage(0);
+      setHasMore(true);
+    };
+
+    resetGalleryState();
+  }, [categoryId, itemsPerPage]);
+
+  useEffect(() => {
+    if (!categoryId || (!hasMore && currentPage > 0)) return;
+
     const loadImages = async () => {
       try {
-        setLoading(true);
-        const data = await fetchGalleryImages(categoryId);
-        setImages(data);
-      } catch (error) {
-        console.error("Lỗi khi tải ảnh:", error);
+        if (currentPage === 0) {
+          setLoading(true);
+        } else {
+          setLoadingMore(true);
+        }
+
+        const result = await fetchGalleryImages(
+          categoryId,
+          currentPage,
+          itemsPerPage,
+        );
+        setImages((prev) =>
+          currentPage === 0 ? result.images : [...prev, ...result.images],
+        );
+        setHasMore(result.hasMore);
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : JSON.stringify(error, null, 2);
+        console.error("Lỗi khi tải ảnh:", errorMessage, error);
         toast.error("Không thể tải danh sách ảnh");
       } finally {
-        setLoading(false);
+        if (currentPage === 0) {
+          setLoading(false);
+        } else {
+          setLoadingMore(false);
+        }
       }
     };
 
     loadImages();
-  }, [categoryId]);
+  }, [categoryId, currentPage, itemsPerPage, hasMore]);
 
   const observerTarget = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
-          if (currentPage * itemsPerPage < images.length) {
-            setCurrentPage((p) => p + 1);
-          }
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+          setCurrentPage((p) => p + 1);
         }
       },
-      { threshold: 1.0 }
+      { threshold: 1.0 },
     );
 
     if (observerTarget.current) {
@@ -47,7 +81,7 @@ export function useGalleryData(categoryId: string | undefined) {
     }
 
     return () => observer.disconnect();
-  }, [currentPage, images.length, itemsPerPage]);
+  }, [currentPage, images.length, itemsPerPage, hasMore, loading, loadingMore]);
 
   return {
     images,
@@ -55,6 +89,8 @@ export function useGalleryData(categoryId: string | undefined) {
     currentPage,
     itemsPerPage,
     loading,
+    loadingMore,
+    hasMore,
     observerTarget,
   };
 }

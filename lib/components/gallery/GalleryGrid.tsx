@@ -24,8 +24,6 @@ interface GalleryGridProps {
   loading: boolean;
   viewMode: 'grid' | 'masonry';
   columnsCount: 2 | 3 | 4;
-  currentPage: number;
-  itemsPerPage: number;
   isAdmin: boolean;
   canUpload: boolean;
   isReorderMode: boolean;
@@ -34,6 +32,8 @@ interface GalleryGridProps {
   draggedItemIndex: number | null;
   observerTarget: React.RefObject<HTMLDivElement | null>;
   categoryLabel: string;
+  hasMore: boolean;
+  loadingMore: boolean;
   onDeleteRequest: (id: string) => void;
   onSelectImage: (id: string) => void;
   onPreview: (index: number) => void;
@@ -49,14 +49,14 @@ interface GalleryGridProps {
 
 export default function GalleryGrid({
   images, loading, viewMode, columnsCount,
-  currentPage, itemsPerPage, isAdmin, canUpload,
+  isAdmin, canUpload,
   isReorderMode, isSelectionMode, selectedIds, draggedItemIndex,
-  observerTarget, categoryLabel,
+  observerTarget, categoryLabel, hasMore, loadingMore,
   onDeleteRequest, onSelectImage, onPreview, onUploadClick,
   onDragStart, onDragOver, onDragEnter, onDragEnd,
   onTouchStart, onTouchMove, onTouchEnd,
 }: GalleryGridProps) {
-  if (loading) {
+  if (loading && images.length === 0) {
     return (
       <div className="flex justify-center py-20">
         <Loader2 className="animate-spin text-rose-400" size={40} />
@@ -88,7 +88,7 @@ export default function GalleryGrid({
     );
   }
 
-  const displayedImages = isReorderMode ? images : images.slice(0, currentPage * itemsPerPage);
+  const displayedImages = images;
 
   return (
     <>
@@ -120,9 +120,13 @@ export default function GalleryGrid({
       </div>
 
       {/* Infinite scroll trigger */}
-      {!isReorderMode && currentPage * itemsPerPage < images.length && (
+      {!isReorderMode && hasMore && (
         <div ref={observerTarget} className="flex justify-center items-center py-12 col-span-full">
-          <div className="w-8 h-8 border-4 border-rose-200 dark:border-zinc-800 border-t-rose-500 dark:border-t-rose-400 rounded-full animate-spin" />
+          <div className="h-8 w-8">
+            {loadingMore && (
+              <div className="w-8 h-8 border-4 border-rose-200 dark:border-zinc-800 border-t-rose-500 dark:border-t-rose-400 rounded-full animate-spin" />
+            )}
+          </div>
         </div>
       )}
     </>

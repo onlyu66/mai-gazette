@@ -142,13 +142,17 @@ export const fetchLuuButPage = async (
  */
 export const fetchGalleryImages = async (
   category?: string,
-): Promise<GalleryImageRecord[]> => {
-  if (!supabase) return [];
+  page = 0,
+  pageSize = 12,
+): Promise<{ images: GalleryImageRecord[]; hasMore: boolean }> => {
+  if (!supabase) return { images: [], hasMore: false };
 
-  // Sort by order_index ascending, then created_at descending (newest first for default order=0)
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+
   let query = supabase
     .from("gallery_images")
-    .select("*")
+    .select("*", { count: "exact" })
     .order("order_index", { ascending: true })
     .order("created_at", { ascending: false });
 
@@ -156,9 +160,21 @@ export const fetchGalleryImages = async (
     query = query.eq("category", category);
   }
 
-  const { data, error } = await query;
-  if (error) throw error;
-  return data || [];
+  const { data, error, count } = await query.range(from, to);
+  if (error) {
+    if (error.code === "PGRST103") {
+      return { images: [], hasMore: false };
+    }
+    throw error;
+  }
+
+  const records = (data || []) as GalleryImageRecord[];
+  const total = typeof count === "number" ? count : null;
+  const hasMore =
+    total !== null
+      ? from + records.length < total
+      : records.length === pageSize;
+  return { images: records, hasMore };
 };
 
 /**
