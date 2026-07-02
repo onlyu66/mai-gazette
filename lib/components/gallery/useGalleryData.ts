@@ -1,96 +1,131 @@
-import { useState, useEffect, useRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  type SetStateAction,
+} from "react";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchGalleryImages } from "@/lib/services/api";
 import { GalleryImageRecord } from "@/lib/types";
-import toast from "react-hot-toast";
 
 export function useGalleryData(
   categoryId: string | undefined,
   itemsPerPage = 6,
 ) {
-  const [images, setImages] = useState<GalleryImageRecord[]>([]);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-
-  useEffect(() => {
-    if (!categoryId) return;
-
-    const resetGalleryState = () => {
-      setImages([]);
-      setCurrentPage(0);
-      setHasMore(true);
-    };
-
-    resetGalleryState();
-  }, [categoryId, itemsPerPage]);
-
-  useEffect(() => {
-    if (!categoryId || (!hasMore && currentPage > 0)) return;
-
-    const loadImages = async () => {
-      try {
-        if (currentPage === 0) {
-          setLoading(true);
-        } else {
-          setLoadingMore(true);
-        }
-
-        const result = await fetchGalleryImages(
-          categoryId,
-          currentPage,
-          itemsPerPage,
-        );
-        setImages((prev) =>
-          currentPage === 0 ? result.images : [...prev, ...result.images],
-        );
-        setHasMore(result.hasMore);
-      } catch (error: unknown) {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : JSON.stringify(error, null, 2);
-        console.error("Lỗi khi tải ảnh:", errorMessage, error);
-        toast.error("Không thể tải danh sách ảnh");
-      } finally {
-        if (currentPage === 0) {
-          setLoading(false);
-        } else {
-          setLoadingMore(false);
-        }
-      }
-    };
-
-    loadImages();
-  }, [categoryId, currentPage, itemsPerPage, hasMore]);
-
+  const queryClient = useQueryClient();
   const observerTarget = useRef<HTMLDivElement>(null);
+  const queryKey = ["galleryImages", categoryId];
+
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useInfiniteQuery({
+      queryKey,
+      queryFn: ({ pageParam = 0 }) =>
+        fetchGalleryImages(categoryId!, pageParam as number, itemsPerPage),
+      initialPageParam: 0,
+      getNextPageParam: (lastPage, allPages) =>
+        lastPage.hasMore ? allPages.length : undefined,
+      enabled: Boolean(categoryId),
+      staleTime: 30_000,
+      gcTime: 5 * 60_000,
+    });
+
+  const images = useMemo(
+    () => data?.pages.flatMap((page) => page.images) ?? [],
+    [data],
+  );
+
+  const setImages = useCallback(
+    (updater: SetStateAction<GalleryImageRecord[]>) => {
+      if (!categoryId) return;
+
+      queryClient.setQueryData(
+        queryKey,
+        (
+          oldData:
+            | {
+                pages: { images: GalleryImageRecord[]; hasMore: boolean }[];
+                pageParams: unknown[];
+              }
+            | undefined,
+        ) => {
+          if (!oldData) return oldData;
+
+          const currentImages = oldData.pages.flatMap((page) => page.images);
+          const nextImages =
+            typeof updater === "function"
+              ? (
+                  updater as (
+                    prev: GalleryImageRecord[],
+                  ) => GalleryImageRecord[]
+                )(currentImages)
+              : updater;
+
+          const pages = [] as {
+            images: GalleryImageRecord[];
+            hasMore: boolean;
+          }[];
+          const totalPages = Math.max(
+            1,
+            Math.ceil(nextImages.length / itemsPerPage),
+          );
+
+          for (let index = 0; index < totalPages; index += 1) {
+            const start = index * itemsPerPage;
+            const end = start + itemsPerPage;
+            pages.push({
+              images: nextImages.slice(start, end),
+              hasMore: end < nextImages.length,
+            });
+          }
+
+          return {
+            ...oldData,
+            pages,
+            pageParams: pages.map((_, pageIndex) => pageIndex),
+          };
+        },
+      );
+    },
+    [categoryId, itemsPerPage, queryClient],
+  );
 
   useEffect(() => {
+    const target = observerTarget.current;
+    if (!target) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
-          setCurrentPage((p) => p + 1);
+        if (
+          entries[0]?.isIntersecting &&
+          hasNextPage &&
+          !isLoading &&
+          !isFetchingNextPage
+        ) {
+          fetchNextPage();
         }
       },
-      { threshold: 1.0 },
+      { threshold: 0.2 },
     );
 
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
+    observer.observe(target);
     return () => observer.disconnect();
-  }, [currentPage, images.length, itemsPerPage, hasMore, loading, loadingMore]);
+  }, [
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    images.length,
+  ]);
 
   return {
     images,
     setImages,
-    currentPage,
+    currentPage: 0,
     itemsPerPage,
-    loading,
-    loadingMore,
-    hasMore,
+    loading: isLoading,
+    loadingMore: isFetchingNextPage,
+    hasMore: Boolean(hasNextPage),
     observerTarget,
   };
 }

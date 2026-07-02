@@ -1,5 +1,6 @@
 import { deleteGalleryImage } from "@/lib/services/api";
 import { GalleryImageRecord } from "@/lib/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -9,8 +10,16 @@ export function useGalleryDelete(
   setSelectedIds: React.Dispatch<React.SetStateAction<string[]>>,
   setIsSelectionMode: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
+  const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deletingMultiple, setDeletingMultiple] = useState(false);
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteGalleryImage(id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["galleryImages"] });
+    },
+  });
 
   const requestDelete = (id: string) => {
     setDeletingId(id);
@@ -27,8 +36,9 @@ export function useGalleryDelete(
 
     try {
       if (deletingMultiple) {
-        const deletePromises = selectedIds.map((id) => deleteGalleryImage(id));
-        await Promise.all(deletePromises);
+        await Promise.all(
+          selectedIds.map((id) => deleteMutation.mutateAsync(id)),
+        );
         setImages((prev) =>
           prev.filter((img) => !selectedIds.includes(img.id)),
         );
@@ -37,7 +47,7 @@ export function useGalleryDelete(
         setIsSelectionMode(false);
         setDeletingMultiple(false);
       } else if (deletingId) {
-        await deleteGalleryImage(deletingId);
+        await deleteMutation.mutateAsync(deletingId);
         setImages((prev) => prev.filter((img) => img.id !== deletingId));
         toast.success("Đã xóa ảnh thành công 🗑️");
         setDeletingId(null);

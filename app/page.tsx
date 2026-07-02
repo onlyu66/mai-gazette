@@ -11,8 +11,9 @@ import { useLuuBut } from '@/lib/hooks/useLuuBut';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
 import { useEffect, useState, useRef } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/contexts/AuthContext';
-import Image from 'next/image';
+import ImageWithSkeleton from '@/lib/components/ImageWithSkeleton';
 import Link from 'next/link';
 import { Camera, LogIn, LogOut } from 'lucide-react';
 import { getGraduateImagePreference, saveGraduateImagePreference, uploadGalleryImage } from '@/lib/services/api';
@@ -32,46 +33,53 @@ export default function Home() {
   // Secret trigger for ArchiveFeed
   const { user, signOut } = useAuth();
   const showSecretArchive = Boolean(user);
+  const queryClient = useQueryClient();
   const [graduateImageUrl, setGraduateImageUrl] = useState<string | null>(null);
+  const [pendingGraduateImageUrl, setPendingGraduateImageUrl] = useState<string | null>(null);
   const [uploadingGraduateImage, setUploadingGraduateImage] = useState(false);
-  const [isGraduateImageLoading, setIsGraduateImageLoading] = useState(true);
-  const [graduateImageError, setGraduateImageError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
+  const profileId = user?.id ?? '00000000-0000-0000-0000-000000000000';
 
-    const loadGraduateImage = async () => {
-      setIsGraduateImageLoading(true);
-      setGraduateImageError(false);
+  const saveGraduateImageMutation = useMutation({
+    mutationFn: ({
+      userId,
+      imageUrl,
+      previousImageUrl,
+    }: {
+      userId: string;
+      imageUrl: string;
+      previousImageUrl?: string | null;
+    }) => saveGraduateImagePreference(userId, imageUrl, previousImageUrl),
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries({ queryKey: ['graduateImage', variables.userId] });
+      setPendingGraduateImageUrl(variables.imageUrl);
+      toast.success('Đã cập nhật ảnh tân cử nhân');
+    },
+    onError: (error) => {
+      toast.error(`Cập nhật ảnh thất bại: ${error instanceof Error ? error.message : String(error)}`);
+    },
+  });
 
-      const profileId = user?.id ?? '00000000-0000-0000-0000-000000000000';
+  const graduateImageQuery = useQuery({
+    queryKey: ['graduateImage', profileId],
+    queryFn: () => getGraduateImagePreference(profileId),
+    enabled: mounted,
+    staleTime: 30_000,
+  });
 
-      try {
-        const supabaseImage = await getGraduateImagePreference(profileId);
+  const currentGraduateImageUrl = pendingGraduateImageUrl ?? graduateImageUrl ?? graduateImageQuery.data ?? '/avatar.jpg';
+  const isGraduateImageLoadingState = !mounted || graduateImageQuery.isLoading || uploadingGraduateImage || saveGraduateImageMutation.isPending || Boolean(pendingGraduateImageUrl);
+  const graduateImageErrorState = graduateImageQuery.isError || saveGraduateImageMutation.isError;
 
-        if (!isMounted) return;
 
-        if (supabaseImage) {
-          setGraduateImageUrl(supabaseImage);
-        } else {
-          setGraduateImageUrl('/avatar.jpg');
-        }
-      } catch (error) {
-        if (!isMounted) return;
-        console.error('Lỗi khi lấy ảnh tân cử nhân từ Supabase:', error);
-        setGraduateImageError(true);
-        setGraduateImageUrl('/avatar.jpg');
-      }
-    };
-
-    loadGraduateImage();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [user]);
+  const handleGraduateImageLoaded = () => {
+    if (pendingGraduateImageUrl) {
+      setGraduateImageUrl(pendingGraduateImageUrl);
+    }
+    setPendingGraduateImageUrl(null);
+  };
 
   const handleGraduateImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -83,34 +91,21 @@ export default function Home() {
     }
 
     setUploadingGraduateImage(true);
-    setIsGraduateImageLoading(true);
-    setGraduateImageError(false);
 
     try {
       const uploadedUrl = await uploadGalleryImage(file, file.type);
       if (!uploadedUrl) {
-        setIsGraduateImageLoading(false);
         toast.error('Không thể tải ảnh lên. Vui lòng thử lại');
         return;
       }
 
-      const savedToSupabase = await saveGraduateImagePreference(
-        user.id,
-        uploadedUrl,
-        graduateImageUrl,
-      );
-      setGraduateImageUrl(uploadedUrl);
-
-      if (savedToSupabase) {
-        toast.success('Đã cập nhật ảnh tân cử nhân');
-      } else {
-        toast.error('Ảnh đã được tải lên nhưng chưa lưu được vào hồ sơ Supabase');
-      }
+      await saveGraduateImageMutation.mutateAsync({
+        userId: user.id,
+        imageUrl: uploadedUrl,
+        previousImageUrl: graduateImageUrl,
+      });
     } catch (error) {
       console.error('Lỗi khi cập nhật ảnh tân cử nhân:', error);
-      setGraduateImageError(true);
-      setIsGraduateImageLoading(false);
-      toast.error('Cập nhật ảnh thất bại');
     } finally {
       setUploadingGraduateImage(false);
       event.target.value = '';
@@ -254,7 +249,7 @@ export default function Home() {
               <div className="w-1/2 h-full bg-linear-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:animate-hieu-ung-quet-sang"></div>
             </div>
             <div className="w-full h-full rounded-xl overflow-hidden border border-rose-200/60 relative bg-[#2A1B1C]">
-              {isGraduateImageLoading && (
+              {isGraduateImageLoadingState && (
                 <div className="absolute inset-0 z-20 overflow-hidden bg-[#2A1B1C]">
                   <div className="absolute inset-0 bg-linear-to-br from-rose-950/80 via-zinc-900 to-rose-950/70 animate-pulse" />
                   <div className="absolute inset-0 opacity-70 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(244,114,182,0.18),transparent_30%)] animate-pulse" />
@@ -264,25 +259,18 @@ export default function Home() {
                   <div className="absolute inset-0 rounded-xl border border-white/10" />
                 </div>
               )}
-              {graduateImageUrl ? (
-                <Image
-                  src={graduateImageUrl}
+              {currentGraduateImageUrl ? (
+                <ImageWithSkeleton
+                  src={currentGraduateImageUrl}
                   alt="Phan Ngọc Mai"
-                  fill
                   sizes="(max-width: 768px) 100vw, 33vw"
                   priority
-                  loading="eager"
-                  unoptimized
-                  onLoad={() => setIsGraduateImageLoading(false)}
-                  onError={() => {
-                    setGraduateImageError(true);
-                    setIsGraduateImageLoading(false);
-                    setGraduateImageUrl('/avatar.jpg');
-                  }}
-                  className={`object-cover opacity-85 group-hover:scale-105 transition duration-700 object-[50%_40%] ${isGraduateImageLoading ? 'opacity-0' : 'opacity-85'}`}
+                  onLoad={handleGraduateImageLoaded}
+                  className={`opacity-85 group-hover:scale-105 transition duration-700 object-[50%_40%] ${isGraduateImageLoadingState ? 'opacity-0' : 'opacity-85'}`}
+                  shimmerClassName="bg-[#2A1B1C]"
                 />
               ) : null}
-              {graduateImageError && (
+              {graduateImageErrorState && (
                 <div className="absolute top-3 left-3 z-30 rounded-full bg-black/60 px-2 py-1 text-[9px] uppercase tracking-[0.25em] text-white/80">
                   Ảnh chưa sẵn sàng
                 </div>

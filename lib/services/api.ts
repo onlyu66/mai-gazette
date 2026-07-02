@@ -131,23 +131,22 @@ export const uploadStorageImage = async (
 export const insertLuuBut = async (
   postData: InsertLuuButDTO,
 ): Promise<LuuButRecord> => {
-  if (!supabase) throw new Error("Supabase chưa được cấu hình (.env.local).");
+  const response = await fetch("/api/luu-but", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      noiDung: postData.noiDung,
+      tacGia: postData.tacGia || "Bạn ẩn danh",
+      anhUrl: postData.anhUrl,
+    }),
+  });
 
-  const { data, error } = await supabase
-    .from("luu_but")
-    .insert([
-      {
-        noi_dung: postData.noiDung,
-        tac_gia: postData.tacGia || "Bạn ẩn danh",
-        anh_url: postData.anhUrl,
-      },
-    ])
-    .select();
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload?.error || "Không thể khởi tạo bản ghi dữ liệu");
+  }
 
-  if (error) throw error;
-  if (!data || data.length === 0)
-    throw new Error("Không thể khởi tạo bản ghi dữ liệu");
-  return data[0] as LuuButRecord;
+  return payload as LuuButRecord;
 };
 
 /**
@@ -173,28 +172,26 @@ export const fetchLuuButPage = async (
   pageSize = 12,
   searchQuery?: string,
 ): Promise<{ records: LuuButRecord[]; hasMore: boolean }> => {
-  if (!supabase) return { records: [], hasMore: false };
-
-  const from = page * pageSize;
-  const to = from + pageSize - 1;
-
-  let query = supabase.from("luu_but").select("*", { count: "exact" });
+  const query = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  });
 
   if (searchQuery) {
-    const term = searchQuery.toLowerCase();
-
-    query = query.or(`tac_gia.ilike.%${term}%,noi_dung.ilike.%${term}%`);
+    query.set("search", searchQuery);
   }
 
-  const { data, error, count } = await query
-    .order("created_at", { ascending: false })
-    .range(from, to);
+  const response = await fetch(`/api/luu-but?${query.toString()}`);
+  const payload = await response.json().catch(() => ({}));
 
-  if (error) throw error;
+  if (!response.ok) {
+    throw new Error(payload?.error || "Không thể tải danh sách lưu bút.");
+  }
 
-  const records = (data || []) as LuuButRecord[];
-  const total = count ?? 0;
-  return { records, hasMore: from + records.length < total };
+  return {
+    records: (payload?.records || []) as LuuButRecord[],
+    hasMore: Boolean(payload?.hasMore),
+  };
 };
 
 /**
@@ -205,36 +202,26 @@ export const fetchGalleryImages = async (
   page = 0,
   pageSize = 12,
 ): Promise<{ images: GalleryImageRecord[]; hasMore: boolean }> => {
-  if (!supabase) return { images: [], hasMore: false };
-
-  const from = page * pageSize;
-  const to = from + pageSize - 1;
-
-  let query = supabase
-    .from("gallery_images")
-    .select("*", { count: "exact" })
-    .order("order_index", { ascending: true })
-    .order("created_at", { ascending: false });
+  const query = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  });
 
   if (category) {
-    query = query.eq("category", category);
+    query.set("category", category);
   }
 
-  const { data, error, count } = await query.range(from, to);
-  if (error) {
-    if (error.code === "PGRST103") {
-      return { images: [], hasMore: false };
-    }
-    throw error;
+  const response = await fetch(`/api/gallery?${query.toString()}`);
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(payload?.error || "Không thể tải danh sách ảnh.");
   }
 
-  const records = (data || []) as GalleryImageRecord[];
-  const total = typeof count === "number" ? count : null;
-  const hasMore =
-    total !== null
-      ? from + records.length < total
-      : records.length === pageSize;
-  return { images: records, hasMore };
+  return {
+    images: (payload?.images || []) as GalleryImageRecord[],
+    hasMore: Boolean(payload?.hasMore),
+  };
 };
 
 /**
@@ -245,94 +232,33 @@ export const saveGraduateImagePreference = async (
   imageUrl: string,
   previousImageUrl?: string | null,
 ): Promise<boolean> => {
-  if (!supabase) return false;
-
   try {
-    const { data: existingPublicRecord, error: existingPublicError } =
-      await supabase
-        .from("gallery_images")
-        .select("id, image_url")
-        .eq("category", GRADUATE_IMAGE_PUBLIC_CATEGORY)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-    if (existingPublicError) {
-      if (
-        existingPublicError?.code &&
-        ["42P01", "PGRST116", "PGRST114"].includes(existingPublicError.code)
-      ) {
-        // Ignore missing table / no rows and continue with a fresh insert.
-      } else {
-        throw existingPublicError;
-      }
-    }
-
-    const previousStoredUrl =
-      previousImageUrl ?? existingPublicRecord?.image_url ?? null;
-
-    const profileResult = await supabase.from("profiles").upsert(
-      {
-        id: userId,
-        graduate_image_url: imageUrl,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "id" },
-    );
-
-    if (profileResult.error) {
-      if (
-        profileResult.error?.code &&
-        ["42P01", "PGRST116", "PGRST114", "42501"].includes(
-          profileResult.error.code,
-        )
-      ) {
-        // Fall back to a public record so anonymous visitors can still read the image.
-      } else {
-        throw profileResult.error;
-      }
-    }
-
-    if (existingPublicError) {
-      if (
-        existingPublicError?.code &&
-        ["42P01", "PGRST116", "PGRST114"].includes(existingPublicError.code)
-      ) {
-        return false;
-      }
-      throw existingPublicError;
-    }
-
-    if (existingPublicRecord?.id) {
-      const { error: updateError } = await supabase
-        .from("gallery_images")
-        .update({ image_url: imageUrl, order_index: 0 })
-        .eq("id", existingPublicRecord.id);
-
-      if (updateError) {
-        throw updateError;
-      }
-    } else {
-      const { error: insertError } = await supabase
-        .from("gallery_images")
-        .insert([
-          {
-            category: GRADUATE_IMAGE_PUBLIC_CATEGORY,
-            image_url: imageUrl,
-            order_index: 0,
-          },
-        ]);
-
-      if (insertError) {
-        throw insertError;
-      }
+    if (!supabase) {
+      throw new Error("Supabase chưa được cấu hình.");
     }
 
     const {
       data: { session },
     } = await supabase.auth.getSession();
+
+    const response = await fetch("/api/graduate-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId,
+        imageUrl,
+        previousImageUrl,
+        accessToken: session?.access_token,
+      }),
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(payload?.error || "Không thể lưu ảnh tân cử nhân.");
+    }
+
     await deleteStoredImageIfNeeded(
-      previousStoredUrl,
+      previousImageUrl ?? null,
       imageUrl,
       userId,
       session?.access_token,
@@ -340,72 +266,24 @@ export const saveGraduateImagePreference = async (
 
     return true;
   } catch (error) {
-    const code =
-      error && typeof error === "object" && "code" in error
-        ? String((error as { code?: string }).code)
-        : "";
-    if (["42P01", "PGRST116", "PGRST114", "42501"].includes(code)) {
-      return false;
-    }
     console.error("Lỗi khi lưu ảnh tân cử nhân vào Supabase:", error);
-    return false;
+    throw error;
   }
 };
 
 export const getGraduateImagePreference = async (
   userId: string,
 ): Promise<string | null> => {
-  if (!supabase) return null;
-
   try {
-    const { data: publicData, error: publicError } = await supabase
-      .from("gallery_images")
-      .select("image_url")
-      .eq("category", GRADUATE_IMAGE_PUBLIC_CATEGORY)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const response = await fetch(`/api/graduate-image?userId=${userId}`);
+    const payload = await response.json().catch(() => ({}));
 
-    if (publicError) {
-      if (
-        publicError?.code &&
-        ["42P01", "PGRST116", "PGRST114"].includes(publicError.code)
-      ) {
-        return null;
-      }
-      throw publicError;
+    if (!response.ok) {
+      throw new Error(payload?.error || "Không thể tải ảnh tân cử nhân.");
     }
 
-    const publicFallbackUrl = publicData?.image_url ?? null;
-
-    if (!userId || userId === PUBLIC_GRADUATE_PROFILE_ID) {
-      return publicFallbackUrl;
-    }
-
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("graduate_image_url")
-      .eq("id", userId)
-      .maybeSingle();
-
-    if (error) {
-      if (
-        error?.code &&
-        ["42P01", "PGRST116", "PGRST114"].includes(error.code)
-      ) {
-        return publicFallbackUrl;
-      }
-      throw error;
-    }
-
-    return data?.graduate_image_url ?? publicFallbackUrl;
+    return payload?.imageUrl ?? null;
   } catch (error) {
-    if (error && typeof error === "object" && "code" in error) {
-      const code = (error as { code?: string }).code;
-      if (code && ["42P01", "PGRST116", "PGRST114"].includes(code)) {
-        return null;
-      }
-    }
     console.error("Lỗi khi đọc ảnh tân cử nhân từ Supabase:", error);
     return null;
   }
@@ -416,17 +294,22 @@ export const insertGalleryImage = async (
   imageUrl: string,
   orderIndex?: number,
 ): Promise<GalleryImageRecord> => {
-  if (!supabase) throw new Error("Supabase chưa được cấu hình.");
+  const response = await fetch("/api/gallery", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      category,
+      imageUrl,
+      orderIndex: orderIndex ?? 0,
+    }),
+  });
 
-  const { data, error } = await supabase
-    .from("gallery_images")
-    .insert([{ category, image_url: imageUrl, order_index: orderIndex ?? 0 }])
-    .select();
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload?.error || "Không thể khởi tạo bản ghi hình ảnh");
+  }
 
-  if (error) throw error;
-  if (!data || data.length === 0)
-    throw new Error("Không thể khởi tạo bản ghi hình ảnh");
-  return data[0] as GalleryImageRecord;
+  return payload as GalleryImageRecord;
 };
 
 /**
@@ -467,21 +350,18 @@ export const deleteGalleryImage = async (id: string): Promise<void> => {
 export const updateGalleryOrder = async (
   updates: { id: string; order_index: number }[],
 ): Promise<void> => {
-  if (!supabase) throw new Error("Supabase chưa được cấu hình.");
   if (updates.length === 0) return;
 
-  // Sử dụng update thay vì upsert để tránh lỗi null constraint trên các cột khác
-  const promises = updates.map((u) =>
-    supabase!
-      .from("gallery_images")
-      .update({ order_index: u.order_index })
-      .eq("id", u.id),
-  );
+  const response = await fetch("/api/gallery", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(
+      updates.map((u) => ({ id: u.id, order_index: u.order_index })),
+    ),
+  });
 
-  const results = await Promise.all(promises);
-  const errors = results.filter((r) => r.error).map((r) => r.error);
-
-  if (errors.length > 0) {
-    throw new Error("Cập nhật thứ tự thất bại: " + errors[0]?.message);
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload?.error || "Cập nhật thứ tự thất bại.");
   }
 };
