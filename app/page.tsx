@@ -12,8 +12,11 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { useTheme } from 'next-themes';
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/lib/contexts/AuthContext';
+import Image from 'next/image';
 import Link from 'next/link';
-import { LogIn, LogOut } from 'lucide-react';
+import { Camera, LogIn, LogOut } from 'lucide-react';
+import { getGraduateImagePreference, saveGraduateImagePreference, uploadGalleryImage } from '@/lib/services/api';
+import toast from 'react-hot-toast';
 
 
 export default function Home() {
@@ -28,19 +31,90 @@ export default function Home() {
 
   // Secret trigger for ArchiveFeed
   const { user, signOut } = useAuth();
-  const [showSecretArchive, setShowSecretArchive] = useState(false);
+  const showSecretArchive = Boolean(user);
+  const [graduateImageUrl, setGraduateImageUrl] = useState<string | null>(null);
+  const [uploadingGraduateImage, setUploadingGraduateImage] = useState(false);
+  const [isGraduateImageLoading, setIsGraduateImageLoading] = useState(true);
+  const [graduateImageError, setGraduateImageError] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (user) {
-      setShowSecretArchive(true);
-    }
+    let isMounted = true;
+
+    const loadGraduateImage = async () => {
+      setIsGraduateImageLoading(true);
+      setGraduateImageError(false);
+
+      const profileId = user?.id ?? '00000000-0000-0000-0000-000000000000';
+
+      try {
+        const supabaseImage = await getGraduateImagePreference(profileId);
+
+        if (!isMounted) return;
+
+        if (supabaseImage) {
+          setGraduateImageUrl(supabaseImage);
+        } else {
+          setGraduateImageUrl('/avatar.jpg');
+        }
+      } catch (error) {
+        if (!isMounted) return;
+        console.error('Lỗi khi lấy ảnh tân cử nhân từ Supabase:', error);
+        setGraduateImageError(true);
+        setGraduateImageUrl('/avatar.jpg');
+      }
+    };
+
+    loadGraduateImage();
+
+    return () => {
+      isMounted = false;
+    };
   }, [user]);
+
+  const handleGraduateImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Vui lòng chọn tệp ảnh hợp lệ');
+      return;
+    }
+
+    setUploadingGraduateImage(true);
+    setIsGraduateImageLoading(true);
+    setGraduateImageError(false);
+
+    try {
+      const uploadedUrl = await uploadGalleryImage(file, file.type);
+      if (!uploadedUrl) {
+        setIsGraduateImageLoading(false);
+        toast.error('Không thể tải ảnh lên. Vui lòng thử lại');
+        return;
+      }
+
+      const savedToSupabase = await saveGraduateImagePreference(user.id, uploadedUrl);
+      setGraduateImageUrl(uploadedUrl);
+
+      if (savedToSupabase) {
+        toast.success('Đã cập nhật ảnh tân cử nhân');
+      } else {
+        toast.error('Ảnh đã được tải lên nhưng chưa lưu được vào hồ sơ Supabase');
+      }
+    } catch (error) {
+      console.error('Lỗi khi cập nhật ảnh tân cử nhân:', error);
+      setGraduateImageError(true);
+      setIsGraduateImageLoading(false);
+      toast.error('Cập nhật ảnh thất bại');
+    } finally {
+      setUploadingGraduateImage(false);
+      event.target.value = '';
+    }
+  };
 
   const startPress = () => {
     pressTimer.current = setTimeout(() => {
-      setShowSecretArchive(true);
-      // Cuộn tới sau khi mở
       setTimeout(() => {
         document.getElementById('kho-luu-tru')?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
@@ -101,10 +175,10 @@ export default function Home() {
       {/* Hero Section */}
       <section id="trang-chu" className="max-w-7xl mx-auto px-6 pt-16 pb-12 grid lg:grid-cols-12 gap-12 items-center relative overflow-hidden">
         {/* Parallax decorative blobs */}
-        <motion.div style={{ y: blobY1 }} className="absolute -top-24 -right-20 pointer-events-none -z-0">
-          <div className="w-[420px] h-[420px] rounded-full bg-rose-100/60 dark:bg-rose-900/10 opacity-50 animate-float" />
+        <motion.div style={{ y: blobY1 }} className="absolute -top-24 -right-20 pointer-events-none z-0">
+          <div className="w-105 h-105 rounded-full bg-rose-100/60 dark:bg-rose-900/10 opacity-50 animate-float" />
         </motion.div>
-        <motion.div style={{ y: blobY2 }} className="absolute -bottom-20 -left-16 pointer-events-none -z-0">
+        <motion.div style={{ y: blobY2 }} className="absolute -bottom-20 -left-16 pointer-events-none z-0">
           <div className="w-72 h-72 rounded-full bg-rose-200/40 dark:bg-rose-800/10 opacity-30 animate-float-reverse" />
         </motion.div>
 
@@ -165,19 +239,67 @@ export default function Home() {
             className="absolute inset-0 bg-rose-400/20 dark:bg-rose-600/20 blur-xl rounded-full -z-10 w-[80%] h-[80%] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
           />
 
-          <div className="relative group w-full max-w-[340px] aspect-[3/4] rounded-2xl p-3.5 shadow-xl hover:-translate-y-2 hover:rotate-1 transition-all duration-700 ease-out grid grid-cols-1">
+          <div className="relative group w-full max-w-85 aspect-3/4 rounded-2xl p-3.5 shadow-xl hover:-translate-y-2 hover:rotate-1 transition-all duration-700 ease-out grid grid-cols-1">
             {/* Animated Frame Background/Border */}
             <motion.div
               animate={{ opacity: [0.5, 1, 0.5], boxShadow: ['0 0 5px rgba(244,114,182,0.2)', '0 0 20px rgba(244,114,182,0.6)', '0 0 5px rgba(244,114,182,0.2)'] }}
               transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/60 via-rose-50/30 to-rose-100/40 dark:from-zinc-900/60 dark:via-zinc-900/40 dark:to-rose-950/30 backdrop-blur-md border border-rose-200/40 dark:border-zinc-800 pointer-events-none group-hover:!opacity-100 group-hover:!shadow-[0_0_20px_rgba(244,114,182,0.6)]"
+              className="absolute inset-0 rounded-2xl bg-linear-to-br from-white/60 via-rose-50/30 to-rose-100/40 dark:from-zinc-900/60 dark:via-zinc-900/40 dark:to-rose-950/30 backdrop-blur-md border border-rose-200/40 dark:border-zinc-800 pointer-events-none group-hover:!opacity-100 group-hover:!shadow-[0_0_20px_rgba(244,114,182,0.6)]"
             />
             <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-10">
-              <div className="w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:animate-hieu-ung-quet-sang"></div>
+              <div className="w-1/2 h-full bg-linear-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:animate-hieu-ung-quet-sang"></div>
             </div>
             <div className="w-full h-full rounded-xl overflow-hidden border border-rose-200/60 relative bg-[#2A1B1C]">
-              <img src="/avatar.jpg" alt="Phan Ngọc Mai" className="w-full h-full object-cover opacity-85 group-hover:scale-105 transition duration-700 object-[50%_40%]" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1A0E0F] via-black/10 to-black/40 mix-blend-multiply"></div>
+              {isGraduateImageLoading && (
+                <div className="absolute inset-0 z-20 overflow-hidden bg-[#2A1B1C]">
+                  <div className="absolute inset-0 bg-linear-to-br from-rose-950/80 via-zinc-900 to-rose-950/70 animate-pulse" />
+                  <div className="absolute inset-0 opacity-70 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(244,114,182,0.18),transparent_30%)] animate-pulse" />
+                  <div className="absolute left-4 top-4 h-8 w-24 rounded-full bg-white/10 blur-sm animate-pulse" />
+                  <div className="absolute bottom-4 left-4 h-3 w-32 rounded-full bg-white/10 animate-pulse" />
+                  <div className="absolute bottom-4 right-4 h-3 w-20 rounded-full bg-white/10 animate-pulse" />
+                  <div className="absolute inset-0 rounded-xl border border-white/10" />
+                </div>
+              )}
+              {graduateImageUrl ? (
+                <Image
+                  src={graduateImageUrl}
+                  alt="Phan Ngọc Mai"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  unoptimized
+                  onLoad={() => setIsGraduateImageLoading(false)}
+                  onError={() => {
+                    setGraduateImageError(true);
+                    setIsGraduateImageLoading(false);
+                    setGraduateImageUrl('/avatar.jpg');
+                  }}
+                  className={`object-cover opacity-85 group-hover:scale-105 transition duration-700 object-[50%_40%] ${isGraduateImageLoading ? 'opacity-0' : 'opacity-85'}`}
+                />
+              ) : null}
+              {graduateImageError && (
+                <div className="absolute top-3 left-3 z-30 rounded-full bg-black/60 px-2 py-1 text-[9px] uppercase tracking-[0.25em] text-white/80">
+                  Ảnh chưa sẵn sàng
+                </div>
+              )}
+              <div className="absolute inset-0 bg-linear-to-t from-[#1A0E0F] via-black/10 to-black/40 mix-blend-multiply"></div>
+              {user && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute bottom-4 right-4 z-30 flex items-center gap-2 rounded-full bg-white/90 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.25em] text-rose-600 shadow-lg transition hover:bg-white"
+                  >
+                    {uploadingGraduateImage ? 'Đang tải...' : <><Camera size={14} /> Đổi ảnh</>}
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleGraduateImageUpload}
+                  />
+                </>
+              )}
               <div className="absolute bottom-0 left-0 w-full p-5 text-white z-20 space-y-1">
                 <p className="font-bao-chi text-[10px] tracking-[0.3em] text-rose-400 font-bold uppercase">Graduation 2026</p>
                 <h4 className="font-nghe-thuat text-xl font-bold text-[#FFE8BC]">Tân Cử Nhân</h4>
@@ -275,7 +397,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="w-16 h-0.5 rounded-full bg-gradient-to-r from-transparent via-rose-300 to-transparent"></div>
+          <div className="w-16 h-0.5 rounded-full bg-linear-to-r from-transparent via-rose-300 to-transparent"></div>
 
           <p className="text-sm max-w-lg leading-relaxed italic" style={{ color: 'var(--mau-chu)', opacity: 0.8, fontFamily: 'var(--font-playfair), serif' }}>
             &quot;Cảm ơn bạn đã ghé thăm góc nhỏ lưu giữ những kỷ niệm đẹp nhất của thanh xuân. Chúc chúng ta của sau này, rực rỡ và bình an.&quot;

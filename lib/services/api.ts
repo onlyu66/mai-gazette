@@ -1,6 +1,9 @@
 import { supabase } from "@/lib/supabase";
 import { GalleryImageRecord, InsertLuuButDTO, LuuButRecord } from "../types";
 
+const GRADUATE_IMAGE_PUBLIC_CATEGORY = "graduate-hero";
+const PUBLIC_GRADUATE_PROFILE_ID = "00000000-0000-0000-0000-000000000000";
+
 /**
  * Upload file Blob ảnh lên Supabase Storage.
  * Hàm nhận Blob đã được nén từ client, không cần decode base64 nữa.
@@ -180,6 +183,152 @@ export const fetchGalleryImages = async (
 /**
  * Thêm ảnh mới vào Gallery
  */
+export const saveGraduateImagePreference = async (
+  userId: string,
+  imageUrl: string,
+): Promise<boolean> => {
+  if (!supabase) return false;
+
+  try {
+    const profileResult = await supabase.from("profiles").upsert(
+      {
+        id: userId,
+        graduate_image_url: imageUrl,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" },
+    );
+
+    if (profileResult.error) {
+      if (
+        profileResult.error?.code &&
+        ["42P01", "PGRST116", "PGRST114", "42501"].includes(
+          profileResult.error.code,
+        )
+      ) {
+        // Fall back to a public record so anonymous visitors can still read the image.
+      } else {
+        throw profileResult.error;
+      }
+    }
+
+    const { data: existingPublicRecord, error: existingPublicError } =
+      await supabase
+        .from("gallery_images")
+        .select("id")
+        .eq("category", GRADUATE_IMAGE_PUBLIC_CATEGORY)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (existingPublicError) {
+      if (
+        existingPublicError?.code &&
+        ["42P01", "PGRST116", "PGRST114"].includes(existingPublicError.code)
+      ) {
+        return false;
+      }
+      throw existingPublicError;
+    }
+
+    if (existingPublicRecord?.id) {
+      const { error: updateError } = await supabase
+        .from("gallery_images")
+        .update({ image_url: imageUrl, order_index: 0 })
+        .eq("id", existingPublicRecord.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+    } else {
+      const { error: insertError } = await supabase
+        .from("gallery_images")
+        .insert([
+          {
+            category: GRADUATE_IMAGE_PUBLIC_CATEGORY,
+            image_url: imageUrl,
+            order_index: 0,
+          },
+        ]);
+
+      if (insertError) {
+        throw insertError;
+      }
+    }
+
+    return true;
+  } catch (error) {
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? String((error as { code?: string }).code)
+        : "";
+    if (["42P01", "PGRST116", "PGRST114", "42501"].includes(code)) {
+      return false;
+    }
+    console.error("Lỗi khi lưu ảnh tân cử nhân vào Supabase:", error);
+    return false;
+  }
+};
+
+export const getGraduateImagePreference = async (
+  userId: string,
+): Promise<string | null> => {
+  if (!supabase) return null;
+
+  try {
+    const { data: publicData, error: publicError } = await supabase
+      .from("gallery_images")
+      .select("image_url")
+      .eq("category", GRADUATE_IMAGE_PUBLIC_CATEGORY)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (publicError) {
+      if (
+        publicError?.code &&
+        ["42P01", "PGRST116", "PGRST114"].includes(publicError.code)
+      ) {
+        return null;
+      }
+      throw publicError;
+    }
+
+    const publicFallbackUrl = publicData?.image_url ?? null;
+
+    if (!userId || userId === PUBLIC_GRADUATE_PROFILE_ID) {
+      return publicFallbackUrl;
+    }
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("graduate_image_url")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (error) {
+      if (
+        error?.code &&
+        ["42P01", "PGRST116", "PGRST114"].includes(error.code)
+      ) {
+        return publicFallbackUrl;
+      }
+      throw error;
+    }
+
+    return data?.graduate_image_url ?? publicFallbackUrl;
+  } catch (error) {
+    if (error && typeof error === "object" && "code" in error) {
+      const code = (error as { code?: string }).code;
+      if (code && ["42P01", "PGRST116", "PGRST114"].includes(code)) {
+        return null;
+      }
+    }
+    console.error("Lỗi khi đọc ảnh tân cử nhân từ Supabase:", error);
+    return null;
+  }
+};
+
 export const insertGalleryImage = async (
   category: string,
   imageUrl: string,
