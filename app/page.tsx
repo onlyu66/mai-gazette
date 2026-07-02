@@ -30,9 +30,11 @@ export default function Home() {
 
   const { formData, luuButList, loading, hasMore, loadingMore, loadMore, updateField, formatDropCapText, submitLuuBut, searchLuuBut } = useLuuBut();
 
-  // Secret trigger for ArchiveFeed
+  // Secret trigger for ArchiveFeed: reveal only after long press if anonymous,
+  // or show immediately when the user is logged in.
   const { user, signOut } = useAuth();
-  const showSecretArchive = Boolean(user);
+  const [secretArchiveUnlocked, setSecretArchiveUnlocked] = useState(false);
+  const showSecretArchive = Boolean(user) || secretArchiveUnlocked;
   const queryClient = useQueryClient();
   const [graduateImageUrl, setGraduateImageUrl] = useState<string | null>(null);
   const [pendingGraduateImageUrl, setPendingGraduateImageUrl] = useState<string | null>(null);
@@ -113,7 +115,15 @@ export default function Home() {
   };
 
   const startPress = () => {
+    if (user) {
+      document.getElementById('kho-luu-tru')?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    if (secretArchiveUnlocked) return;
+
     pressTimer.current = setTimeout(() => {
+      setSecretArchiveUnlocked(true);
       setTimeout(() => {
         document.getElementById('kho-luu-tru')?.scrollIntoView({ behavior: 'smooth' });
       }, 100);

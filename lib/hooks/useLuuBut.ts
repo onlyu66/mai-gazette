@@ -20,6 +20,7 @@ export const useLuuBut = () => {
     noiDung: "",
     tacGia: "",
     anhFile: null,
+    anonymous: false,
   });
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -49,6 +50,7 @@ export const useLuuBut = () => {
         noiDung: "",
         tacGia: "",
         anhFile: null,
+        anonymous: false,
       });
       toast.success(
         "🎉 Ấn bản trang nhất đã được lưu trữ và xuất bản thành công!",
@@ -120,7 +122,7 @@ export const useLuuBut = () => {
 
       const postData = {
         noiDung: formData.noiDung,
-        tacGia: formData.tacGia.trim(),
+        tacGia: formData.anonymous ? undefined : formData.tacGia.trim(),
         anhUrl: uploadedUrl,
       };
 

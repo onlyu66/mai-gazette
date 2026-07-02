@@ -1,6 +1,8 @@
 'use client';
+/* eslint-disable react-hooks/set-state-in-effect */
 
 import React, { ChangeEvent, useRef, useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { LuuButFormData } from '../types';
 import { compressImage } from '../utils/compressImage';
 
@@ -22,6 +24,7 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
   // ── Local state for text inputs: decouples typing from the heavy preview re-render ──
   const [localNoiDung, setLocalNoiDung] = useState(formData.noiDung);
   const [localTacGia, setLocalTacGia] = useState(formData.tacGia);
+  const [localAnonymous, setLocalAnonymous] = useState(formData.anonymous);
   const noiDungTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tacGiaTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -40,21 +43,29 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
     tacGiaTimer.current = setTimeout(() => updateField('tacGia', val), 300);
   }, [updateField]);
 
+  const handleAnonymousChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    setLocalAnonymous(checked);
+    if (checked) {
+      setLocalTacGia('');
+      updateField('tacGia', '');
+    }
+    updateField('anonymous', checked);
+  }, [updateField]);
+
   // Sync local when parent resets form (e.g. after successful submit)
   useEffect(() => { setLocalNoiDung(formData.noiDung); }, [formData.noiDung]);
   useEffect(() => { setLocalTacGia(formData.tacGia); }, [formData.tacGia]);
+  useEffect(() => { setLocalAnonymous(formData.anonymous); }, [formData.anonymous]);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (!formData.anhFile) {
       if (preview) URL.revokeObjectURL(preview);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPreview(null);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFileName(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
-  }, [formData.anhFile]);
+  }, [formData.anhFile, preview]);
 
   const processFile = async (file: File) => {
     if (!file.type.startsWith('image/')) return;
@@ -143,7 +154,7 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
               className={`w-full h-32 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-300 ${
                 isDragging
                   ? 'border-rose-400 bg-rose-50 scale-[1.01]'
-                  : 'border-rose-200/70 hover:border-rose-300'
+                  : 'border-rose-200/70 hover:border-rose-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(244,114,182,0.12)]'
               }`}
               style={!isDragging ? { background: 'var(--khung-kinh)' } : {}}
             >
@@ -160,8 +171,16 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
             </div>
           ) : (
             <div className="relative rounded-2xl overflow-hidden border border-rose-200/50 shadow-sm group">
-              <img src={preview} alt="Ảnh kỷ niệm" className="w-full h-40 object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              <div className="relative w-full h-40">
+                <Image
+                  src={preview}
+                  alt="Ảnh kỷ niệm"
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+              <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
               <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                 <button type="button" onClick={() => fileInputRef.current?.click()}
                   className="bg-white/90 text-gray-800 text-[10px] font-bold px-3 py-1.5 rounded-xl hover:bg-white transition">
@@ -191,7 +210,7 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
               value={localNoiDung}
               onChange={handleNoiDungChange}
               placeholder="Hãy để lại những lời chúc ấm áp, kỷ niệm đáng nhớ hoặc những điều bạn muốn nói với Mai nhé... 🌸"
-              className="w-full px-4 py-3.5 rounded-2xl text-sm leading-relaxed resize-none border border-transparent focus:outline-none focus:ring-2 focus:ring-rose-300/50 focus:border-rose-300 placeholder:text-rose-200 transition-all duration-200"
+              className="w-full px-4 py-3.5 rounded-2xl text-sm leading-relaxed resize-none border border-transparent focus:outline-none focus:ring-2 focus:ring-rose-300/50 focus:border-rose-300 placeholder:text-rose-200 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(244,114,182,0.12)]"
               style={{ fontFamily: 'var(--font-playfair), serif', background: 'var(--khung-kinh)', color: 'var(--mau-chu)' }}
             />
             <span className="absolute bottom-3 right-3.5 text-[9px] text-rose-200 font-mono">
@@ -206,14 +225,29 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
           <label className="block text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: 'var(--text-heading)', opacity: 0.8 }}>
             ✦ Tên của bạn
           </label>
-          <div className="relative">
+          <div className="flex items-center gap-3 flex-wrap">
+            <label className="group inline-flex cursor-pointer items-center gap-2 rounded-full border border-rose-200/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.95),rgba(255,243,246,0.9))] px-3 py-2 text-sm font-medium shadow-[0_4px_14px_rgba(244,114,182,0.12)] backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-[0_8px_20px_rgba(244,114,182,0.16)]">
+              <input
+                type="checkbox"
+                checked={localAnonymous}
+                onChange={handleAnonymousChange}
+                className="peer sr-only"
+              />
+              <span className="relative flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-rose-300/80 bg-white shadow-[inset_0_1px_2px_rgba(244,114,182,0.16)] transition-all duration-200 peer-checked:border-rose-500 peer-checked:bg-[linear-gradient(135deg,#f43f5e,#ec4899)] peer-checked:shadow-[0_0_0_4px_rgba(244,114,182,0.22)]">
+                <span className="text-[10px] font-bold leading-none text-white opacity-0 transition-all duration-200 peer-checked:opacity-100 peer-checked:scale-100 scale-75">✓</span>
+              </span>
+              <span className="text-[13px] text-rose-500/90 transition-colors duration-200 group-hover:text-rose-600 peer-checked:text-rose-600">Gửi ẩn danh</span>
+            </label>
+          </div>
+          <div className="relative transition-all duration-200 hover:-translate-y-0.5">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-300 text-sm">✍️</span>
             <input
               type="text"
               value={localTacGia}
               onChange={handleTacGiaChange}
-              placeholder="Bạn là ai? Để lại dấu ấn nhé..."
-              className="w-full pl-10 pr-4 py-3.5 rounded-2xl text-sm border border-transparent focus:outline-none focus:ring-2 focus:ring-rose-300/50 focus:border-rose-300 placeholder:text-rose-200 transition-all duration-200"
+              placeholder={localAnonymous ? 'Điều anh luôn giấu kín trong tim...' : 'Bạn là ai? Để lại dấu ấn nhé...'}
+              disabled={localAnonymous}
+              className={`w-full pl-10 pr-4 py-3.5 rounded-2xl text-sm border border-transparent focus:outline-none transition-all duration-200 ${localAnonymous ? 'opacity-50 cursor-not-allowed' : 'focus:ring-2 focus:ring-rose-300/50 focus:border-rose-300 placeholder:text-rose-200 hover:shadow-[0_8px_24px_rgba(244,114,182,0.12)]'}`}
               style={{ background: 'var(--khung-kinh)', color: 'var(--mau-chu)' }}
             />
           </div>

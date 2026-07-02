@@ -10,6 +10,7 @@ export interface LuuButFormData {
   noiDung: string;
   tacGia: string;
   anhFile: Blob | null;
+  anonymous: boolean;
 }
 
 export interface InsertLuuButDTO {
