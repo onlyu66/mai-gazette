@@ -4,6 +4,63 @@ import { GalleryImageRecord, InsertLuuButDTO, LuuButRecord } from "../types";
 const GRADUATE_IMAGE_PUBLIC_CATEGORY = "graduate-hero";
 const PUBLIC_GRADUATE_PROFILE_ID = "00000000-0000-0000-0000-000000000000";
 
+const deleteStoredImageIfNeeded = async (
+  previousImageUrl: string | null,
+  nextImageUrl: string,
+  userId?: string,
+  accessToken?: string,
+): Promise<void> => {
+  if (!previousImageUrl || previousImageUrl === nextImageUrl) {
+    return;
+  }
+
+  if (
+    previousImageUrl === "/avatar.jpg" ||
+    previousImageUrl.includes("/avatar.jpg")
+  ) {
+    return;
+  }
+
+  try {
+    console.log(
+      "🗑️ Requesting server-side storage deletion:",
+      previousImageUrl,
+    );
+
+    const response = await fetch("/api/graduate-image/delete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        imageUrl: previousImageUrl,
+        userId,
+        accessToken,
+      }),
+    });
+
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      console.warn(
+        "⚠️ Server-side storage cleanup did not remove the previous image; continuing with the update.",
+        payload,
+      );
+      return;
+    }
+
+    console.log(
+      "✅ Server-side storage image delete request completed",
+      payload,
+    );
+  } catch (error) {
+    console.warn(
+      "⚠️ Could not delete the previous storage image, but the profile update will continue:",
+      error,
+    );
+  }
+};
+
 /**
  * Upload file Blob ảnh lên Supabase Storage.
  * Hàm nhận Blob đã được nén từ client, không cần decode base64 nữa.
@@ -186,10 +243,34 @@ export const fetchGalleryImages = async (
 export const saveGraduateImagePreference = async (
   userId: string,
   imageUrl: string,
+  previousImageUrl?: string | null,
 ): Promise<boolean> => {
   if (!supabase) return false;
 
   try {
+    const { data: existingPublicRecord, error: existingPublicError } =
+      await supabase
+        .from("gallery_images")
+        .select("id, image_url")
+        .eq("category", GRADUATE_IMAGE_PUBLIC_CATEGORY)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (existingPublicError) {
+      if (
+        existingPublicError?.code &&
+        ["42P01", "PGRST116", "PGRST114"].includes(existingPublicError.code)
+      ) {
+        // Ignore missing table / no rows and continue with a fresh insert.
+      } else {
+        throw existingPublicError;
+      }
+    }
+
+    const previousStoredUrl =
+      previousImageUrl ?? existingPublicRecord?.image_url ?? null;
+
     const profileResult = await supabase.from("profiles").upsert(
       {
         id: userId,
@@ -211,15 +292,6 @@ export const saveGraduateImagePreference = async (
         throw profileResult.error;
       }
     }
-
-    const { data: existingPublicRecord, error: existingPublicError } =
-      await supabase
-        .from("gallery_images")
-        .select("id")
-        .eq("category", GRADUATE_IMAGE_PUBLIC_CATEGORY)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
 
     if (existingPublicError) {
       if (
@@ -255,6 +327,16 @@ export const saveGraduateImagePreference = async (
         throw insertError;
       }
     }
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    await deleteStoredImageIfNeeded(
+      previousStoredUrl,
+      imageUrl,
+      userId,
+      session?.access_token,
+    );
 
     return true;
   } catch (error) {
@@ -353,9 +435,30 @@ export const insertGalleryImage = async (
 export const deleteGalleryImage = async (id: string): Promise<void> => {
   if (!supabase) throw new Error("Supabase chưa được cấu hình.");
 
-  const { error } = await supabase.from("gallery_images").delete().eq("id", id);
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session?.user) {
+    throw new Error("Bạn phải đăng nhập để xóa ảnh.");
+  }
 
-  if (error) throw error;
+  const response = await fetch("/api/gallery/delete", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id,
+      userId: session.user.id,
+      accessToken: session.access_token,
+    }),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(payload?.error || "Không thể xóa ảnh.");
+  }
 };
 
 /**

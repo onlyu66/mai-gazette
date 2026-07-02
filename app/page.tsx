@@ -94,7 +94,11 @@ export default function Home() {
         return;
       }
 
-      const savedToSupabase = await saveGraduateImagePreference(user.id, uploadedUrl);
+      const savedToSupabase = await saveGraduateImagePreference(
+        user.id,
+        uploadedUrl,
+        graduateImageUrl,
+      );
       setGraduateImageUrl(uploadedUrl);
 
       if (savedToSupabase) {
@@ -244,7 +248,7 @@ export default function Home() {
             <motion.div
               animate={{ opacity: [0.5, 1, 0.5], boxShadow: ['0 0 5px rgba(244,114,182,0.2)', '0 0 20px rgba(244,114,182,0.6)', '0 0 5px rgba(244,114,182,0.2)'] }}
               transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute inset-0 rounded-2xl bg-linear-to-br from-white/60 via-rose-50/30 to-rose-100/40 dark:from-zinc-900/60 dark:via-zinc-900/40 dark:to-rose-950/30 backdrop-blur-md border border-rose-200/40 dark:border-zinc-800 pointer-events-none group-hover:!opacity-100 group-hover:!shadow-[0_0_20px_rgba(244,114,182,0.6)]"
+              className="absolute inset-0 rounded-2xl bg-linear-to-br from-white/60 via-rose-50/30 to-rose-100/40 dark:from-zinc-900/60 dark:via-zinc-900/40 dark:to-rose-950/30 backdrop-blur-md border border-rose-200/40 dark:border-zinc-800 pointer-events-none group-hover:opacity-100! group-hover:shadow-[0_0_20px_rgba(244,114,182,0.6)]!"
             />
             <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-10">
               <div className="w-1/2 h-full bg-linear-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:animate-hieu-ung-quet-sang"></div>
@@ -266,6 +270,8 @@ export default function Home() {
                   alt="Phan Ngọc Mai"
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
+                  priority
+                  loading="eager"
                   unoptimized
                   onLoad={() => setIsGraduateImageLoading(false)}
                   onError={() => {
