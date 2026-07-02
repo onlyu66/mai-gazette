@@ -46,6 +46,7 @@ export default function LuuButCard({
 
   const imgSrc = objectUrl || anhUrl;
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const displayDate = createdAt ? formatLuuButDate(createdAt, 'long') : 'Đang cập nhật';
 
   return (
     <div
@@ -80,12 +81,7 @@ export default function LuuButCard({
           <div className="flex justify-center items-center gap-2 text-[9px] font-mono flex-wrap" style={{ color: 'var(--text-muted)' }}>
             <span>Phan Ngọc Mai</span>
             <span>·</span>
-            <span>
-              {createdAt
-                ? formatLuuButDate(createdAt, 'long')
-                : new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-              }
-            </span>
+            <span>{displayDate}</span>
           </div>
         </div>
 

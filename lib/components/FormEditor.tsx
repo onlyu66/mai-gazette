@@ -210,7 +210,7 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
               value={localNoiDung}
               onChange={handleNoiDungChange}
               placeholder="Hãy để lại những lời chúc ấm áp, kỷ niệm đáng nhớ hoặc những điều bạn muốn nói với Mai nhé... 🌸"
-              className="w-full px-4 py-3.5 rounded-2xl text-sm leading-relaxed resize-none border border-transparent focus:outline-none focus:ring-2 focus:ring-rose-300/50 focus:border-rose-300 placeholder:text-rose-200 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(244,114,182,0.12)]"
+              className="w-full px-4 py-3.5 rounded-2xl text-sm leading-relaxed resize-none border border-rose-200/70 bg-white/80 focus:outline-none focus:ring-2 focus:ring-rose-300/50 focus:border-rose-300 placeholder:text-rose-200 transition-all duration-200 hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-[0_8px_24px_rgba(244,114,182,0.12)]"
               style={{ fontFamily: 'var(--font-playfair), serif', background: 'var(--khung-kinh)', color: 'var(--mau-chu)' }}
             />
             <span className="absolute bottom-3 right-3.5 text-[9px] text-rose-200 font-mono">
@@ -247,7 +247,7 @@ export default function FormEditor({ formData, updateField, onSubmit, loading }:
               onChange={handleTacGiaChange}
               placeholder={localAnonymous ? 'Điều anh luôn giấu kín trong tim...' : 'Bạn là ai? Để lại dấu ấn nhé...'}
               disabled={localAnonymous}
-              className={`w-full pl-10 pr-4 py-3.5 rounded-2xl text-sm border border-transparent focus:outline-none transition-all duration-200 ${localAnonymous ? 'opacity-50 cursor-not-allowed' : 'focus:ring-2 focus:ring-rose-300/50 focus:border-rose-300 placeholder:text-rose-200 hover:shadow-[0_8px_24px_rgba(244,114,182,0.12)]'}`}
+              className={`w-full pl-10 pr-4 py-3.5 rounded-2xl text-sm border border-rose-200/70 bg-white/80 focus:outline-none transition-all duration-200 ${localAnonymous ? 'opacity-50 cursor-not-allowed' : 'focus:ring-2 focus:ring-rose-300/50 focus:border-rose-300 placeholder:text-rose-200 hover:border-rose-300 hover:shadow-[0_8px_24px_rgba(244,114,182,0.12)]'}`}
               style={{ background: 'var(--khung-kinh)', color: 'var(--mau-chu)' }}
             />
           </div>

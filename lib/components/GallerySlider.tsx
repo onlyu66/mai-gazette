@@ -2,14 +2,27 @@
 
 import { Camera, Sparkles } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { MEMORIES } from '../constants';
-import { MemoryIcon } from './MemoryIcon';
 import { fetchGalleryImages } from '../services/api';
+import { MemoryIcon } from './MemoryIcon';
 
 export default function GallerySlider() {
+  const router = useRouter();
   const [categoryImages, setCategoryImages] = useState<Record<string, string[]>>({});
+  const hasDraggedRef = useRef(false);
+  const suppressClickRef = useRef(false);
+  const activeItemIdRef = useRef<string | null>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const autoScrollRef = useRef<number | null>(null);
+  const lastPointerXRef = useRef(0);
+  const isDraggingRef = useRef(false);
+  const isPausedRef = useRef(false);
+  const lastAutoTimeRef = useRef<number | null>(null);
+  const dragStartXRef = useRef<number | null>(null);
+  const dragDistanceRef = useRef(0);
 
   useEffect(() => {
     const loadImages = async () => {
@@ -33,6 +46,131 @@ export default function GallerySlider() {
 
     loadImages();
   }, []);
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    const track = trackRef.current;
+    if (!viewport || !track) return;
+
+    const startAutoScroll = (timestamp: number) => {
+      const halfScrollLeft = track.scrollWidth / 2;
+      if (halfScrollLeft <= 0) return;
+      if (viewport.scrollLeft === 0) {
+        viewport.scrollLeft = halfScrollLeft;
+      }
+
+      const step = (now: number) => {
+        if (isDraggingRef.current || isPausedRef.current) {
+          lastAutoTimeRef.current = now;
+          autoScrollRef.current = window.requestAnimationFrame(step);
+          return;
+        }
+
+        const previousTime = lastAutoTimeRef.current ?? now;
+        const elapsed = Math.min(now - previousTime, 15); // Giới hạn tốc độ cuộn để tránh nhảy hình khi tab bị ẩn
+        lastAutoTimeRef.current = now;
+        const distance = (elapsed / 1000) * 95;
+        const current = viewport.scrollLeft;
+        const next = current + distance;
+
+        if (next >= halfScrollLeft) {
+          viewport.scrollLeft = next - halfScrollLeft;
+        } else {
+          viewport.scrollLeft = next;
+        }
+
+        autoScrollRef.current = window.requestAnimationFrame(step);
+      };
+
+      if (autoScrollRef.current) window.cancelAnimationFrame(autoScrollRef.current);
+      lastAutoTimeRef.current = timestamp;
+      autoScrollRef.current = window.requestAnimationFrame(step);
+    };
+
+    const handleResize = () => {
+      if (autoScrollRef.current) window.cancelAnimationFrame(autoScrollRef.current);
+      lastAutoTimeRef.current = null;
+      startAutoScroll(performance.now());
+    };
+
+    startAutoScroll(performance.now());
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      if (autoScrollRef.current) window.cancelAnimationFrame(autoScrollRef.current);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [categoryImages]);
+
+  const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    isDraggingRef.current = true;
+    hasDraggedRef.current = false;
+    suppressClickRef.current = false;
+    dragStartXRef.current = event.clientX;
+    dragDistanceRef.current = 0;
+    lastPointerXRef.current = event.clientX;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current || dragStartXRef.current === null || !viewportRef.current) return;
+
+    const deltaX = event.clientX - lastPointerXRef.current;
+    const viewport = viewportRef.current;
+    const track = trackRef.current;
+    if (!track) return;
+
+    if (Math.abs(deltaX) > 2) {
+      event.preventDefault();
+      suppressClickRef.current = true;
+    }
+
+    const halfScrollLeft = track.scrollWidth / 2;
+    let nextScrollLeft = viewport.scrollLeft - deltaX;
+    if (nextScrollLeft < 0) {
+      nextScrollLeft += halfScrollLeft;
+    } else if (nextScrollLeft >= halfScrollLeft) {
+      nextScrollLeft -= halfScrollLeft;
+    }
+
+    viewport.scrollLeft = nextScrollLeft;
+    dragDistanceRef.current += Math.abs(deltaX);
+    lastPointerXRef.current = event.clientX;
+
+    if (dragDistanceRef.current > 12) {
+      hasDraggedRef.current = true;
+    }
+  };
+
+  const handlePointerUp = (event?: ReactPointerEvent<HTMLDivElement>) => {
+    if (event?.currentTarget?.releasePointerCapture) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    if (!suppressClickRef.current && !hasDraggedRef.current && activeItemIdRef.current) {
+      router.push(`/gallery/${activeItemIdRef.current}`);
+    }
+
+    isDraggingRef.current = false;
+    dragStartXRef.current = null;
+    dragDistanceRef.current = 0;
+    activeItemIdRef.current = null;
+
+    window.setTimeout(() => {
+      suppressClickRef.current = false;
+      hasDraggedRef.current = false;
+    }, 0);
+  };
+
+  const handleItemKeyDown = (event: React.KeyboardEvent<HTMLDivElement>, itemId: string) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      router.push(`/gallery/${itemId}`);
+    }
+  };
 
   // Tạo uniqueStrip với số lần lặp tương ứng
   const uniqueStrip = Array.from({ length: 3 }).flatMap(() => MEMORIES);
@@ -74,21 +212,41 @@ export default function GallerySlider() {
 
       {/* Scrolling strip */}
       <div className="group">
-        <div className="flex w-max flex-nowrap">
-          <div
-            className="flex flex-nowrap pr-6 space-x-5 chay-ngang"
-            style={{ animationDuration: `${finalStrip.length * 1}s` }}
-          >
+        <div
+          ref={viewportRef}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          className="overflow-hidden cursor-grab select-none active:cursor-grabbing"
+          onMouseEnter={() => {
+            isPausedRef.current = true;
+          }}
+          onMouseLeave={() => {
+            isPausedRef.current = false;
+          }}
+          onTouchStart={() => {
+            isPausedRef.current = true;
+          }}
+          onTouchEnd={() => {
+            isPausedRef.current = false;
+          }}
+          style={{ touchAction: 'none' }}
+        >
+          <div ref={trackRef} className="flex w-max flex-nowrap pr-6 space-x-5" >
             {finalStrip.map((item, idx) => (
-              <Link
-                href={`/gallery/${item.id}`}
+              <div
                 key={idx}
+                role="button"
+                tabIndex={0}
+                onPointerDown={() => { activeItemIdRef.current = item.id; }}
+                onKeyDown={(event) => handleItemKeyDown(event, item.id)}
                 className={`
                   relative w-52 h-44 rounded-3xl shrink-0 flex flex-col items-center justify-center gap-3
                   bg-linear-to-br ${item.color} overflow-hidden
-                  border shadow-sm group/card
+                  border shadow-sm group/card cursor-pointer
                   hover:shadow-rose-400/40 hover:-translate-y-2 hover:border-rose-300/50
-                  transition-all duration-500 ease-out
+                  transition-all duration-500 ease-out touch-none
                 `}
                 style={{ borderColor: 'var(--border-card)' }}
               >
@@ -141,7 +299,7 @@ export default function GallerySlider() {
                     </span>
                   </>
                 )}
-              </Link>
+              </div>
             ))}
           </div>
         </div>
